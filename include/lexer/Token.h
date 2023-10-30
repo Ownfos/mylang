@@ -53,6 +53,8 @@ struct Token
     std::string lexeme;
     SourcePos start_pos;
     SourcePos end_pos;
+
+    bool operator==(const Token&) const = default;
 };
 
 } // namespace mylang

@@ -2,6 +2,7 @@ add_library(mylanglib
     file/DummySourceFile.cpp
     file/SourceFile.cpp
     lexer/DummyLexicalAnalyzer.cpp
+    lexer/LexicalAnalyzer.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)
