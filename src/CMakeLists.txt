@@ -3,6 +3,7 @@ add_library(mylanglib
     file/SourceFile.cpp
     lexer/DummyLexicalAnalyzer.cpp
     lexer/LexicalAnalyzer.cpp
+    lexer/LookAheadManager.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)

@@ -2,9 +2,8 @@
 #define MYLANG_LEXICAL_ANALYZER_H
 
 #include "lexer/ILexicalAnalyzer.h"
-#include "file/ISourceFile.h"
-#include <memory>
-#include <stack>
+#include "lexer/LookAheadManager.h"
+#include <optional>
 
 namespace mylang
 {
@@ -24,7 +23,6 @@ private:
     // Keep reading characters until non-whitespace character appears.
     // Returns false if current character is not a whitespace character.
     bool TryRemoveWhitespaces();
-    bool IsWhitespace(char ch) const;
 
     // Keep reading characters until the end of a comment.
     // Returns false immediately if we are not at the beginning of a comment.
@@ -32,9 +30,14 @@ private:
 
     Token FindLongestMatch();
 
+    std::optional<Token> TryFindSingleCharToken();
+    std::optional<Token> TryFindAtMostTwoCharToken();
+    std::optional<Token> TryFindNumericLiteral();
+    std::optional<Token> TryFindStringLiteral();
+    std::optional<Token> TryFindIdentifier();
+
     std::unique_ptr<ISourceFile> m_source_file;
-    std::string m_lexeme_buffer;
-    std::stack<char> m_lookahead_buffer;
+    LookAheadManager m_lookahead;
 };
 
 } // namespace mylang

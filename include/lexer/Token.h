@@ -21,13 +21,15 @@ enum class TokenType
     If,
     Else,
     Return,
-    Times, // *
+    Struct,
+    Multiply, // *
     Divide, // /
     Plus, // +
     Minus, // -
     Assign, // =
     Equal, // ==
     Not, // !
+    NotEqual, // !=
     Less, // <
     LessEqual, // <=
     Greater, // >
@@ -45,6 +47,7 @@ enum class TokenType
     Period, // .
     Arrow, // ->
     EndOfFile,
+    Error,
 };
 
 struct Token
