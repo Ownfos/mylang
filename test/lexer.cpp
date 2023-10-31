@@ -436,7 +436,6 @@ TEST(LexicalAnalyzer, Comparision)
 
 TEST(LexicalAnalyzer, LogicalAndOr)
 {
-    
     auto source_file = std::make_unique<DummySourceFile>("& && | ||");
     auto lexer = LexicalAnalyzer(std::move(source_file));
     auto token = lexer.GetNextToken();
@@ -481,6 +480,29 @@ TEST(LexicalAnalyzer, LogicalAndOr)
         .lexeme = "$",
         .start_pos = SourcePos{.line = 1, .column = 10},
         .end_pos = SourcePos{.line = 1, .column = 10}
+    };
+    ASSERT_EQ(token, expected);
+}
+
+TEST(LexicalAnalyzer, SingleLineComment)
+{
+    auto source_file = std::make_unique<DummySourceFile>("  //for while do 123 4.56  \r\ntrue //\"hello, world\"");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    auto token = lexer.GetNextToken();
+    auto expected = Token{
+        .type = TokenType::BoolLiteral,
+        .lexeme = "true",
+        .start_pos = SourcePos{.line = 2, .column = 1},
+        .end_pos = SourcePos{.line = 2, .column = 4}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::EndOfFile,
+        .lexeme = "$",
+        .start_pos = SourcePos{.line = 2, .column = 22},
+        .end_pos = SourcePos{.line = 2, .column = 22}
     };
     ASSERT_EQ(token, expected);
 }

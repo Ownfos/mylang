@@ -42,8 +42,7 @@ public:
     // following Accept() or Discard() can reuse these 'rewinded' lookaheads.
     void RewindUntilCheckpoint();
 
-    // Make a token out of current lexeme buffer.
-    // Note: This does not clear lexeme buffer!
+    // Make a token out of current lexeme buffer and clear the buffer.
     Token CreateToken(TokenType type);
 
     // Empty buffer and reset rewind checkpoint.

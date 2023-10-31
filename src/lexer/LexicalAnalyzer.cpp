@@ -2,6 +2,8 @@
 #include <vector>
 #include <tuple>
 #include <cctype>
+#include <stdexcept>
+#include <format>
 
 namespace mylang
 {
@@ -59,8 +61,87 @@ bool LexicalAnalyzer::TryRemoveWhitespaces()
 
 bool LexicalAnalyzer::TryRemoveComment()
 {
-    // TODO: implement comment discarding.
-    return false;
+    // This might be a comment.
+    if (m_lookahead.Peek() == '/')
+    {
+        m_lookahead.Accept();
+
+        // Line comment detected!
+        if (m_lookahead.Peek() == '/')
+        {
+            RemoveSingleLineComment();
+            return true;
+        }
+        // Multi-line comment detected!
+        else if (m_lookahead.Peek() == '*')
+        {
+            RemoveMultiLineComment();
+            return true;
+        }
+        // It was just a division operator...
+        else
+        {
+            // Undo reading '/'
+            m_lookahead.RewindUntilCheckpoint();
+            return false;
+        }
+    }
+    // Comment not found.
+    else
+    {
+        return false;
+    }
+}
+
+void LexicalAnalyzer::RemoveSingleLineComment()
+{
+    // Remove the '/' in the lexeme buffer.
+    m_lookahead.CleanUpLexemeBuffer();
+
+    // Discard everything until the end of current line or EOF.
+    while(!m_lookahead.IsEOF() && m_lookahead.Peek() != '\n')
+    {
+        m_lookahead.Discard();
+    }
+}
+
+void LexicalAnalyzer::RemoveMultiLineComment()
+{
+    // This line of code removes '/' of the comment start "/*"
+    // and provide information about the source position.
+    // The comment_start_pos will be used on exception message
+    // if this turns out to be an unterminated comment.
+    auto comment_start_pos = m_lookahead.CreateToken(TokenType::Error).start_pos;
+
+    // Discard the '*' of the comment start "/*"
+    m_lookahead.Discard();
+
+    // Discard everything until we meet "*/" or reach EOF.
+    while (!m_lookahead.IsEOF())
+    {
+        // Might be the end of this comment
+        if (m_lookahead.Peek() == '*')
+        {
+            m_lookahead.Discard();
+            if (m_lookahead.Peek() == '/')
+            {
+                m_lookahead.Discard();
+                return;
+            }
+        }
+        else
+        {
+            m_lookahead.Discard();
+        }
+    }
+
+    // Arriving here implies that we reached EOF without encoutering "*/".
+    // Throw an exception for unterminated comment.
+    auto message = std::format("Lexical Error: unterminated multi-line comment starting from ({}, {})",
+        comment_start_pos.line,
+        comment_start_pos.column
+    );
+    throw std::runtime_error(message);
 }
 
 Token LexicalAnalyzer::FindLongestMatch()
@@ -97,9 +178,6 @@ std::optional<Token> LexicalAnalyzer::TryFindSingleCharToken()
 {
     // List of all tokens that doesn't have any longer match.
     auto cases = std::vector<std::tuple<char, TokenType>>{
-        {'*', TokenType::Multiply},
-        {'/', TokenType::Divide},
-        {'+', TokenType::Plus},
         {'(', TokenType::LeftParen},
         {')', TokenType::RightParen},
         {'{', TokenType::LeftBrace},
@@ -131,11 +209,12 @@ std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
     // First type is for single character match,
     // while the second type is for complete match.
     auto cases = std::vector<std::tuple<std::string, TokenType, TokenType>>{
+        {"*=", TokenType::Multiply, TokenType::MultiplyAssign},
+        {"/=", TokenType::Divide, TokenType::DivideAssign},
         {"==", TokenType::Assign, TokenType::Equal},
         {"!=", TokenType::Not, TokenType::NotEqual},
         {"<=", TokenType::Less, TokenType::LessEqual},
         {">=", TokenType::Greater, TokenType::GreaterEqual},
-        {"->", TokenType::Minus, TokenType::Arrow},
         {"&&", TokenType::Error, TokenType::And},
         {"||", TokenType::Error, TokenType::Or},
     };
@@ -144,7 +223,6 @@ std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
         if (m_lookahead.Peek() == candidate[0])
         {
             m_lookahead.Accept();
-            m_lookahead.MarkRewindCheckpoint();
 
             // Completely matched.
             if (m_lookahead.Peek() == candidate[1])
@@ -155,9 +233,60 @@ std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
             // Only the first character matched.
             else
             {
-                m_lookahead.RewindUntilCheckpoint();
                 return m_lookahead.CreateToken(type1);
             }
+        }
+    }
+
+    // += ++ -- -> -= are the special cases where
+    // two or more token types share same prefix.
+    if (m_lookahead.Peek() == '+')
+    {
+        m_lookahead.Accept();
+
+        // '++'
+        if (m_lookahead.Peek() == '+')
+        {
+            m_lookahead.Accept();
+            return m_lookahead.CreateToken(TokenType::UnaryPlus);
+        }
+        // '+='
+        else if (m_lookahead.Peek() == '=')
+        {
+            m_lookahead.Accept();
+            return m_lookahead.CreateToken(TokenType::PlusAssign);
+        }
+        // '+'
+        else
+        {
+            return m_lookahead.CreateToken(TokenType::Plus);
+        }
+    }
+    else if (m_lookahead.Peek() == '-')
+    {
+        m_lookahead.Accept();
+
+        // '->'
+        if (m_lookahead.Peek() == '>')
+        {
+            m_lookahead.Accept();
+            return m_lookahead.CreateToken(TokenType::Arrow);
+        }
+        // '-='
+        else if (m_lookahead.Peek() == '=')
+        {
+            m_lookahead.Accept();
+            return m_lookahead.CreateToken(TokenType::MinusAssign);
+        }
+        else if (m_lookahead.Peek() == '-')
+        {
+            m_lookahead.Accept();
+            return m_lookahead.CreateToken(TokenType::UnaryMinus);
+        }
+        // '-'
+        else
+        {
+            return m_lookahead.CreateToken(TokenType::Minus);
         }
     }
 
@@ -214,6 +343,7 @@ std::optional<Token> LexicalAnalyzer::TryFindNumericLiteral()
 
 std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
 {
+    // TODO: implement string literal scanning.
     return {};
 }
 

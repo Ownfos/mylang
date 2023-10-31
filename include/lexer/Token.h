@@ -26,6 +26,12 @@ enum class TokenType
     Divide, // /
     Plus, // +
     Minus, // -
+    UnaryPlus, // ++
+    UnaryMinus, // --
+    MultiplyAssign, // *=
+    DivideAssign, // /=
+    PlusAssign, // +=
+    MinusAssign, // -=
     Assign, // =
     Equal, // ==
     Not, // !

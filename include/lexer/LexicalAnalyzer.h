@@ -28,8 +28,11 @@ private:
     // Returns false immediately if we are not at the beginning of a comment.
     bool TryRemoveComment();
 
-    Token FindLongestMatch();
+    // Remove comments.
+    void RemoveSingleLineComment();
+    void RemoveMultiLineComment();
 
+    Token FindLongestMatch();
     std::optional<Token> TryFindSingleCharToken();
     std::optional<Token> TryFindAtMostTwoCharToken();
     std::optional<Token> TryFindNumericLiteral();
