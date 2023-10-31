@@ -228,3 +228,122 @@ TEST(LexicalAnalyzer, NumericLiterals)
     };
     ASSERT_EQ(token, expected);
 }
+
+TEST(LexicalAnalyzer, BasicOperators)
+{
+    auto source_file = std::make_unique<DummySourceFile>("*/+-");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    auto token = lexer.GetNextToken();
+    auto expected = Token{
+        .type = TokenType::Multiply,
+        .lexeme = "*",
+        .start_pos = SourcePos{.line = 1, .column = 1},
+        .end_pos = SourcePos{.line = 1, .column = 1}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::Divide,
+        .lexeme = "/",
+        .start_pos = SourcePos{.line = 1, .column = 2},
+        .end_pos = SourcePos{.line = 1, .column = 2}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::Plus,
+        .lexeme = "+",
+        .start_pos = SourcePos{.line = 1, .column = 3},
+        .end_pos = SourcePos{.line = 1, .column = 3}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::Minus,
+        .lexeme = "-",
+        .start_pos = SourcePos{.line = 1, .column = 4},
+        .end_pos = SourcePos{.line = 1, .column = 4}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::EndOfFile,
+        .lexeme = "$",
+        .start_pos = SourcePos{.line = 1, .column = 5},
+        .end_pos = SourcePos{.line = 1, .column = 5}
+    };
+    ASSERT_EQ(token, expected);
+}
+
+TEST(LexicalAnalyzer, Brackets)
+{
+    auto source_file = std::make_unique<DummySourceFile>("(){}[]");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    auto token = lexer.GetNextToken();
+    auto expected = Token{
+        .type = TokenType::LeftParen,
+        .lexeme = "(",
+        .start_pos = SourcePos{.line = 1, .column = 1},
+        .end_pos = SourcePos{.line = 1, .column = 1}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::RightParen,
+        .lexeme = ")",
+        .start_pos = SourcePos{.line = 1, .column = 2},
+        .end_pos = SourcePos{.line = 1, .column = 2}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::LeftBrace,
+        .lexeme = "{",
+        .start_pos = SourcePos{.line = 1, .column = 3},
+        .end_pos = SourcePos{.line = 1, .column = 3}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::RightBrace,
+        .lexeme = "}",
+        .start_pos = SourcePos{.line = 1, .column = 4},
+        .end_pos = SourcePos{.line = 1, .column = 4}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::LeftBracket,
+        .lexeme = "[",
+        .start_pos = SourcePos{.line = 1, .column = 5},
+        .end_pos = SourcePos{.line = 1, .column = 5}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::RightBracket,
+        .lexeme = "]",
+        .start_pos = SourcePos{.line = 1, .column = 6},
+        .end_pos = SourcePos{.line = 1, .column = 6}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::EndOfFile,
+        .lexeme = "$",
+        .start_pos = SourcePos{.line = 1, .column = 7},
+        .end_pos = SourcePos{.line = 1, .column = 7}
+    };
+    ASSERT_EQ(token, expected);
+}
+

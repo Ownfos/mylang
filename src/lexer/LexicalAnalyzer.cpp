@@ -94,6 +94,34 @@ Token LexicalAnalyzer::FindLongestMatch()
 
 std::optional<Token> LexicalAnalyzer::TryFindSingleCharToken()
 {
+    // List of all tokens that doesn't have any longer match.
+    auto cases = std::vector<std::tuple<char, TokenType>>{
+        {'*',        TokenType::Multiply},
+        {'/',       TokenType::Divide},
+        {'+',         TokenType::Plus},
+        {'-',         TokenType::Minus},
+        {'(',         TokenType::LeftParen},
+        {')',         TokenType::RightParen},
+        {'{',         TokenType::LeftBrace},
+        {'}',         TokenType::RightBrace},
+        {'[',         TokenType::LeftBracket},
+        {']',         TokenType::RightBracket},
+        {',',         TokenType::Comma},
+        {':',         TokenType::Colon},
+        {';',         TokenType::Semicolon},
+        {'"',         TokenType::DoubleQuote},
+        {'.',         TokenType::Period},
+    };
+    for (const auto& [ch, type] : cases)
+    {
+        if (m_lookahead.Peek() == ch)
+        {
+            m_lookahead.Accept();
+            return m_lookahead.CreateToken(type);
+        }
+    }
+    
+    // Pattern mismatch.
     return {};
 }
 
