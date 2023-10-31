@@ -96,21 +96,21 @@ std::optional<Token> LexicalAnalyzer::TryFindSingleCharToken()
 {
     // List of all tokens that doesn't have any longer match.
     auto cases = std::vector<std::tuple<char, TokenType>>{
-        {'*',        TokenType::Multiply},
-        {'/',       TokenType::Divide},
-        {'+',         TokenType::Plus},
-        {'-',         TokenType::Minus},
-        {'(',         TokenType::LeftParen},
-        {')',         TokenType::RightParen},
-        {'{',         TokenType::LeftBrace},
-        {'}',         TokenType::RightBrace},
-        {'[',         TokenType::LeftBracket},
-        {']',         TokenType::RightBracket},
-        {',',         TokenType::Comma},
-        {':',         TokenType::Colon},
-        {';',         TokenType::Semicolon},
-        {'"',         TokenType::DoubleQuote},
-        {'.',         TokenType::Period},
+        {'*', TokenType::Multiply},
+        {'/', TokenType::Divide},
+        {'+', TokenType::Plus},
+        {'-', TokenType::Minus},
+        {'(', TokenType::LeftParen},
+        {')', TokenType::RightParen},
+        {'{', TokenType::LeftBrace},
+        {'}', TokenType::RightBrace},
+        {'[', TokenType::LeftBracket},
+        {']', TokenType::RightBracket},
+        {',', TokenType::Comma},
+        {':', TokenType::Colon},
+        {';', TokenType::Semicolon},
+        {'"', TokenType::DoubleQuote},
+        {'.', TokenType::Period},
     };
     for (const auto& [ch, type] : cases)
     {
@@ -189,16 +189,16 @@ void ChangeTypeIfReservedWord(Token& token)
 {
     // A database of (lexeme, type) tuple for all reserved words.
     auto special_cases = std::vector<std::tuple<std::string, TokenType>>{
-        {"true",        TokenType::BoolLiteral},
-        {"false",       TokenType::BoolLiteral},
-        {"for",         TokenType::For},
-        {"while",       TokenType::While},
-        {"break",       TokenType::Break},
-        {"continue",    TokenType::Continue},
-        {"if",          TokenType::If},
-        {"else",        TokenType::Else},
-        {"return",      TokenType::Return},
-        {"struct",      TokenType::Struct},
+        {"true",     TokenType::BoolLiteral},
+        {"false",    TokenType::BoolLiteral},
+        {"for",      TokenType::For},
+        {"while",    TokenType::While},
+        {"break",    TokenType::Break},
+        {"continue", TokenType::Continue},
+        {"if",       TokenType::If},
+        {"else",     TokenType::Else},
+        {"return",   TokenType::Return},
+        {"struct",   TokenType::Struct},
     };
 
     // Check if one of them matches the lexeme.
