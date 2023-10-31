@@ -347,3 +347,140 @@ TEST(LexicalAnalyzer, Brackets)
     ASSERT_EQ(token, expected);
 }
 
+
+TEST(LexicalAnalyzer, Comparision)
+{
+    auto source_file = std::make_unique<DummySourceFile>("< <= > >= = == ! !=");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    auto token = lexer.GetNextToken();
+    auto expected = Token{
+        .type = TokenType::Less,
+        .lexeme = "<",
+        .start_pos = SourcePos{.line = 1, .column = 1},
+        .end_pos = SourcePos{.line = 1, .column = 1}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::LessEqual,
+        .lexeme = "<=",
+        .start_pos = SourcePos{.line = 1, .column = 3},
+        .end_pos = SourcePos{.line = 1, .column = 4}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::Greater,
+        .lexeme = ">",
+        .start_pos = SourcePos{.line = 1, .column = 6},
+        .end_pos = SourcePos{.line = 1, .column = 6}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::GreaterEqual,
+        .lexeme = ">=",
+        .start_pos = SourcePos{.line = 1, .column = 8},
+        .end_pos = SourcePos{.line = 1, .column = 9}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::Assign,
+        .lexeme = "=",
+        .start_pos = SourcePos{.line = 1, .column = 11},
+        .end_pos = SourcePos{.line = 1, .column = 11}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::Equal,
+        .lexeme = "==",
+        .start_pos = SourcePos{.line = 1, .column = 13},
+        .end_pos = SourcePos{.line = 1, .column = 14}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::Not,
+        .lexeme = "!",
+        .start_pos = SourcePos{.line = 1, .column = 16},
+        .end_pos = SourcePos{.line = 1, .column = 16}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::NotEqual,
+        .lexeme = "!=",
+        .start_pos = SourcePos{.line = 1, .column = 18},
+        .end_pos = SourcePos{.line = 1, .column = 19}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::EndOfFile,
+        .lexeme = "$",
+        .start_pos = SourcePos{.line = 1, .column = 20},
+        .end_pos = SourcePos{.line = 1, .column = 20}
+    };
+    ASSERT_EQ(token, expected);
+}
+
+TEST(LexicalAnalyzer, LogicalAndOr)
+{
+    
+    auto source_file = std::make_unique<DummySourceFile>("& && | ||");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    auto token = lexer.GetNextToken();
+    auto expected = Token{
+        .type = TokenType::Error,
+        .lexeme = "&",
+        .start_pos = SourcePos{.line = 1, .column = 1},
+        .end_pos = SourcePos{.line = 1, .column = 1}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::And,
+        .lexeme = "&&",
+        .start_pos = SourcePos{.line = 1, .column = 3},
+        .end_pos = SourcePos{.line = 1, .column = 4}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::Error,
+        .lexeme = "|",
+        .start_pos = SourcePos{.line = 1, .column = 6},
+        .end_pos = SourcePos{.line = 1, .column = 6}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::Or,
+        .lexeme = "||",
+        .start_pos = SourcePos{.line = 1, .column = 8},
+        .end_pos = SourcePos{.line = 1, .column = 9}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::EndOfFile,
+        .lexeme = "$",
+        .start_pos = SourcePos{.line = 1, .column = 10},
+        .end_pos = SourcePos{.line = 1, .column = 10}
+    };
+    ASSERT_EQ(token, expected);
+}

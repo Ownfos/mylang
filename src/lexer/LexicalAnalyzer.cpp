@@ -1,5 +1,6 @@
 #include "lexer/LexicalAnalyzer.h"
 #include <vector>
+#include <tuple>
 #include <cctype>
 
 namespace mylang
@@ -99,7 +100,6 @@ std::optional<Token> LexicalAnalyzer::TryFindSingleCharToken()
         {'*', TokenType::Multiply},
         {'/', TokenType::Divide},
         {'+', TokenType::Plus},
-        {'-', TokenType::Minus},
         {'(', TokenType::LeftParen},
         {')', TokenType::RightParen},
         {'{', TokenType::LeftBrace},
@@ -127,6 +127,41 @@ std::optional<Token> LexicalAnalyzer::TryFindSingleCharToken()
 
 std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
 {
+    // List of all tokens that require one more lookahead.
+    // First type is for single character match,
+    // while the second type is for complete match.
+    auto cases = std::vector<std::tuple<std::string, TokenType, TokenType>>{
+        {"==", TokenType::Assign, TokenType::Equal},
+        {"!=", TokenType::Not, TokenType::NotEqual},
+        {"<=", TokenType::Less, TokenType::LessEqual},
+        {">=", TokenType::Greater, TokenType::GreaterEqual},
+        {"->", TokenType::Minus, TokenType::Arrow},
+        {"&&", TokenType::Error, TokenType::And},
+        {"||", TokenType::Error, TokenType::Or},
+    };
+    for (const auto& [candidate, type1, type2] : cases)
+    {
+        if (m_lookahead.Peek() == candidate[0])
+        {
+            m_lookahead.Accept();
+            m_lookahead.MarkRewindCheckpoint();
+
+            // Completely matched.
+            if (m_lookahead.Peek() == candidate[1])
+            {
+                m_lookahead.Accept();
+                return m_lookahead.CreateToken(type2);
+            }
+            // Only the first character matched.
+            else
+            {
+                m_lookahead.RewindUntilCheckpoint();
+                return m_lookahead.CreateToken(type1);
+            }
+        }
+    }
+
+    // Pattern mismatch.
     return {};
 }
 

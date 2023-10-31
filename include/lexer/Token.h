@@ -34,6 +34,8 @@ enum class TokenType
     LessEqual, // <=
     Greater, // >
     GreaterEqual, // >=
+    And, // &&
+    Or, // ||
     LeftParen, // (
     RightParen, // )
     LeftBrace, // {
