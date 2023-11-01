@@ -1,9 +1,8 @@
 #include "lexer/LexicalAnalyzer.h"
+#include "lexer/LexicalError.h"
 #include <vector>
 #include <tuple>
 #include <cctype>
-#include <stdexcept>
-#include <format>
 
 namespace mylang
 {
@@ -135,13 +134,8 @@ void LexicalAnalyzer::RemoveMultiLineComment()
         }
     }
 
-    // Arriving here implies that we reached EOF without encoutering "*/".
-    // Throw an exception for unterminated comment.
-    auto message = std::format("Lexical Error: unterminated multi-line comment starting from ({}, {})",
-        comment_start_pos.line,
-        comment_start_pos.column
-    );
-    throw std::runtime_error(message);
+    // Arriving here implies that we reached EOF without encoutering "*/"
+    throw LexicalError(comment_start_pos, "unterminated multi-line comment");
 }
 
 Token LexicalAnalyzer::FindLongestMatch()
@@ -187,7 +181,6 @@ std::optional<Token> LexicalAnalyzer::TryFindSingleCharToken()
         {',', TokenType::Comma},
         {':', TokenType::Colon},
         {';', TokenType::Semicolon},
-        {'"', TokenType::DoubleQuote},
         {'.', TokenType::Period},
     };
     for (const auto& [ch, type] : cases)

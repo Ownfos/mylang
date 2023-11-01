@@ -51,7 +51,6 @@ enum class TokenType
     Comma, // ,
     Colon, // :
     Semicolon, // ;
-    DoubleQuote, // "
     Period, // .
     Arrow, // ->
     EndOfFile,
