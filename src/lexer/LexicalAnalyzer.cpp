@@ -3,6 +3,7 @@
 #include <vector>
 #include <tuple>
 #include <cctype>
+#include <format>
 
 namespace mylang
 {
@@ -336,8 +337,56 @@ std::optional<Token> LexicalAnalyzer::TryFindNumericLiteral()
 
 std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
 {
-    // TODO: implement string literal scanning.
-    return {};
+    if (m_lookahead.Peek() == '"')
+    {
+        // Do not include opening quote in lexeme.
+        m_lookahead.Discard();
+
+        while (!m_lookahead.IsEOF() && m_lookahead.Peek() != '\n')
+        {
+            // TODO: escape sequence handling
+            if (m_lookahead.Peek() == '\\')
+            {
+                m_lookahead.Accept();
+
+                // Check if this is a valid escape sequence.
+                auto valid_escape_sequences = std::string("nrt\\\"\'");
+                auto is_valid = valid_escape_sequences.find(m_lookahead.Peek()) != std::string::npos;
+                if (is_valid)
+                {
+                    m_lookahead.Accept();
+                }
+                // This is an unexpected escape sequence.
+                else
+                {
+                    m_lookahead.Accept();
+                    auto token = m_lookahead.CreateToken(TokenType::Error);
+                    auto message = std::format("illegal escape sequence in string literal \"{}\"", token.lexeme);
+                    throw LexicalError(token.end_pos, message);
+                }
+            }
+            else if (m_lookahead.Peek() == '"')
+            {
+                m_lookahead.Discard();
+                return m_lookahead.CreateToken(TokenType::StringLiteral);
+            }
+            else
+            {
+                m_lookahead.Accept();
+            }
+        }
+
+        // Arriving here implies that we reached EOF
+        // or newline without encoutering closing '"'.
+        auto token = m_lookahead.CreateToken(TokenType::StringLiteral);
+        auto message = std::format("unterminated string literal \"{}\"", token.lexeme);
+        throw LexicalError(token.start_pos, message);
+    }
+    // Pattern mismatch.
+    else
+    {
+        return {};
+    }
 }
 
 // A utility function used in TryFindIdentifier().
@@ -347,6 +396,10 @@ void ChangeTypeIfReservedWord(Token& token)
 {
     // A database of (lexeme, type) tuple for all reserved words.
     auto special_cases = std::vector<std::tuple<std::string, TokenType>>{
+        {"i32",     TokenType::IntType},
+        {"f32",     TokenType::FloatType},
+        {"bool",     TokenType::BoolType},
+        {"str",     TokenType::StringType},
         {"true",     TokenType::BoolLiteral},
         {"false",    TokenType::BoolLiteral},
         {"for",      TokenType::For},

@@ -506,3 +506,26 @@ TEST(LexicalAnalyzer, SingleLineComment)
     };
     ASSERT_EQ(token, expected);
 }
+
+TEST(LexicalAnalyzer, StringLiteral)
+{
+    auto source_file = std::make_unique<DummySourceFile>("\"hello, world!\"");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    auto token = lexer.GetNextToken();
+    auto expected = Token{
+        .type = TokenType::StringLiteral,
+        .lexeme = "hello, world!",
+        .start_pos = SourcePos{.line = 1, .column = 2},
+        .end_pos = SourcePos{.line = 1, .column = 14}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::EndOfFile,
+        .lexeme = "$",
+        .start_pos = SourcePos{.line = 1, .column = 16},
+        .end_pos = SourcePos{.line = 1, .column = 16}
+    };
+    ASSERT_EQ(token, expected);
+}

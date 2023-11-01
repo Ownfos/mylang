@@ -14,6 +14,10 @@ enum class TokenType
     FloatLiteral,
     StringLiteral,
     BoolLiteral,
+    IntType, // i32
+    FloatType, // f32
+    BoolType, // bool
+    StringType, // str
     For,
     While,
     Break,
