@@ -1,5 +1,6 @@
 #include "lexer/DummyLexicalAnalyzer.h"
 #include "lexer/LexicalAnalyzer.h"
+#include "lexer/LexicalError.h"
 #include "file/DummySourceFile.h"
 #include <gtest/gtest.h>
 
@@ -514,9 +515,9 @@ TEST(LexicalAnalyzer, StringLiteral)
     auto token = lexer.GetNextToken();
     auto expected = Token{
         .type = TokenType::StringLiteral,
-        .lexeme = "hello, world!",
-        .start_pos = SourcePos{.line = 1, .column = 2},
-        .end_pos = SourcePos{.line = 1, .column = 14}
+        .lexeme = "\"hello, world!\"",
+        .start_pos = SourcePos{.line = 1, .column = 1},
+        .end_pos = SourcePos{.line = 1, .column = 15}
     };
     ASSERT_EQ(token, expected);
 
@@ -528,4 +529,48 @@ TEST(LexicalAnalyzer, StringLiteral)
         .end_pos = SourcePos{.line = 1, .column = 16}
     };
     ASSERT_EQ(token, expected);
+}
+
+TEST(LexicalAnalyzer, ValidEscapeSequence)
+{
+    auto source_file = std::make_unique<DummySourceFile>("\"\\n \\r \\t \\\\ \\\" \\'\"");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    auto token = lexer.GetNextToken();
+    auto expected = Token{
+        .type = TokenType::StringLiteral,
+        .lexeme = "\"\\n \\r \\t \\\\ \\\" \\'\"",
+        .start_pos = SourcePos{.line = 1, .column = 1},
+        .end_pos = SourcePos{.line = 1, .column = 19}
+    };
+    ASSERT_EQ(token, expected);
+
+    token = lexer.GetNextToken();
+    expected = Token{
+        .type = TokenType::EndOfFile,
+        .lexeme = "$",
+        .start_pos = SourcePos{.line = 1, .column = 20},
+        .end_pos = SourcePos{.line = 1, .column = 20}
+    };
+    ASSERT_EQ(token, expected);
+}
+
+TEST(LexicalAnalyzer, InvalidEscapeSequence)
+{
+    auto source_file = std::make_unique<DummySourceFile>("\"\\a\"");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    EXPECT_THROW({lexer.GetNextToken();}, LexicalError);
+}
+
+TEST(LexicalAnalyzer, UnterminatedString)
+{
+    auto source_file = std::make_unique<DummySourceFile>("\"");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    EXPECT_THROW({lexer.GetNextToken();}, LexicalError);
+}
+
+TEST(LexicalAnalyzer, UnterminatedComment)
+{
+    auto source_file = std::make_unique<DummySourceFile>("/*asdf");
+    auto lexer = LexicalAnalyzer(std::move(source_file));
+    EXPECT_THROW({lexer.GetNextToken();}, LexicalError);
 }

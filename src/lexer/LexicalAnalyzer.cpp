@@ -339,8 +339,7 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
 {
     if (m_lookahead.Peek() == '"')
     {
-        // Do not include opening quote in lexeme.
-        m_lookahead.Discard();
+        m_lookahead.Accept();
 
         while (!m_lookahead.IsEOF() && m_lookahead.Peek() != '\n')
         {
@@ -350,7 +349,7 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
                 m_lookahead.Accept();
 
                 // Check if this is a valid escape sequence.
-                auto valid_escape_sequences = std::string("nrt\\\"\'");
+                auto valid_escape_sequences = std::string("nrt\\\"'");
                 auto is_valid = valid_escape_sequences.find(m_lookahead.Peek()) != std::string::npos;
                 if (is_valid)
                 {
@@ -367,7 +366,7 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
             }
             else if (m_lookahead.Peek() == '"')
             {
-                m_lookahead.Discard();
+                m_lookahead.Accept();
                 return m_lookahead.CreateToken(TokenType::StringLiteral);
             }
             else
@@ -379,7 +378,7 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
         // Arriving here implies that we reached EOF
         // or newline without encoutering closing '"'.
         auto token = m_lookahead.CreateToken(TokenType::StringLiteral);
-        auto message = std::format("unterminated string literal \"{}\"", token.lexeme);
+        auto message = std::format("unterminated string literal [{}]", token.lexeme);
         throw LexicalError(token.start_pos, message);
     }
     // Pattern mismatch.
