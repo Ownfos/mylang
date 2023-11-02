@@ -8,6 +8,7 @@
 namespace mylang
 {
 
+// Split characters from source file and turn them into a stream of tokens.
 class LexicalAnalyzer : public ILexicalAnalyzer
 {
 public:
