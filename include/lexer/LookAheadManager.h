@@ -16,6 +16,7 @@ struct LookAheadData
     SourcePos pos;
 };
 
+// TODO: make lookahead generic so that lexer and parser can use it
 class LookAheadManager
 {
 public:

@@ -86,7 +86,7 @@ Student: struct = {
 ```
 ### Statements
 ```
-stmt          ::= compound-stmt | if-stmt | for-stmt | while-stmt | jump-stmt
+stmt          ::= expr ";" | compound-stmt | if-stmt | for-stmt | while-stmt | jump-stmt
 compound-stmt ::= "{" stmt* "}"
 if-stmt       ::= "if" "(" expr ")" compound-stmt ("else" (if-stmt | compound-stmt))?
 for-stmt      ::= "for" "(" expr? ";" expr? ";" expr? ")" compound-stmt
@@ -95,17 +95,29 @@ jump-stmt     ::= ("return" expr? | "break" | "continue") ";"
 ```
 ### Expressions
 ```
-expr          ::= or-expr (("=" | "+=" | "-=" | "*=" | "/=") or-expr)*
+// TODO: transform expr so that we have LL(1) grammar
+
+expr          ::= (identifier assign-op)* or-expr
+assign-op     ::= "=" | "+=" | "-=" | "*=" | "/="
+
 or-expr       ::= and-expr ("||" and-expr)*
 and-expr      ::= compare-expr ("&&" compare-expr)*
-compare-expr  ::= add-expr (("==" | "!=" | ">=" | "<=" | "<" | ">") add-expr)*
+
+compare-expr  ::= add-expr (compare-op add-expr)*
+compare-op    ::= "==" | "!=" | ">=" | "<=" | "<" | ">"
+
 add-expr      ::= mult-expr (("+" | "-") mult-expr)*
 mult-expr     ::= prefix-expr (("*" | "/") prefix-expr)*
-prefix-expr   ::= ("!" | "+" | "-" | "++" | "--") postfix-expr
-postfix-expr  ::= access-expr ("++" | "--")
-access-expr   ::= primary-expr (member-access | func-call)
+
+prefix-expr   ::= prefix-op? postfix-expr
+prefix-op     ::= "!" | "+" | "-" | "++" | "--"
+
+postfix-expr  ::= primary-expr postfix-op*
+postfix-op    ::= "++" | "--" | member-access | func-call
+
 member-access ::= "." identifier
 func-call     ::= "(" arg-list? ")"
 arg-list      ::= expr ("," expr)*
+
 primary-expr  ::= literal | identifier | "(" expr ")"
 ```

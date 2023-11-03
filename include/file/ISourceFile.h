@@ -5,6 +5,8 @@
 
 namespace mylang
 {
+    
+// TODO: make ISourceFile a generic stream so that lexer and parser can use it
 
 // Represents a stream of characters for a source code.
 // You can get the current character and its position while scanning one by one.
