@@ -394,10 +394,10 @@ void ChangeTypeIfReservedWord(Token& token)
 {
     // A database of (lexeme, type) tuple for all reserved words.
     auto special_cases = std::vector<std::tuple<std::string, TokenType>>{
-        {"i32",     TokenType::IntType},
-        {"f32",     TokenType::FloatType},
+        {"i32",      TokenType::IntType},
+        {"f32",      TokenType::FloatType},
         {"bool",     TokenType::BoolType},
-        {"str",     TokenType::StringType},
+        {"str",      TokenType::StringType},
         {"true",     TokenType::BoolLiteral},
         {"false",    TokenType::BoolLiteral},
         {"for",      TokenType::For},
@@ -408,9 +408,12 @@ void ChangeTypeIfReservedWord(Token& token)
         {"else",     TokenType::Else},
         {"return",   TokenType::Return},
         {"struct",   TokenType::Struct},
-        {"in",   TokenType::In},
-        {"out",   TokenType::Out},
-        {"inout",   TokenType::InOut},
+        {"in",       TokenType::In},
+        {"out",      TokenType::Out},
+        {"inout",    TokenType::InOut},
+        {"module",   TokenType::Module},
+        {"import",   TokenType::Import},
+        {"export",   TokenType::Export},
     };
 
     // Check if one of them matches the lexeme.

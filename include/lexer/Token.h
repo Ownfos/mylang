@@ -29,6 +29,9 @@ enum class TokenType
     In, // in
     Out, // out
     InOut, //inout
+    Module,
+    Import,
+    Export,
     Multiply, // *
     Divide, // /
     Plus, // +
