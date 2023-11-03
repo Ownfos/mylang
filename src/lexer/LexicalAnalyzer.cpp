@@ -343,7 +343,6 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
 
         while (!m_lookahead.IsEOF() && m_lookahead.Peek() != '\n')
         {
-            // TODO: escape sequence handling
             if (m_lookahead.Peek() == '\\')
             {
                 m_lookahead.Accept();
