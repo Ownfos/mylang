@@ -19,7 +19,12 @@ cd build; ctest; cd ..
 ```
 
 # Syntax
-## Module declaration and dependencies
+### Notation rules used to write theses:
+- Characters ```() | * ?``` are used for regular expression
+- Strings enclosed between double quotes are terminals (e.g., ```"module"```)
+- ```identifier``` and ```literal``` are terminals
+- Everything other than these are nonterminals
+### Module declaration and dependencies
 ```
 program       ::= module-decl module-import* global-decl*
 module-decl   ::= "module" identifier ";"
@@ -39,7 +44,7 @@ import logger;
 
 /* ... */
 ```
-## Declarations
+### Declarations
 ```
 global-decl ::= "export"? identifier ":" (func-decl | struct-decl)
 
@@ -79,15 +84,28 @@ Student: struct = {
     age: i32;
 };
 ```
-## Statements
+### Statements
 ```
+stmt          ::= compound-stmt | if-stmt | for-stmt | while-stmt | jump-stmt
 compound-stmt ::= "{" stmt* "}"
-stmt ::= 
+if-stmt       ::= "if" "(" expr ")" compound-stmt ("else" (if-stmt | compound-stmt))?
+for-stmt      ::= "for" "(" expr? ";" expr? ";" expr? ")" compound-stmt
+while-stmt    ::= "while" "(" expr ")" compound-stmt
+jump-stmt     ::= ("return" expr? | "break" | "continue") ";"
 ```
-## Expressions
+### Expressions
 ```
-expr ::=
+expr          ::= or-expr (("=" | "+=" | "-=" | "*=" | "/=") or-expr)*
+or-expr       ::= and-expr ("||" and-expr)*
+and-expr      ::= compare-expr ("&&" compare-expr)*
+compare-expr  ::= add-expr (("==" | "!=" | ">=" | "<=" | "<" | ">") add-expr)*
+add-expr      ::= mult-expr (("+" | "-") mult-expr)*
+mult-expr     ::= prefix-expr (("*" | "/") prefix-expr)*
+prefix-expr   ::= ("!" | "+" | "-" | "++" | "--") postfix-expr
+postfix-expr  ::= access-expr ("++" | "--")
+access-expr   ::= primary-expr (member-access | func-call)
+member-access ::= "." identifier
+func-call     ::= "(" arg-list? ")"
+arg-list      ::= expr ("," expr)*
+primary-expr  ::= literal | identifier | "(" expr ")"
 ```
-- Characters ```() | * ?``` are for regular expression
-- Terminals are enclosed in double quotes (e.g., ```"module"```)
-- Everything other than these are nonterminals
