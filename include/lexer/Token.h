@@ -26,6 +26,9 @@ enum class TokenType
     Else,
     Return,
     Struct,
+    In, // in
+    Out, // out
+    InOut, //inout
     Multiply, // *
     Divide, // /
     Plus, // +

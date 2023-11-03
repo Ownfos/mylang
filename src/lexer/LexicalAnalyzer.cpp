@@ -408,6 +408,9 @@ void ChangeTypeIfReservedWord(Token& token)
         {"else",     TokenType::Else},
         {"return",   TokenType::Return},
         {"struct",   TokenType::Struct},
+        {"in",   TokenType::In},
+        {"out",   TokenType::Out},
+        {"inout",   TokenType::InOut},
     };
 
     // Check if one of them matches the lexeme.
