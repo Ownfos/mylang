@@ -408,6 +408,7 @@ void ChangeTypeIfReservedWord(Token& token)
         {"else",     TokenType::Else},
         {"return",   TokenType::Return},
         {"struct",   TokenType::Struct},
+        {"func",     TokenType::Func},
         {"in",       TokenType::In},
         {"out",      TokenType::Out},
         {"inout",    TokenType::InOut},

@@ -26,6 +26,7 @@ enum class TokenType
     Else,
     Return,
     Struct,
+    Func,
     In, // in
     Out, // out
     InOut, //inout
