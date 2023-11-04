@@ -134,13 +134,12 @@ primary-expr  ::= literal | identifier | "(" expr ")"
   -ExprStmt
   -VarDeclStmt
   -CompoundStmt
-  -VarDeclStmt
   -IfStmt
   -ForStmt
   -WhileStmt
   -JumpStmt
  +Expr
-  -ID
+  -Identifier
   -Literal
   -BinaryOp
   -UnaryOp
