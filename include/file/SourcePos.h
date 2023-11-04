@@ -14,7 +14,7 @@ struct SourcePos
     int line;
     int column;
 
-    auto operator<=>(const SourcePos&) const = default;
+    bool operator==(const SourcePos&) const = default;
 };
 
 } // namespace mylang

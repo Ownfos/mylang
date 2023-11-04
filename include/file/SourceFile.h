@@ -16,20 +16,13 @@ public:
     SourceFile(const std::filesystem::path& path);
     virtual ~SourceFile();
 
+    virtual bool IsFinished() const override;
     virtual char CurrentChar() const override;
-    virtual SourcePos CurrentPos() const override;
-
-    virtual bool IsEOF() const override;
-
-    virtual void ReadNext() override;
+    virtual void LoadNextChar() override;
 
 private:
     std::ifstream m_file;
-    char m_current_char = '$';
-
-    // The column number will be incremented to 1
-    // on the initial call of ReadNext() inside the constructor.
-    SourcePos m_pos = {.line = 1, .column = 0};
+    char m_current_char;
 };
 
 } // namespace mylang

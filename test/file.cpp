@@ -8,8 +8,8 @@ using namespace mylang;
 TEST(DummySourceFile, EmptyFile)
 {
     auto s = DummySourceFile("");
-    ASSERT_TRUE(s.IsEOF());
-    ASSERT_EQ(s.CurrentChar(), '$');
+    ASSERT_EQ(s.GetNext(), '$');
+    ASSERT_TRUE(s.IsFinished());
 }
 
 TEST(DummySourceFile, SingleLine)
@@ -17,25 +17,19 @@ TEST(DummySourceFile, SingleLine)
     auto s = DummySourceFile("hello, world!");
     for (char ch : std::string("hello, world!"))
     {
-        ASSERT_FALSE(s.IsEOF());
-        ASSERT_EQ(s.CurrentChar(), ch);
-        s.ReadNext();
+        ASSERT_EQ(s.GetNext(), ch);
+        ASSERT_FALSE(s.IsFinished());
     }
-    ASSERT_TRUE(s.IsEOF());
-    ASSERT_EQ(s.CurrentChar(), '$');
-    ASSERT_EQ(s.CurrentPos(), (SourcePos{.line = 1, .column = 14}));
+    ASSERT_EQ(s.GetNext(), (SourceChar{.ch = '$', .pos = SourcePos{.line = 1, .column = 14}}));
+    ASSERT_TRUE(s.IsFinished());
 }
 
 TEST(DummySourceFile, MultipleLine)
 {
     auto s = DummySourceFile("hello\r\nworld!\r\n");
-    for (int i = 0; i < 6; i++) s.ReadNext();
-    ASSERT_EQ(s.CurrentChar(), '\n');
-    ASSERT_EQ(s.CurrentPos(), (SourcePos{.line = 1, .column = 7}));
-
-    s.ReadNext();
-    ASSERT_EQ(s.CurrentChar(), 'w');
-    ASSERT_EQ(s.CurrentPos(), (SourcePos{.line = 2, .column = 1}));
+    for (int i = 0; i < 6; i++) s.GetNext();
+    ASSERT_EQ(s.GetNext(), (SourceChar{.ch = '\n', .pos = SourcePos{.line = 1, .column = 7}}));
+    ASSERT_EQ(s.GetNext(), (SourceChar{.ch = 'w', .pos = SourcePos{.line = 2, .column = 1}}));
 }
 
 void CreateTempFile(const std::string& content)
@@ -55,8 +49,8 @@ TEST(SourceFile, EmptyFile)
     CreateTempFile("");
     {
         auto s = SourceFile("temp.txt");
-        ASSERT_TRUE(s.IsEOF());
-        ASSERT_EQ(s.CurrentChar(), '$');
+        ASSERT_EQ(s.GetNext(), '$');
+        ASSERT_TRUE(s.IsFinished());
     }
     DeleteTempFile();
 }
@@ -68,14 +62,11 @@ TEST(SourceFile, SingleLine)
         auto s = SourceFile("temp.txt");
         for (char ch : std::string("ABC DEF"))
         {
-            ASSERT_FALSE(s.IsEOF());
-            ASSERT_EQ(s.CurrentChar(), ch);
-            s.ReadNext();
+            ASSERT_EQ(s.GetNext(), ch);
+            ASSERT_FALSE(s.IsFinished());
         }
-        ASSERT_TRUE(s.IsEOF());
-        ASSERT_EQ(s.CurrentChar(), '$');
-        ASSERT_EQ(s.CurrentPos().column, 8);
-        ASSERT_EQ(s.CurrentPos(), (SourcePos{.line = 1, .column = 8}));
+        ASSERT_EQ(s.GetNext(), (SourceChar{.ch = '$', .pos = SourcePos{.line = 1, .column = 8}}));
+        ASSERT_TRUE(s.IsFinished());
     }
     DeleteTempFile();
 }
@@ -85,13 +76,9 @@ TEST(SourceFile, MultipleLine)
     CreateTempFile("hello\r\nworld!\r\n");
     {
         auto s = SourceFile("temp.txt");
-        for (int i = 0; i < 6; i++) s.ReadNext();
-        ASSERT_EQ(s.CurrentChar(), '\n');
-        ASSERT_EQ(s.CurrentPos(), (SourcePos{.line = 1, .column = 7}));
-
-        s.ReadNext();
-        ASSERT_EQ(s.CurrentChar(), 'w');
-        ASSERT_EQ(s.CurrentPos(), (SourcePos{.line = 2, .column = 1}));
+        for (int i = 0; i < 6; i++) s.GetNext();
+        ASSERT_EQ(s.GetNext(), (SourceChar{.ch = '\n', .pos = SourcePos{.line = 1, .column = 7}}));
+        ASSERT_EQ(s.GetNext(), (SourceChar{.ch = 'w', .pos = SourcePos{.line = 2, .column = 1}}));
     }
     DeleteTempFile();
 }

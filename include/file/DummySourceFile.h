@@ -12,17 +12,13 @@ class DummySourceFile : public ISourceFile
 public:
     DummySourceFile(std::string&& content);
 
+    virtual bool IsFinished() const override;
     virtual char CurrentChar() const override;
-    virtual SourcePos CurrentPos() const override;
-
-    virtual bool IsEOF() const override;
-
-    virtual void ReadNext() override;
+    virtual void LoadNextChar() override;
 
 private:
     std::string m_content;
-    int m_content_cursor = 0;
-    SourcePos m_pos = {1, 1};
+    int m_content_cursor = -1;
 };
 
 } // namespace mylang

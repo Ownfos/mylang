@@ -7,9 +7,14 @@ DummySourceFile::DummySourceFile(std::string&& content)
     : m_content(std::move(content))
 {}
 
+bool DummySourceFile::IsFinished() const
+{
+    return m_content_cursor == m_content.size();
+}
+
 char DummySourceFile::CurrentChar() const
 {
-    if (IsEOF())
+    if (IsFinished())
     {
         return '$';
     }
@@ -19,33 +24,8 @@ char DummySourceFile::CurrentChar() const
     }
 }
 
-SourcePos DummySourceFile::CurrentPos() const
+void DummySourceFile::LoadNextChar()
 {
-    return m_pos;
-}
-
-bool DummySourceFile::IsEOF() const
-{
-    return m_content_cursor == m_content.size();
-}
-
-void DummySourceFile::ReadNext()
-{
-    // Do nothing if we are at EOF.
-    if (IsEOF()) return;
-
-    // Calculate next source position.
-    if (CurrentChar() == '\n')
-    {
-        m_pos.column = 1;
-        m_pos.line++;
-    }
-    else
-    {
-        m_pos.column++;
-    }
-
-    // Move cursor position by one.
     m_content_cursor++;
 }
 

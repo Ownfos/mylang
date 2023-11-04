@@ -1,6 +1,7 @@
 add_library(mylanglib
     file/DummySourceFile.cpp
     file/SourceFile.cpp
+    file/ISourceFile.cpp
     lexer/DummyLexicalAnalyzer.cpp
     lexer/LookAheadManager.cpp
     lexer/LexicalAnalyzer.cpp

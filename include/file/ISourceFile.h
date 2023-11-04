@@ -1,35 +1,47 @@
 #ifndef MYLANG_I_SOURCE_FILE_H
 #define MYLANG_I_SOURCE_FILE_H
 
-#include "file/SourcePos.h"
+#include "common/IStream.h"
+#include "file/SourceChar.h"
 
 namespace mylang
 {
-    
-// TODO: make ISourceFile a generic stream so that lexer and parser can use it
 
 // Represents a stream of characters for a source code.
-// You can get the current character and its position while scanning one by one.
-// Assumes that only ASCII characters are used.
-// The first character of the source file (or '$' if the file was empty)
-// should be available right after construction.
-class ISourceFile
+// Every child class should implement three virtual functions:
+// - bool IsFinished() const;
+// - char CurrentChar() const;
+// - void LoadNextChar();
+class ISourceFile : public IStream<SourceChar>
 {
 public:
-    virtual ~ISourceFile() = default;
+    // Implement IStream interface using CurrentChar() and ReadNext().
+    virtual SourceChar GetNext() override;
 
-    // Returns most recently scanned character
-    // and its position on the source code.
-    // If we are at the end of file, '$' will be returned.
+protected:
+    // Return the last scanned character (or '$' for EOF).
+    // This function is guaranteed to be called
+    // only after LoadNextChar() is executed at least once.
     virtual char CurrentChar() const = 0;
-    virtual SourcePos CurrentPos() const = 0;
 
-    // Returns true if we reached the end of file.
-    virtual bool IsEOF() const = 0;
+    // Fetch next character.
+    // Initial LoadNext() should load the first letter.
+    // This function is guaranteed to be called
+    // only when IsFinished() is false.
+    virtual void LoadNextChar() = 0;
 
-    // Reads a single character and update source position.
-    // Does nothing if we already reached EOF.
-    virtual void ReadNext() = 0;
+private:
+    // Set m_pos to the position of next character.
+    // Note that we need to examine current character
+    // to handle line feed in case of '\n'.
+    void MovePosToNext();
+
+    // This will keep track of current head position.
+    SourcePos m_current_pos;
+
+    // Used to set initial value of m_pos to {1, 1}
+    // when GetNext() is called for the first time.
+    bool m_first_char_not_loaded = true;
 };
 
 } // namespace mylang

@@ -7,16 +7,13 @@ namespace mylang
 LookAheadManager::LookAheadManager(std::unique_ptr<ISourceFile>&& source_file)
     : m_source_file(std::move(source_file))
 {
-    m_lookahead_buffer.push(LookAheadData{
-        .ch = m_source_file->CurrentChar(),
-        .pos = m_source_file->CurrentPos()
-    });
+    m_lookahead_buffer.push(m_source_file->GetNext());
 }
 
 bool LookAheadManager::IsEOF() const
 {
     // Returns true iff when we have EOF ('$') stored in the buffer and source file is depleted.
-    return m_lookahead_buffer.size() == 1 && m_source_file->IsEOF();
+    return m_lookahead_buffer.size() == 1 && m_source_file->IsFinished();
 }
 
 char LookAheadManager::Peek() const
@@ -44,11 +41,7 @@ void LookAheadManager::Discard()
     // Fetch next character.
     if (m_lookahead_buffer.empty())
     {
-        m_source_file->ReadNext();
-        m_lookahead_buffer.push(LookAheadData{
-            .ch = m_source_file->CurrentChar(),
-            .pos = m_source_file->CurrentPos()
-        });
+        m_lookahead_buffer.push(m_source_file->GetNext());
     }
 }
 

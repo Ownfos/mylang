@@ -10,12 +10,6 @@
 namespace mylang
 {
 
-struct LookAheadData
-{
-    char ch;
-    SourcePos pos;
-};
-
 // TODO: make lookahead generic so that lexer and parser can use it
 class LookAheadManager
 {
@@ -53,11 +47,11 @@ private:
     std::unique_ptr<ISourceFile> m_source_file;
 
     // Contains characters that a token consists of.
-    std::vector<LookAheadData> m_lexeme_buffer;
+    std::vector<SourceChar> m_lexeme_buffer;
 
     // Contains characters that are not used yet.
     // TOS is the current lookahead.
-    std::stack<LookAheadData> m_lookahead_buffer;
+    std::stack<SourceChar> m_lookahead_buffer;
 
     // The checkpoint for RewindUntilCheckpoint().
     // Any character at lexeme buffer starting from this index
