@@ -3,7 +3,6 @@ add_library(mylanglib
     file/SourceFile.cpp
     file/ISourceFile.cpp
     lexer/DummyLexicalAnalyzer.cpp
-    lexer/LookAheadManager.cpp
     lexer/LexicalAnalyzer.cpp
     lexer/LexicalError.cpp
 )
