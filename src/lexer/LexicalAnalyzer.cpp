@@ -17,15 +17,8 @@ Token LexicalAnalyzer::GetNextToken()
     // Make sure we are at the start of a token.
     ProceedToTokenStart();
 
-    if (m_lookahead.IsEOF())
-    {
-        m_lookahead.Accept();
-        return m_lookahead.CreateToken(TokenType::EndOfFile);
-    }
-    else
-    {
-        return FindLongestMatch();
-    }
+    // Find a token (which could be an EOF).
+    return FindLongestMatch();
 }
 
 void LexicalAnalyzer::ProceedToTokenStart()
@@ -51,7 +44,7 @@ bool IsWhitespace(char ch)
 bool LexicalAnalyzer::TryRemoveWhitespaces()
 {
     bool is_something_removed = false;
-    while (!m_lookahead.IsEOF() && IsWhitespace(m_lookahead.Peek()))
+    while (!m_lookahead.IsFinished() && IsWhitespace(m_lookahead.Peek().ch))
     {
         is_something_removed = true;
         m_lookahead.Discard();
@@ -82,7 +75,7 @@ bool LexicalAnalyzer::TryRemoveComment()
         else
         {
             // Undo reading '/'
-            m_lookahead.RewindUntilCheckpoint();
+            m_lookahead.Rewind();
             return false;
         }
     }
@@ -96,10 +89,10 @@ bool LexicalAnalyzer::TryRemoveComment()
 void LexicalAnalyzer::RemoveSingleLineComment()
 {
     // Remove the '/' in the lexeme buffer.
-    m_lookahead.CleanUpLexemeBuffer();
+    m_lookahead.ClearAcceptHistory();
 
     // Discard everything until the end of current line or EOF.
-    while(!m_lookahead.IsEOF() && m_lookahead.Peek() != '\n')
+    while(!m_lookahead.IsFinished() && m_lookahead.Peek().ch != '\n')
     {
         m_lookahead.Discard();
     }
@@ -111,13 +104,13 @@ void LexicalAnalyzer::RemoveMultiLineComment()
     // and provide information about the source position.
     // The comment_start_pos will be used on exception message
     // if this turns out to be an unterminated comment.
-    auto comment_start_pos = m_lookahead.CreateToken(TokenType::Error).start_pos;
+    auto comment_start_pos = CreateToken(TokenType::Error).start_pos;
 
     // Discard the '*' of the comment start "/*"
     m_lookahead.Discard();
 
     // Discard everything until we meet "*/" or reach EOF.
-    while (!m_lookahead.IsEOF())
+    while (!m_lookahead.IsFinished())
     {
         // Might be the end of this comment
         if (m_lookahead.Peek() == '*')
@@ -141,7 +134,11 @@ void LexicalAnalyzer::RemoveMultiLineComment()
 
 Token LexicalAnalyzer::FindLongestMatch()
 {
-    if (auto token = TryFindSingleCharToken(); token.has_value())
+    if (auto token = TryFindEOF(); token.has_value())
+    {
+        return token.value();
+    }
+    else if (auto token = TryFindSingleCharToken(); token.has_value())
     {
         return token.value();
     }
@@ -165,7 +162,26 @@ Token LexicalAnalyzer::FindLongestMatch()
     {
         // Unexpected character!
         m_lookahead.Accept();
-        return m_lookahead.CreateToken(TokenType::Error);
+        return CreateToken(TokenType::Error);
+    }
+}
+
+std::optional<Token> LexicalAnalyzer::TryFindEOF()
+{
+    // There are two reasons why Accept() is used ahead of checking IsFinished():
+    // 1. IStream::Isfinished() returns true only after reading the end sentinel.
+    //    This means that IsFinished() DOES NOT return turn true before we read the '$'.
+    // 2. Even if we are already at the end before Accept(),
+    //    we need to provide a lexeme for EOF token which is obtained with GetNext().
+    m_lookahead.Accept();
+    if (m_lookahead.IsFinished())
+    {
+        return CreateToken(TokenType::EndOfFile);
+    }
+    else
+    {
+        m_lookahead.Rewind();
+        return {};
     }
 }
 
@@ -189,7 +205,7 @@ std::optional<Token> LexicalAnalyzer::TryFindSingleCharToken()
         if (m_lookahead.Peek() == ch)
         {
             m_lookahead.Accept();
-            return m_lookahead.CreateToken(type);
+            return CreateToken(type);
         }
     }
     
@@ -222,12 +238,12 @@ std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
             if (m_lookahead.Peek() == candidate[1])
             {
                 m_lookahead.Accept();
-                return m_lookahead.CreateToken(type2);
+                return CreateToken(type2);
             }
             // Only the first character matched.
             else
             {
-                return m_lookahead.CreateToken(type1);
+                return CreateToken(type1);
             }
         }
     }
@@ -242,18 +258,18 @@ std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
         if (m_lookahead.Peek() == '+')
         {
             m_lookahead.Accept();
-            return m_lookahead.CreateToken(TokenType::UnaryPlus);
+            return CreateToken(TokenType::UnaryPlus);
         }
         // '+='
         else if (m_lookahead.Peek() == '=')
         {
             m_lookahead.Accept();
-            return m_lookahead.CreateToken(TokenType::PlusAssign);
+            return CreateToken(TokenType::PlusAssign);
         }
         // '+'
         else
         {
-            return m_lookahead.CreateToken(TokenType::Plus);
+            return CreateToken(TokenType::Plus);
         }
     }
     else if (m_lookahead.Peek() == '-')
@@ -264,23 +280,23 @@ std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
         if (m_lookahead.Peek() == '>')
         {
             m_lookahead.Accept();
-            return m_lookahead.CreateToken(TokenType::Arrow);
+            return CreateToken(TokenType::Arrow);
         }
         // '-='
         else if (m_lookahead.Peek() == '=')
         {
             m_lookahead.Accept();
-            return m_lookahead.CreateToken(TokenType::MinusAssign);
+            return CreateToken(TokenType::MinusAssign);
         }
         else if (m_lookahead.Peek() == '-')
         {
             m_lookahead.Accept();
-            return m_lookahead.CreateToken(TokenType::UnaryMinus);
+            return CreateToken(TokenType::UnaryMinus);
         }
         // '-'
         else
         {
-            return m_lookahead.CreateToken(TokenType::Minus);
+            return CreateToken(TokenType::Minus);
         }
     }
 
@@ -291,9 +307,9 @@ std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
 std::optional<Token> LexicalAnalyzer::TryFindNumericLiteral()
 {
     // Integer and float literals start with a digit.
-    if (std::isdigit(m_lookahead.Peek()))
+    if (std::isdigit(m_lookahead.Peek().ch))
     {
-        while (std::isdigit(m_lookahead.Peek()))
+        while (std::isdigit(m_lookahead.Peek().ch))
         {
             m_lookahead.Accept();
         }
@@ -305,27 +321,27 @@ std::optional<Token> LexicalAnalyzer::TryFindNumericLiteral()
         {
             m_lookahead.Accept();
             // Valid float literal should have digits after '.'
-            if (std::isdigit(m_lookahead.Peek()))
+            if (std::isdigit(m_lookahead.Peek().ch))
             {
                 // Read more digits.
-                while (std::isdigit(m_lookahead.Peek()))
+                while (std::isdigit(m_lookahead.Peek().ch))
                 {
                     m_lookahead.Accept();
                 }
 
-                return m_lookahead.CreateToken(TokenType::FloatLiteral);
+                return CreateToken(TokenType::FloatLiteral);
             }
             // Integer literal was the longest valid match!
             // Rewind state back to when we encounterd '.'
             else
             {
-                m_lookahead.RewindUntilCheckpoint();
-                return m_lookahead.CreateToken(TokenType::IntLiteral);
+                m_lookahead.Rewind();
+                return CreateToken(TokenType::IntLiteral);
             }
         }
         else
         {
-            return m_lookahead.CreateToken(TokenType::IntLiteral);
+            return CreateToken(TokenType::IntLiteral);
         }
     }
     // Pattern mismatch.
@@ -341,7 +357,7 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
     {
         m_lookahead.Accept();
 
-        while (!m_lookahead.IsEOF() && m_lookahead.Peek() != '\n')
+        while (!m_lookahead.IsFinished() && m_lookahead.Peek() != '\n')
         {
             if (m_lookahead.Peek() == '\\')
             {
@@ -349,7 +365,7 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
 
                 // Check if this is a valid escape sequence.
                 auto valid_escape_sequences = std::string("nrt\\\"'");
-                auto is_valid = valid_escape_sequences.find(m_lookahead.Peek()) != std::string::npos;
+                auto is_valid = valid_escape_sequences.find(m_lookahead.Peek().ch) != std::string::npos;
                 if (is_valid)
                 {
                     m_lookahead.Accept();
@@ -358,7 +374,7 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
                 else
                 {
                     m_lookahead.Accept();
-                    auto token = m_lookahead.CreateToken(TokenType::Error);
+                    auto token = CreateToken(TokenType::Error);
                     auto message = std::format("illegal escape sequence in string literal \"{}\"", token.lexeme);
                     throw LexicalError(token.end_pos, message);
                 }
@@ -366,7 +382,7 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
             else if (m_lookahead.Peek() == '"')
             {
                 m_lookahead.Accept();
-                return m_lookahead.CreateToken(TokenType::StringLiteral);
+                return CreateToken(TokenType::StringLiteral);
             }
             else
             {
@@ -376,7 +392,7 @@ std::optional<Token> LexicalAnalyzer::TryFindStringLiteral()
 
         // Arriving here implies that we reached EOF
         // or newline without encoutering closing '"'.
-        auto token = m_lookahead.CreateToken(TokenType::StringLiteral);
+        auto token = CreateToken(TokenType::StringLiteral);
         auto message = std::format("unterminated string literal [{}]", token.lexeme);
         throw LexicalError(token.start_pos, message);
     }
@@ -430,7 +446,7 @@ void ChangeTypeIfReservedWord(Token& token)
 
 std::optional<Token> LexicalAnalyzer::TryFindIdentifier()
 {
-    char curr = m_lookahead.Peek();
+    char curr = m_lookahead.Peek().ch;
 
     // Identifiers can start with '_' or an alphabet.
     if (curr == '_' || std::isalpha(curr))
@@ -439,13 +455,13 @@ std::optional<Token> LexicalAnalyzer::TryFindIdentifier()
         do
         {
             m_lookahead.Accept();
-            curr = m_lookahead.Peek();
+            curr = m_lookahead.Peek().ch;
         }
         while (curr == '_' || std::isalpha(curr) || std::isdigit(curr));
 
         // Create token and check if it is a reserved word (keywords, bool literal).
         // If it wasn't a reserved word, keep its type as Idendifier.
-        auto token = m_lookahead.CreateToken(TokenType::Identifier);
+        auto token = CreateToken(TokenType::Identifier);
         ChangeTypeIfReservedWord(token);
 
         return token;
@@ -455,6 +471,31 @@ std::optional<Token> LexicalAnalyzer::TryFindIdentifier()
     {
         return {};
     }
+}
+
+Token LexicalAnalyzer::CreateToken(TokenType type)
+{
+    auto lexeme_buffer = m_lookahead.GetAcceptHistory();
+
+    // Accumulate lexeme string.
+    auto lexeme = std::string("");
+    for (auto [ch, pos] : lexeme_buffer)
+    {
+        lexeme.push_back(ch);
+    }
+
+    // Create token.
+    auto token = Token{
+        .type = type,
+        .lexeme = lexeme,
+        .start_pos = lexeme_buffer.front().pos,
+        .end_pos = lexeme_buffer.back().pos,
+    };
+
+    // Discard used lexeme and reset.
+    m_lookahead.ClearAcceptHistory();
+
+    return token;
 }
 
 } // namespace mylang

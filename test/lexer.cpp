@@ -23,49 +23,6 @@ TEST(DummyLexicalAnalyzer, SingleToken)
     ASSERT_EQ(lexer.GetNextToken().type, TokenType::EndOfFile);
 }
 
-TEST(LookAheadManager, EmptySource)
-{
-    auto lookahead = LookAheadManager(std::make_unique<DummySourceFile>(""));
-    ASSERT_TRUE(lookahead.IsEOF());
-    ASSERT_EQ(lookahead.Peek(), '$');
-}
-
-TEST(LookAheadManager, SequentialRead)
-{
-    auto lookahead = LookAheadManager(std::make_unique<DummySourceFile>("abcd efg"));
-    for (auto ch : std::string("abcd efg"))
-    {
-        ASSERT_FALSE(lookahead.IsEOF());
-        ASSERT_EQ(lookahead.Peek(), ch);
-
-        lookahead.Accept();
-    }
-    ASSERT_TRUE(lookahead.IsEOF());
-    ASSERT_EQ(lookahead.Peek(), '$');
-
-    auto token = lookahead.CreateToken(TokenType::Identifier);
-    ASSERT_EQ(token.lexeme, "abcd efg");
-}
-
-TEST(LookAheadManager, Rewind)
-{
-    auto lookahead = LookAheadManager(std::make_unique<DummySourceFile>("abcd efg"));
-    lookahead.Accept(); // 'a'
-    lookahead.MarkRewindCheckpoint(); // on rewind, undo everything after 'a'.
-    lookahead.Discard(); // 'b'
-    lookahead.Accept(); // 'c'
-    ASSERT_EQ(lookahead.Peek(), 'd');
-
-    lookahead.RewindUntilCheckpoint(); // only 'a' should survive
-    auto token = lookahead.CreateToken(TokenType::Identifier);
-    ASSERT_EQ(token.lexeme, "a");
-
-    ASSERT_EQ(lookahead.Peek(), 'c'); // 'c' should be reverted and reused here.
-    lookahead.Discard();
-
-    ASSERT_EQ(lookahead.Peek(), 'd'); // once again 'd'
-}
-
 TEST(LexicalAnalyzer, EmptyList)
 {
     auto source_file = std::make_unique<DummySourceFile>("");

@@ -11,7 +11,11 @@ class IStream
 public:
     virtual ~IStream() = default;
 
-    // Returns true iff there are nothing left to fetch.
+    // Returns true if we already reached the end.
+    //
+    // --- Important Note ---
+    // We never know if we the stream is finished
+    // until we actually try to read the next one on the end!
     // For example, IsFinished() becomes false
     // after a file reads the EOF sentinel.
     virtual bool IsFinished() const = 0;

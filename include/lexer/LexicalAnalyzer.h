@@ -1,8 +1,9 @@
 #ifndef MYLANG_LEXICAL_ANALYZER_H
 #define MYLANG_LEXICAL_ANALYZER_H
 
+#include "common/BufferedStream.h"
+#include "file/ISourceFile.h"
 #include "lexer/ILexicalAnalyzer.h"
-#include "lexer/LookAheadManager.h"
 #include <optional>
 
 namespace mylang
@@ -16,7 +17,10 @@ public:
 
     virtual Token GetNextToken() override;
 
+    bool IsFinished();
+
 private:
+
     // Keep reading characters until we meet
     // non-whitespace, non-comment-starting character.
     void ProceedToTokenStart();
@@ -33,15 +37,18 @@ private:
     void RemoveSingleLineComment();
     void RemoveMultiLineComment();
 
+    // Make a token instance out of all accepted characters (i.e., the lexeme buffer).
+    Token CreateToken(TokenType type);
+
     Token FindLongestMatch();
+    std::optional<Token> TryFindEOF();
     std::optional<Token> TryFindSingleCharToken();
     std::optional<Token> TryFindAtMostTwoCharToken();
     std::optional<Token> TryFindNumericLiteral();
     std::optional<Token> TryFindStringLiteral();
     std::optional<Token> TryFindIdentifier();
 
-    std::unique_ptr<ISourceFile> m_source_file;
-    LookAheadManager m_lookahead;
+    BufferedStream<SourceChar> m_lookahead;
 };
 
 } // namespace mylang

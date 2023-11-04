@@ -6,8 +6,6 @@ BufferedStream<T>::BufferedStream(std::unique_ptr<IStream<T>>&& input_stream)
 template<typename T>
 bool BufferedStream<T>::IsFinished() const
 {
-    // Note: m_lookaheads always store at least one data
-    // so that we can immediatly
     return m_lookaheads.size() == 0 && m_input_stream->IsFinished();
 }
 
