@@ -95,8 +95,6 @@ jump-stmt     ::= ("return" expr? | "break" | "continue") ";"
 ```
 ### Expressions
 ```
-// TODO: transform expr so that we have LL(1) grammar
-
 expr          ::= (identifier assign-op)* or-expr
 assign-op     ::= "=" | "+=" | "-=" | "*=" | "/="
 
@@ -120,4 +118,28 @@ func-call     ::= "(" arg-list? ")"
 arg-list      ::= expr ("," expr)*
 
 primary-expr  ::= literal | identifier | "(" expr ")"
+```
+
+# Tree node hierarchy
+- '+': abstract class
+- '-': concrete class
+```
++AST
+ -Program
+ +Decl
+  -FuncDecl
+  -StructDecl
+ +Stmt
+  -CompoundStmt
+  -IfStmt
+  -ForStmt
+  -WhileStmt
+  -JumpStmt
+ +Expr
+  -ID
+  -Literal
+  -BinaryOp
+  -UnaryOp
+  -MemberAccess
+  -FunctionCall
 ```
