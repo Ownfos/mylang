@@ -86,7 +86,8 @@ Student: struct = {
 ```
 ### Statements
 ```
-stmt          ::= expr ";" | compound-stmt | if-stmt | for-stmt | while-stmt | jump-stmt
+stmt          ::= expr ";" | compound-stmt | var-decl-stmt | if-stmt | for-stmt | while-stmt | jump-stmt
+var-decl-stmt ::= identifier ":" type "=" expr ";"
 compound-stmt ::= "{" stmt* "}"
 if-stmt       ::= "if" "(" expr ")" compound-stmt ("else" (if-stmt | compound-stmt))?
 for-stmt      ::= "for" "(" expr? ";" expr? ";" expr? ")" compound-stmt
@@ -126,11 +127,12 @@ primary-expr  ::= literal | identifier | "(" expr ")"
 ```
 +AST
  -Program
- +Decl
+ +GlobalDecl
   -FuncDecl
   -StructDecl
  +Stmt
   -CompoundStmt
+  -VarDeclStmt
   -IfStmt
   -ForStmt
   -WhileStmt
