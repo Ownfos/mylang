@@ -7,9 +7,17 @@ DummyLexicalAnalyzer::DummyLexicalAnalyzer(const std::vector<Token>& tokens)
     : m_tokens(tokens)
 {}
 
-Token DummyLexicalAnalyzer::GetNextToken()
+bool DummyLexicalAnalyzer::IsFinished() const
 {
-    if (m_next_token_ind == m_tokens.size())
+    return m_current_token_ind == m_tokens.size();
+}
+
+Token DummyLexicalAnalyzer::GetNext()
+{
+    // Move to the next position, unless it reaches out of bound.
+    m_current_token_ind = std::min(m_current_token_ind + 1, static_cast<int>(m_tokens.size()));
+
+    if (IsFinished())
     {
         return Token{
             .type = TokenType::EndOfFile,
@@ -18,7 +26,7 @@ Token DummyLexicalAnalyzer::GetNextToken()
     }
     else
     {
-        return m_tokens[m_next_token_ind++];
+        return m_tokens[m_current_token_ind];
     }
 }
 

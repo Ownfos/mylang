@@ -3,24 +3,22 @@
 
 #include "common/BufferedStream.h"
 #include "file/ISourceFile.h"
-#include "lexer/ILexicalAnalyzer.h"
+#include "lexer/Token.h"
 #include <optional>
 
 namespace mylang
 {
 
 // Split characters from source file and turn them into a stream of tokens.
-class LexicalAnalyzer : public ILexicalAnalyzer
+class LexicalAnalyzer : public IStream<Token>
 {
 public:
     LexicalAnalyzer(std::unique_ptr<ISourceFile>&& source_file);
 
-    virtual Token GetNextToken() override;
-
-    bool IsFinished();
+    virtual bool IsFinished() const override;
+    virtual Token GetNext() override;
 
 private:
-
     // Keep reading characters until we meet
     // non-whitespace, non-comment-starting character.
     void ProceedToTokenStart();

@@ -12,7 +12,12 @@ LexicalAnalyzer::LexicalAnalyzer(std::unique_ptr<ISourceFile>&& source_file)
     : m_lookahead(std::move(source_file))
 {}
 
-Token LexicalAnalyzer::GetNextToken()
+bool LexicalAnalyzer::IsFinished() const
+{
+    return m_lookahead.IsFinished();
+}
+
+Token LexicalAnalyzer::GetNext()
 {
     // Make sure we are at the start of a token.
     ProceedToTokenStart();

@@ -13,7 +13,7 @@ int main(int argc, char** argv)
         auto lexer = LexicalAnalyzer(std::move(source_file));
         while(true)
         {
-            auto token = lexer.GetNextToken();
+            auto token = lexer.GetNext();
 
             std::cout << std::format("type: {}, lexeme: {}, line: {}, col: {} ~ {}\n\n",
                 static_cast<int>(token.type),

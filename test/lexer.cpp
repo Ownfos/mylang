@@ -9,7 +9,7 @@ using namespace mylang;
 TEST(DummyLexicalAnalyzer, EmptyList)
 {
     auto l = DummyLexicalAnalyzer({});
-    ASSERT_EQ(l.GetNextToken().type, TokenType::EndOfFile);
+    ASSERT_EQ(l.GetNext().type, TokenType::EndOfFile);
 }
 
 TEST(DummyLexicalAnalyzer, SingleToken)
@@ -19,15 +19,15 @@ TEST(DummyLexicalAnalyzer, SingleToken)
         .lexeme = "foo"
     };
     auto lexer = DummyLexicalAnalyzer({token});
-    ASSERT_EQ(lexer.GetNextToken().type, TokenType::Identifier);
-    ASSERT_EQ(lexer.GetNextToken().type, TokenType::EndOfFile);
+    ASSERT_EQ(lexer.GetNext().type, TokenType::Identifier);
+    ASSERT_EQ(lexer.GetNext().type, TokenType::EndOfFile);
 }
 
 TEST(LexicalAnalyzer, EmptyList)
 {
     auto source_file = std::make_unique<DummySourceFile>("");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -41,7 +41,7 @@ TEST(LexicalAnalyzer, If)
 {
     auto source_file = std::make_unique<DummySourceFile>("if");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::If,
         .lexeme = "if",
@@ -50,7 +50,7 @@ TEST(LexicalAnalyzer, If)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -64,7 +64,7 @@ TEST(LexicalAnalyzer, TwoIfWithWhitespaces)
 {
     auto source_file = std::make_unique<DummySourceFile>("  \n if\t \r\n  if   ");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::If,
         .lexeme = "if",
@@ -72,7 +72,7 @@ TEST(LexicalAnalyzer, TwoIfWithWhitespaces)
         .end_pos = SourcePos{.line = 2, .column = 3}
     };
     
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::If,
         .lexeme = "if",
@@ -81,7 +81,7 @@ TEST(LexicalAnalyzer, TwoIfWithWhitespaces)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -95,7 +95,7 @@ TEST(LexicalAnalyzer, Identifier)
 {
     auto source_file = std::make_unique<DummySourceFile>("_foo123");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::Identifier,
         .lexeme = "_foo123",
@@ -104,7 +104,7 @@ TEST(LexicalAnalyzer, Identifier)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -118,7 +118,7 @@ TEST(LexicalAnalyzer, ErrorTokens)
 {
     auto source_file = std::make_unique<DummySourceFile>("#$%");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::Error,
         .lexeme = "#",
@@ -127,7 +127,7 @@ TEST(LexicalAnalyzer, ErrorTokens)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Error,
         .lexeme = "$",
@@ -136,7 +136,7 @@ TEST(LexicalAnalyzer, ErrorTokens)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Error,
         .lexeme = "%",
@@ -145,7 +145,7 @@ TEST(LexicalAnalyzer, ErrorTokens)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -159,7 +159,7 @@ TEST(LexicalAnalyzer, NumericLiterals)
 {
     auto source_file = std::make_unique<DummySourceFile>("123 45.67");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::IntLiteral,
         .lexeme = "123",
@@ -168,7 +168,7 @@ TEST(LexicalAnalyzer, NumericLiterals)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::FloatLiteral,
         .lexeme = "45.67",
@@ -177,7 +177,7 @@ TEST(LexicalAnalyzer, NumericLiterals)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -191,7 +191,7 @@ TEST(LexicalAnalyzer, BasicOperators)
 {
     auto source_file = std::make_unique<DummySourceFile>("*/+-");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::Multiply,
         .lexeme = "*",
@@ -200,7 +200,7 @@ TEST(LexicalAnalyzer, BasicOperators)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Divide,
         .lexeme = "/",
@@ -209,7 +209,7 @@ TEST(LexicalAnalyzer, BasicOperators)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Plus,
         .lexeme = "+",
@@ -218,7 +218,7 @@ TEST(LexicalAnalyzer, BasicOperators)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Minus,
         .lexeme = "-",
@@ -227,7 +227,7 @@ TEST(LexicalAnalyzer, BasicOperators)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -241,7 +241,7 @@ TEST(LexicalAnalyzer, Brackets)
 {
     auto source_file = std::make_unique<DummySourceFile>("(){}[]");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::LeftParen,
         .lexeme = "(",
@@ -250,7 +250,7 @@ TEST(LexicalAnalyzer, Brackets)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::RightParen,
         .lexeme = ")",
@@ -259,7 +259,7 @@ TEST(LexicalAnalyzer, Brackets)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::LeftBrace,
         .lexeme = "{",
@@ -268,7 +268,7 @@ TEST(LexicalAnalyzer, Brackets)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::RightBrace,
         .lexeme = "}",
@@ -277,7 +277,7 @@ TEST(LexicalAnalyzer, Brackets)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::LeftBracket,
         .lexeme = "[",
@@ -286,7 +286,7 @@ TEST(LexicalAnalyzer, Brackets)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::RightBracket,
         .lexeme = "]",
@@ -295,7 +295,7 @@ TEST(LexicalAnalyzer, Brackets)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -310,7 +310,7 @@ TEST(LexicalAnalyzer, Comparision)
 {
     auto source_file = std::make_unique<DummySourceFile>("< <= > >= = == ! !=");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::Less,
         .lexeme = "<",
@@ -319,7 +319,7 @@ TEST(LexicalAnalyzer, Comparision)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::LessEqual,
         .lexeme = "<=",
@@ -328,7 +328,7 @@ TEST(LexicalAnalyzer, Comparision)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Greater,
         .lexeme = ">",
@@ -337,7 +337,7 @@ TEST(LexicalAnalyzer, Comparision)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::GreaterEqual,
         .lexeme = ">=",
@@ -346,7 +346,7 @@ TEST(LexicalAnalyzer, Comparision)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Assign,
         .lexeme = "=",
@@ -355,7 +355,7 @@ TEST(LexicalAnalyzer, Comparision)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Equal,
         .lexeme = "==",
@@ -364,7 +364,7 @@ TEST(LexicalAnalyzer, Comparision)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Not,
         .lexeme = "!",
@@ -373,7 +373,7 @@ TEST(LexicalAnalyzer, Comparision)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::NotEqual,
         .lexeme = "!=",
@@ -382,7 +382,7 @@ TEST(LexicalAnalyzer, Comparision)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -396,7 +396,7 @@ TEST(LexicalAnalyzer, LogicalAndOr)
 {
     auto source_file = std::make_unique<DummySourceFile>("& && | ||");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::Error,
         .lexeme = "&",
@@ -405,7 +405,7 @@ TEST(LexicalAnalyzer, LogicalAndOr)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::And,
         .lexeme = "&&",
@@ -414,7 +414,7 @@ TEST(LexicalAnalyzer, LogicalAndOr)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Error,
         .lexeme = "|",
@@ -423,7 +423,7 @@ TEST(LexicalAnalyzer, LogicalAndOr)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::Or,
         .lexeme = "||",
@@ -432,7 +432,7 @@ TEST(LexicalAnalyzer, LogicalAndOr)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -446,7 +446,7 @@ TEST(LexicalAnalyzer, SingleLineComment)
 {
     auto source_file = std::make_unique<DummySourceFile>("  //for while do 123 4.56  \r\ntrue //\"hello, world\"");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::BoolLiteral,
         .lexeme = "true",
@@ -455,7 +455,7 @@ TEST(LexicalAnalyzer, SingleLineComment)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -469,7 +469,7 @@ TEST(LexicalAnalyzer, StringLiteral)
 {
     auto source_file = std::make_unique<DummySourceFile>("\"hello, world!\"");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::StringLiteral,
         .lexeme = "\"hello, world!\"",
@@ -478,7 +478,7 @@ TEST(LexicalAnalyzer, StringLiteral)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -492,7 +492,7 @@ TEST(LexicalAnalyzer, ValidEscapeSequence)
 {
     auto source_file = std::make_unique<DummySourceFile>("\"\\n \\r \\t \\\\ \\\" \\'\"");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    auto token = lexer.GetNextToken();
+    auto token = lexer.GetNext();
     auto expected = Token{
         .type = TokenType::StringLiteral,
         .lexeme = "\"\\n \\r \\t \\\\ \\\" \\'\"",
@@ -501,7 +501,7 @@ TEST(LexicalAnalyzer, ValidEscapeSequence)
     };
     ASSERT_EQ(token, expected);
 
-    token = lexer.GetNextToken();
+    token = lexer.GetNext();
     expected = Token{
         .type = TokenType::EndOfFile,
         .lexeme = "$",
@@ -515,19 +515,19 @@ TEST(LexicalAnalyzer, InvalidEscapeSequence)
 {
     auto source_file = std::make_unique<DummySourceFile>("\"\\a\"");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    EXPECT_THROW({lexer.GetNextToken();}, LexicalError);
+    EXPECT_THROW({lexer.GetNext();}, LexicalError);
 }
 
 TEST(LexicalAnalyzer, UnterminatedString)
 {
     auto source_file = std::make_unique<DummySourceFile>("\"");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    EXPECT_THROW({lexer.GetNextToken();}, LexicalError);
+    EXPECT_THROW({lexer.GetNext();}, LexicalError);
 }
 
 TEST(LexicalAnalyzer, UnterminatedComment)
 {
     auto source_file = std::make_unique<DummySourceFile>("/*asdf");
     auto lexer = LexicalAnalyzer(std::move(source_file));
-    EXPECT_THROW({lexer.GetNextToken();}, LexicalError);
+    EXPECT_THROW({lexer.GetNext();}, LexicalError);
 }
