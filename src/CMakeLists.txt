@@ -5,6 +5,11 @@ add_library(mylanglib
     lexer/DummyLexicalAnalyzer.cpp
     lexer/LexicalAnalyzer.cpp
     lexer/LexicalError.cpp
+    parser/SyntaxAnalyzer.cpp
+    parser/ast/Program.cpp
+    parser/ast/globdecl/GlobalDecl.cpp
+    parser/ast/globdecl/FuncDecl.cpp
+    parser/ast/visitor/TreePrinter.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)

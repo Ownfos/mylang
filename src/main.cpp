@@ -1,5 +1,7 @@
-#include "lexer/LexicalAnalyzer.h"
 #include "file/DummySourceFile.h"
+#include "lexer/LexicalAnalyzer.h"
+#include "parser/SyntaxAnalyzer.h"
+#include "parser/ast/visitor/TreePrinter.h"
 #include <iostream>
 #include <format>
 
@@ -9,25 +11,19 @@ int main(int argc, char** argv)
 {
     try
     {
-        auto source_file = std::make_unique<DummySourceFile>(argv[1]);
-        auto lexer = LexicalAnalyzer(std::move(source_file));
-        while(true)
-        {
-            auto token = lexer.GetNext();
+        auto source_code = std::string("module math; import a; import export b; foo: func = (a:i32, b:out j32) goo: func = ()->str");
+        auto source_file = std::make_unique<DummySourceFile>(std::move(source_code));
+        auto lexer = std::make_unique<LexicalAnalyzer>(std::move(source_file));
+        auto syntax = std::make_unique<SyntaxAnalyzer>(std::move(lexer));
 
-            std::cout << std::format("type: {}, lexeme: {}, line: {}, col: {} ~ {}\n\n",
-                static_cast<int>(token.type),
-                token.lexeme,
-                token.start_pos.line,
-                token.start_pos.column,
-                token.end_pos.column
-            );
+        auto ast = syntax->GenerateAST();
 
-            if (token.type == TokenType::EndOfFile) break;
-        }
+        auto printer = TreePrinter(std::cout);
+        ast->Accept(&printer);
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
+    
 }

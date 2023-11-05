@@ -5,15 +5,22 @@ namespace mylang
 {
 
 // TODO: add concrete class of tree nodes like below
-// class ConcreteClass;
+class Program;
+class FuncDecl;
+class StructDecl;
 
 class IAbstractSyntaxTreeVisitor
 {
 public:
     virtual ~IAbstractSyntaxTreeVisitor() = default;
 
+    virtual void IncreaseDepth() {};
+    virtual void DecreaseDepth() {};
+
     // TODO: add concrete class of tree nodes like below
-    // virtual void Visit(ConcreteClass* node) = 0;
+    virtual void Visit(Program* node) = 0;
+    virtual void Visit(FuncDecl* node) = 0;
+    virtual void Visit(StructDecl* node) = 0;
 };
 
 } // namespace mylang
