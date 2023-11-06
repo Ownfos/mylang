@@ -6,6 +6,18 @@
 namespace mylang
 {
 
+bool IsFirstOfExpr(TokenType type)
+{
+    // TODO: return true iff type is in First(expr)
+    return false;
+}
+
+bool IsFirstOfStmt(TokenType type)
+{
+    // TODO: return true iff type is in First(stmt)
+    return false;
+}
+
 SyntaxAnalyzer::SyntaxAnalyzer(std::unique_ptr<IStream<Token>>&& lexer)
     : m_lexer(std::move(lexer))
 {}
@@ -64,6 +76,10 @@ std::optional<Token> SyntaxAnalyzer::OptionalAcceptOneOf(const std::set<TokenTyp
     }
 }
 
+// program ::= module-decl module-import* global-decl*
+// module-decl ::= "module" identifier ";"
+// module-import ::= "import" "export"? identifier ";"
+// global-decl ::= "export"? identifier ":" (func-decl | struct-decl)
 std::shared_ptr<Program> SyntaxAnalyzer::ParseProgram()
 {
     // Module declaration.
@@ -111,6 +127,7 @@ std::shared_ptr<Program> SyntaxAnalyzer::ParseProgram()
     return std::make_shared<Program>(module_name, import_list, global_declarations);
 }
 
+// func-decl ::= "func" "=" "(" param-list? ")" ("->" type)? compound-stmt
 std::shared_ptr<FuncDecl> SyntaxAnalyzer::ParseFuncDecl(bool should_export, Token name)
 {
     Accept(TokenType::Func);
@@ -129,11 +146,12 @@ std::shared_ptr<FuncDecl> SyntaxAnalyzer::ParseFuncDecl(bool should_export, Toke
     }
 
     // Function body.
-    // TODO: add CompoundStmt parsing when ready.
+    auto body = ParseCompoundStmt();
 
-    return std::make_shared<FuncDecl>(should_export, name, return_type, parameters/*, body*/);
+    return std::make_shared<FuncDecl>(should_export, name, return_type, parameters, body);
 }
 
+// param-list ::= param ("," param)*
 std::vector<Parameter> SyntaxAnalyzer::ParseParamList()
 {
     std::vector<Parameter> parameters;
@@ -153,6 +171,7 @@ std::vector<Parameter> SyntaxAnalyzer::ParseParamList()
     return parameters;
 }
 
+// param ::= identifier ":" param-usage? type
 Parameter SyntaxAnalyzer::ParseParam()
 {
     auto name = Accept(TokenType::Identifier);
@@ -185,6 +204,26 @@ std::shared_ptr<StructDecl> SyntaxAnalyzer::ParseStructDecl(bool should_export, 
 {
     // TODO: implement struct parsing
     return {};
+}
+
+std::shared_ptr<Stmt> SyntaxAnalyzer::ParseStmt()
+{
+    // TODO: implement
+    return {};
+}
+
+// compound-stmt ::= "{" stmt* "}"
+std::shared_ptr<CompoundStmt> SyntaxAnalyzer::ParseCompoundStmt()
+{
+    Accept(TokenType::LeftBrace);
+    auto statements = std::vector<std::shared_ptr<Stmt>>();
+    while (IsFirstOfStmt(m_lexer.Peek().type))
+    {
+        statements.push_back(ParseStmt());
+    }
+    Accept(TokenType::RightBrace);
+
+    return std::make_shared<CompoundStmt>(statements);
 }
 
 } // namespace mylang

@@ -9,6 +9,7 @@ add_library(mylanglib
     parser/ast/Program.cpp
     parser/ast/globdecl/GlobalDecl.cpp
     parser/ast/globdecl/FuncDecl.cpp
+    parser/ast/stmt/CompoundStmt.cpp
     parser/ast/visitor/TreePrinter.cpp
 )
 

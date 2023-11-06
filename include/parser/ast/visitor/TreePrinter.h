@@ -18,6 +18,7 @@ public:
     virtual void Visit(Program* node) override;
     virtual void Visit(FuncDecl* node) override;
     virtual void Visit(StructDecl* node) override;
+    virtual void Visit(CompoundStmt* node) override;
 
 private:
     void Indent();

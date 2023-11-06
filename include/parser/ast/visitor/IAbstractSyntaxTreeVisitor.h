@@ -8,6 +8,7 @@ namespace mylang
 class Program;
 class FuncDecl;
 class StructDecl;
+class CompoundStmt;
 
 class IAbstractSyntaxTreeVisitor
 {
@@ -21,6 +22,7 @@ public:
     virtual void Visit(Program* node) = 0;
     virtual void Visit(FuncDecl* node) = 0;
     virtual void Visit(StructDecl* node) = 0;
+    virtual void Visit(CompoundStmt* node) = 0;
 };
 
 } // namespace mylang

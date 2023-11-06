@@ -2,6 +2,7 @@
 #include "parser/ast/Program.h"
 #include "parser/ast/globdecl/FuncDecl.h"
 #include "parser/ast/globdecl/StructDecl.h"
+#include "parser/ast/stmt/CompoundStmt.h"
 #include <format>
 
 namespace mylang
@@ -71,6 +72,12 @@ void TreePrinter::Visit(FuncDecl* node)
 void TreePrinter::Visit(StructDecl* node)
 {
     Indent();
+}
+
+void TreePrinter::Visit(CompoundStmt* node)
+{
+    Indent();
+    m_output_stream << "CompoundStmt\n";
 }
 
 void TreePrinter::Indent()
