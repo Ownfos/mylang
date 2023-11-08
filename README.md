@@ -18,6 +18,15 @@ cmake --build build
 cd build; ctest; cd ..
 ```
 
+# Pending Tasks...
+- syntax for temporary struct instance
+- type representation and type checking
+- allowed operations between types
+- implicit conversion?
+- automatic index bound check?
+- lvalue, rvalue
+- ref type variable?
+
 # Syntax
 ### Notation rules used to write theses:
 - Characters ```() | * ?``` are used for regular expression
@@ -51,7 +60,8 @@ global-decl ::= "export"? identifier ":" (func-decl | struct-decl)
 func-decl   ::= "func" "=" "(" param-list? ")" ("->" type)? compound-stmt
 
 param-list  ::= param ("," param)*
-param       ::= identifier ":" param-usage? type
+param       ::= identifier ":" param-type
+param-type  ::= param-usage? type
 param-usage ::= "in" | "out" | "inout"
 
 struct-decl ::= "struct" "=" "{" member-decl* "}"
@@ -87,12 +97,41 @@ Student: struct = {
 ### Statements
 ```
 stmt          ::= expr ";" | var-decl ";" | compound-stmt | if-stmt | for-stmt | while-stmt | jump-stmt
-var-decl      ::= identifier ":" type "=" expr
 compound-stmt ::= "{" stmt* "}"
 if-stmt       ::= "if" "(" expr ")" compound-stmt ("else" (if-stmt | compound-stmt))?
 for-stmt      ::= "for" "(" (var-decl | expr)? ";" expr? ";" expr? ")" compound-stmt
 while-stmt    ::= "while" "(" expr ")" compound-stmt
 jump-stmt     ::= ("return" expr? | "break" | "continue") ";"
+
+var-decl      ::= identifier ":" type "=" var-init
+var-init      ::= expr | "{" var-init ("," var-init)* "}"
+```
+### Types
+```
+type            ::= base-type array-part*
+
+base-type       ::= primitive-type | struct-type | func-type
+primitive-type  ::= "i32" | "f32" | "str" | "bool"
+struct-type     ::= identifier
+func-type       ::= "[" "(" param-type-list? ")" ("->" type)? "]"
+param-type-list ::= param-type ("," param-type)*
+
+array-part      ::= "[" int-literal "]"
+```
+```c++
+// A 2x2 matrix of int
+i32[2][2]
+
+// An array of custom struct type
+my_struct[3]
+
+// A function with two parameters with no return value
+// 1. input paramter - array of str
+// 2. output paramter - A function with two paramters and a return value
+//   2-1. input parameter - int
+//   2-2. input parameter - int
+//   2-3. return type - array of int
+[(in str[4], out [(i32, i32) -> i32[3]])]
 ```
 ### Expressions
 ```
@@ -112,11 +151,12 @@ prefix-expr   ::= prefix-op? postfix-expr
 prefix-op     ::= "!" | "+" | "-" | "++" | "--"
 
 postfix-expr  ::= primary-expr postfix-op*
-postfix-op    ::= "++" | "--" | member-access | func-call
+postfix-op    ::= "++" | "--" | member-access | func-call | array-index
 
 member-access ::= "." identifier
 func-call     ::= "(" arg-list? ")"
 arg-list      ::= expr ("," expr)*
+array-index   :: "[" expr "]"
 
 primary-expr  ::= literal | identifier | "(" expr ")"
 ```
