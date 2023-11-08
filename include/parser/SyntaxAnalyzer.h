@@ -4,6 +4,7 @@
 #include "common/BufferedStream.h"
 #include "lexer/Token.h"
 #include "parser/ast/IAbstractSyntaxTree.h"
+#include "parser/type/Type.h"
 #include <memory>
 #include <optional>
 #include <set>
@@ -43,7 +44,7 @@ private:
     std::shared_ptr<FuncDecl> ParseFuncDecl(bool should_export, Token name);
     std::vector<Parameter> ParseParamList();
     Parameter ParseParam();
-    Token ParseType();
+    std::shared_ptr<Type> ParseType();
     
     std::shared_ptr<StructDecl> ParseStructDecl(bool should_export, Token name);
 

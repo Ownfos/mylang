@@ -2,6 +2,7 @@
 #include "parser/ast/Program.h"
 #include "parser/ast/globdecl/FuncDecl.h"
 #include "parser/ast/globdecl/StructDecl.h"
+#include "parser/type/PrimitiveType.h"
 
 namespace mylang
 {
@@ -139,7 +140,7 @@ std::shared_ptr<FuncDecl> SyntaxAnalyzer::ParseFuncDecl(bool should_export, Toke
     Accept(TokenType::RightParen);
     
     // Return type.
-    auto return_type = std::optional<Token>{};
+    auto return_type = std::shared_ptr<Type>{};
     if (OptionalAccept(TokenType::Arrow))
     {
         return_type = ParseType();
@@ -189,15 +190,17 @@ Parameter SyntaxAnalyzer::ParseParam()
     return Parameter{name, usage, type};
 }
 
-Token SyntaxAnalyzer::ParseType()
+std::shared_ptr<Type> SyntaxAnalyzer::ParseType()
 {
-    return AcceptOneOf({
-        TokenType::Identifier,
+    // TODO: complete type parsing logic (function, array, struct)
+    auto type = AcceptOneOf({
         TokenType::IntType,
         TokenType::FloatType,
         TokenType::BoolType,
         TokenType::StringType
     });
+
+    return std::make_shared<PrimitiveType>(type);
 }
 
 std::shared_ptr<StructDecl> SyntaxAnalyzer::ParseStructDecl(bool should_export, Token name)

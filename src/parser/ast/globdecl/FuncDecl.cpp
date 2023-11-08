@@ -5,7 +5,7 @@ namespace mylang
 {
 
 // TODO: accept CompoundStmt when ready.
-FuncDecl::FuncDecl(bool should_export, const Token& name, const std::optional<Token>& return_type, const std::vector<Parameter>& parameters, std::shared_ptr<CompoundStmt> body)
+FuncDecl::FuncDecl(bool should_export, const Token& name, std::shared_ptr<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<CompoundStmt> body)
     : GlobalDecl(should_export, name)
     , m_return_type(return_type)
     , m_parameters(parameters)
@@ -20,9 +20,9 @@ void FuncDecl::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->DecreaseDepth();
 }
 
-const std::optional<Token>& FuncDecl::ReturnType() const
+const Type* FuncDecl::ReturnType() const
 {
-    return m_return_type;
+    return m_return_type.get();
 }
 
 const std::vector<Parameter>& FuncDecl::Parameters() const

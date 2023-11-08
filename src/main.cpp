@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 {
     try
     {
-        auto source_code = std::string("module math; import a; import export b; foo: func = (a:i32, b:out j32){} goo: func = ()->str{}");
+        auto source_code = std::string("module math; import a; import export b; foo: func = (a:i32, b:out i32){} goo: func = ()->str{}");
         auto source_file = std::make_unique<DummySourceFile>(std::move(source_code));
         auto lexer = std::make_unique<LexicalAnalyzer>(std::move(source_file));
         auto syntax = std::make_unique<SyntaxAnalyzer>(std::move(lexer));

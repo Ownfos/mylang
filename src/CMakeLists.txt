@@ -11,6 +11,7 @@ add_library(mylanglib
     parser/ast/globdecl/FuncDecl.cpp
     parser/ast/stmt/CompoundStmt.cpp
     parser/ast/visitor/TreePrinter.cpp
+    parser/type/PrimitiveType.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)

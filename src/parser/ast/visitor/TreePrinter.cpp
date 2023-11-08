@@ -8,8 +8,9 @@
 namespace mylang
 {
 
-TreePrinter::TreePrinter(std::ostream& output_stream, int indent_spaces)
+TreePrinter::TreePrinter(std::ostream& output_stream, bool verbose, int indent_spaces)
     : m_output_stream(output_stream)
+    , m_verbose(verbose)
     , m_indent_spaces(indent_spaces)
 {}
 
@@ -25,48 +26,62 @@ void TreePrinter::DecreaseDepth()
 
 void TreePrinter::Visit(Program* node)
 {
+    // Node type
     Indent();
+    m_output_stream << "[Program]\n";
 
-    m_output_stream << std::format("Program: [name: {}, ", node->ModuleName().lexeme);
-    m_output_stream << "imported modules: [";
-    const auto& import_list = node->ImportList();
-    for (int i = 0; i < import_list.size(); ++i)
+    if (m_verbose)
     {
-        if (i > 0)
-        {
-            m_output_stream << ", ";
-        }
+        // Module declaration
+        Indent();
+        m_output_stream << std::format("- module: {}\n",
+            node->ModuleName().lexeme
+        );
 
-        const auto& [should_export, name] = import_list[i];
-        m_output_stream << std::format("[should export: {}, name: {}]", should_export, name.lexeme);
+        // Imported modules
+        for (const auto& import_info : node->ImportList())
+        {
+            Indent();
+            m_output_stream << std::format("- imported module: {}, should exported: {}\n",
+                import_info.name.lexeme,
+                import_info.should_export
+            );
+        }
     }
-    m_output_stream << "]]\n";
 }
 
 void TreePrinter::Visit(FuncDecl* node)
 {
+    // Node type
     Indent();
+    m_output_stream << "[FuncDecl]\n";
 
-    m_output_stream << std::format("FuncDecl: [name: {}, ", node->Name().lexeme);
-    auto ret_type = node->ReturnType().value_or(Token{.lexeme = "void"});
-    m_output_stream << std::format("return type: {}, ", ret_type.lexeme);
-    m_output_stream << "parameters: [";
-    const auto& parameters = node->Parameters();
-    for (int i = 0; i < parameters.size(); ++i)
+    if (m_verbose)
     {
-        if (i > 0)
-        {
-            m_output_stream << ", ";
-        }
-
-        const auto& [name, usage, type] = parameters[i];
-        m_output_stream << std::format("[name: {}, usage: {}, type: {}]",
-            name.lexeme,
-            usage.value_or(Token{.lexeme = "in"}).lexeme,
-            type.lexeme
+        // Function name
+        Indent();
+        m_output_stream << std::format("- name: {}\n",
+            node->Name().lexeme
         );
+
+        // Return type
+        Indent();
+        auto ret_type = node->ReturnType();
+        m_output_stream << std::format("- return type: {}\n",
+            ret_type ? ret_type->ToString() : "void"
+        );
+
+        // Parameters
+        for (const auto& [name, usage, type] : node->Parameters())
+        {
+            Indent();
+            m_output_stream << std::format("- parameter name: {}, usage: {}, type: {}\n",
+                name.lexeme,
+                usage ? usage->lexeme : "in",
+                type->ToString()
+            );
+        }
     }
-    m_output_stream << "]]\n";
 }
 
 void TreePrinter::Visit(StructDecl* node)
@@ -77,7 +92,7 @@ void TreePrinter::Visit(StructDecl* node)
 void TreePrinter::Visit(CompoundStmt* node)
 {
     Indent();
-    m_output_stream << "CompoundStmt\n";
+    m_output_stream << "[CompoundStmt]\n";
 }
 
 void TreePrinter::Indent()

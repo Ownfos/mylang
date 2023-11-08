@@ -3,6 +3,7 @@
 
 #include "parser/ast/globdecl/GlobalDecl.h"
 #include "parser/ast/stmt/CompoundStmt.h"
+#include "parser/type/Type.h"
 #include <vector>
 #include <optional>
 
@@ -13,21 +14,21 @@ struct Parameter
 {
     Token name;
     std::optional<Token> usage;
-    Token type;
+    std::shared_ptr<Type> type;
 };
 
 class FuncDecl : public GlobalDecl
 {
 public:
-    FuncDecl(bool should_export, const Token& name, const std::optional<Token>& return_type, const std::vector<Parameter>& parameters, std::shared_ptr<CompoundStmt> body);
+    FuncDecl(bool should_export, const Token& name, std::shared_ptr<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<CompoundStmt> body);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
 
-    const std::optional<Token>& ReturnType() const;
+    const Type* ReturnType() const;
     const std::vector<Parameter>& Parameters() const;
 
 private:
-    std::optional<Token> m_return_type;
+    std::shared_ptr<Type> m_return_type;
     std::vector<Parameter> m_parameters;
     std::shared_ptr<CompoundStmt> m_body;
 };

@@ -10,7 +10,7 @@ namespace mylang
 class TreePrinter : public IAbstractSyntaxTreeVisitor
 {
 public:
-    TreePrinter(std::ostream& output_stream, int indent_spaces = 4);
+    TreePrinter(std::ostream& output_stream, bool verbose = true, int indent_spaces = 4);
 
     virtual void IncreaseDepth() override;
     virtual void DecreaseDepth() override;
@@ -24,6 +24,7 @@ private:
     void Indent();
 
     std::ostream& m_output_stream;
+    bool m_verbose;
     int m_indent_spaces;
     int m_indent_level = 0;
 };
