@@ -14,6 +14,7 @@ add_library(mylanglib
     parser/type/Type.cpp
     parser/type/base/DataType.cpp
     parser/type/base/FuncType.cpp
+    parser/routine/IParseRoutine.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)
