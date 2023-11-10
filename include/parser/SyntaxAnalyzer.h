@@ -12,10 +12,22 @@ namespace mylang
 {
 
 class Program;
+
+// Global declarations
 class FuncDecl;
 class StructDecl;
+
+// Statements
 class Stmt;
 class CompoundStmt;
+class IfStmt;
+class WhileStmt;
+class ForStmt;
+class JumpStmt;
+class VarDeclStmt;
+class ExprStmt;
+
+// Types and paramters
 class IBaseType;
 class Type;
 struct Parameter;
@@ -57,6 +69,12 @@ private:
 
     std::shared_ptr<Stmt> ParseStmt();
     std::shared_ptr<CompoundStmt> ParseCompoundStmt();
+    std::shared_ptr<IfStmt> ParseIfStmt();
+    std::shared_ptr<WhileStmt> ParseWhileStmt();
+    std::shared_ptr<ForStmt> ParseForStmt();
+    std::shared_ptr<JumpStmt> ParseJumpStmt();
+    std::shared_ptr<VarDeclStmt> ParseVarDeclStmt();
+    std::shared_ptr<ExprStmt> ParseExprStmt();
 
     // The source stream of tokens.
     BufferedStream<Token> m_lexer;

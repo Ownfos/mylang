@@ -13,10 +13,41 @@ bool IsFirstOfExpr(TokenType type)
     return false;
 }
 
+bool IsFirstOfJumpStmt(TokenType type)
+{
+    return
+        type == TokenType::Return ||
+        type == TokenType::Break ||
+        type == TokenType::Continue;
+}
+
 bool IsFirstOfStmt(TokenType type)
 {
-    // TODO: return true iff type is in First(stmt)
-    return false;
+    return
+        type == TokenType::LeftBrace ||
+        type == TokenType::For ||
+        type == TokenType::While ||
+        type == TokenType::If ||
+        IsFirstOfJumpStmt(type) ||
+        IsFirstOfExpr(type);
+}
+
+bool IsFirstOfParamType(TokenType type)
+{
+    return
+        // Pameter usage (optional prefix)
+        type == TokenType::In ||
+        type == TokenType::Out ||
+        type == TokenType::InOut ||
+        // Primitive types
+        type == TokenType::IntType ||
+        type == TokenType::FloatType ||
+        type == TokenType::BoolType ||
+        type == TokenType::StringType ||
+        // Struct type
+        type == TokenType::Identifier ||
+        // Function types
+        type == TokenType::LeftBracket;
 }
 
 SyntaxAnalyzer::SyntaxAnalyzer(std::unique_ptr<IStream<Token>>&& lexer)
@@ -192,24 +223,6 @@ ParamType SyntaxAnalyzer::ParseParamType()
     return ParamType{type, usage};
 }
 
-bool IsFirstOfParamType(TokenType type)
-{
-    return
-        // Pameter usage (optional prefix)
-        type == TokenType::In ||
-        type == TokenType::Out ||
-        type == TokenType::InOut ||
-        // Primitive types
-        type == TokenType::IntType ||
-        type == TokenType::FloatType ||
-        type == TokenType::BoolType ||
-        type == TokenType::StringType ||
-        // Struct type
-        type == TokenType::Identifier ||
-        // Function types
-        type == TokenType::LeftBracket;
-}
-
 ParamUsage SyntaxAnalyzer::ParseParamUsage()
 {
     auto usage = OptionalAcceptOneOf({
@@ -306,7 +319,38 @@ std::shared_ptr<StructDecl> SyntaxAnalyzer::ParseStructDecl(bool should_export, 
 std::shared_ptr<Stmt> SyntaxAnalyzer::ParseStmt()
 {
     // TODO: implement
-    return {};
+    if (m_lexer.Peek().type == TokenType::If)
+    {
+        return ParseIfStmt();
+    }
+    else if (m_lexer.Peek().type == TokenType::While)
+    {
+        return ParseWhileStmt();
+    }
+    else if (m_lexer.Peek().type == TokenType::For)
+    {
+        return ParseForStmt();
+    }
+    else if (IsFirstOfJumpStmt(m_lexer.Peek().type))
+    {
+        return ParseJumpStmt();
+    }
+    // Since expr and var-decl can start with identifier,
+    // we need two lookahead instead of one.
+    // 
+    // Example)
+    // count; // expr
+    // count = 0; // expr
+    // count: i32 = 0; // var-decl
+    else if (m_lexer.Peek(0).type == TokenType::Identifier
+        && m_lexer.Peek(1).type == TokenType::Colon)
+    {
+        return ParseVarDeclStmt();
+    }
+    else
+    {
+        return ParseExprStmt();
+    }
 }
 
 // compound-stmt ::= "{" stmt* "}"
@@ -321,6 +365,42 @@ std::shared_ptr<CompoundStmt> SyntaxAnalyzer::ParseCompoundStmt()
     Accept(TokenType::RightBrace);
 
     return std::make_shared<CompoundStmt>(statements);
+}
+
+std::shared_ptr<IfStmt> ParseIfStmt()
+{
+    // TODO: implement
+    return {};
+}
+
+std::shared_ptr<WhileStmt> ParseWhileStmt()
+{
+    // TODO: implement
+    return {};
+}
+
+std::shared_ptr<ForStmt> ParseForStmt()
+{
+    // TODO: implement
+    return {};
+}
+
+std::shared_ptr<JumpStmt> ParseJumpStmt()
+{
+    // TODO: implement
+    return {};
+}
+
+std::shared_ptr<VarDeclStmt> ParseVarDeclStmt()
+{
+    // TODO: implement
+    return {};
+}
+
+std::shared_ptr<ExprStmt> ParseExprStmt()
+{
+    // TODO: implement
+    return {};
 }
 
 } // namespace mylang

@@ -4,7 +4,6 @@
 namespace mylang
 {
 
-// TODO: accept CompoundStmt when ready.
 CompoundStmt::CompoundStmt(const std::vector<std::shared_ptr<Stmt>>& statements)
     : m_statements(statements)
 {}

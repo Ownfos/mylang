@@ -4,7 +4,6 @@
 namespace mylang
 {
 
-// TODO: accept CompoundStmt when ready.
 FuncDecl::FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<CompoundStmt> body)
     : GlobalDecl(should_export, name)
     , m_return_type(return_type)
