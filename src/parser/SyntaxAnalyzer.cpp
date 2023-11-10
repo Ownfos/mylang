@@ -140,7 +140,7 @@ std::shared_ptr<FuncDecl> SyntaxAnalyzer::ParseFuncDecl(bool should_export, Toke
     Accept(TokenType::RightParen);
     
     // Return type.
-    auto return_type = std::shared_ptr<Type>{};
+    auto return_type = std::optional<Type>{};
     if (OptionalAccept(TokenType::Arrow))
     {
         return_type = ParseType();
@@ -190,17 +190,27 @@ Parameter SyntaxAnalyzer::ParseParam()
     return Parameter{name, usage, type};
 }
 
-std::shared_ptr<Type> SyntaxAnalyzer::ParseType()
+Type SyntaxAnalyzer::ParseType()
 {
-    // TODO: complete type parsing logic (function, array, struct)
+    // TODO: complete type parsing logic (function, struct)
     auto type = AcceptOneOf({
         TokenType::IntType,
         TokenType::FloatType,
         TokenType::BoolType,
         TokenType::StringType
     });
+    auto base_type = std::make_shared<PrimitiveType>(type);
 
-    return std::make_shared<PrimitiveType>(type);
+    // ("[" int-literal "]")*
+    auto array_sizes = std::vector<int>{};
+    while (OptionalAccept(TokenType::LeftBracket))
+    {
+        auto size = Accept(TokenType::IntLiteral);
+        array_sizes.push_back(std::stoi(size.lexeme));
+        Accept(TokenType::RightBracket);
+    }
+
+    return Type(base_type, array_sizes);
 }
 
 std::shared_ptr<StructDecl> SyntaxAnalyzer::ParseStructDecl(bool should_export, Token name)

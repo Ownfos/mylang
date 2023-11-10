@@ -26,6 +26,7 @@ cd build; ctest; cd ..
 - automatic index bound check?
 - lvalue, rvalue
 - ref type variable?
+- maybe monad?
 
 # Syntax
 ### Notation rules used to write theses:

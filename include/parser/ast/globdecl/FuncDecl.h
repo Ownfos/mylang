@@ -14,21 +14,21 @@ struct Parameter
 {
     Token name;
     std::optional<Token> usage;
-    std::shared_ptr<Type> type;
+    Type type;
 };
 
 class FuncDecl : public GlobalDecl
 {
 public:
-    FuncDecl(bool should_export, const Token& name, std::shared_ptr<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<CompoundStmt> body);
+    FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<CompoundStmt> body);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
 
-    const Type* ReturnType() const;
+    const std::optional<Type>& ReturnType() const;
     const std::vector<Parameter>& Parameters() const;
 
 private:
-    std::shared_ptr<Type> m_return_type;
+    std::optional<Type> m_return_type;
     std::vector<Parameter> m_parameters;
     std::shared_ptr<CompoundStmt> m_body;
 };

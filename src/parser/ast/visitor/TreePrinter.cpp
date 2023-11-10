@@ -78,7 +78,7 @@ void TreePrinter::Visit(FuncDecl* node)
             m_output_stream << std::format("- parameter name: {}, usage: {}, type: {}\n",
                 name.lexeme,
                 usage ? usage->lexeme : "in",
-                type->ToString()
+                type.ToString()
             );
         }
     }

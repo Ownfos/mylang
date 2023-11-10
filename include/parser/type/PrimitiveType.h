@@ -1,13 +1,14 @@
 #ifndef MYLANG_PRIMITIVE_TYPE_H
 #define MYLANG_PRIMITIVE_TYPE_H
 
-#include "parser/type/Type.h"
+#include "parser/type/IBaseType.h"
 #include "lexer/Token.h"
 
 namespace mylang
 {
 
-class PrimitiveType : public Type
+// A base type class for i32, f32, bool, and str.
+class PrimitiveType : public IBaseType
 {
 public:
     PrimitiveType(const Token& type);

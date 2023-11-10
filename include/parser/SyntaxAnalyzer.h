@@ -44,7 +44,7 @@ private:
     std::shared_ptr<FuncDecl> ParseFuncDecl(bool should_export, Token name);
     std::vector<Parameter> ParseParamList();
     Parameter ParseParam();
-    std::shared_ptr<Type> ParseType();
+    Type ParseType();
     
     std::shared_ptr<StructDecl> ParseStructDecl(bool should_export, Token name);
 

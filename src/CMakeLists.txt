@@ -11,6 +11,7 @@ add_library(mylanglib
     parser/ast/globdecl/FuncDecl.cpp
     parser/ast/stmt/CompoundStmt.cpp
     parser/ast/visitor/TreePrinter.cpp
+    parser/type/Type.cpp
     parser/type/PrimitiveType.cpp
 )
 
