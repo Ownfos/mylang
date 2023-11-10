@@ -4,7 +4,6 @@
 #include "common/BufferedStream.h"
 #include "lexer/Token.h"
 #include "parser/ast/IAbstractSyntaxTree.h"
-#include "parser/type/Type.h"
 #include <memory>
 #include <optional>
 #include <set>
@@ -17,7 +16,11 @@ class FuncDecl;
 class StructDecl;
 class Stmt;
 class CompoundStmt;
+class IBaseType;
+class Type;
 struct Parameter;
+struct ParamType;
+enum class ParamUsage;
 
 // Generate an abstract syntax tree from given stream of tokens.
 class SyntaxAnalyzer
@@ -44,7 +47,11 @@ private:
     std::shared_ptr<FuncDecl> ParseFuncDecl(bool should_export, Token name);
     std::vector<Parameter> ParseParamList();
     Parameter ParseParam();
+    ParamType ParseParamType();
+    ParamUsage ParseParamUsage();
+
     Type ParseType();
+    std::shared_ptr<IBaseType> ParseBaseType();
     
     std::shared_ptr<StructDecl> ParseStructDecl(bool should_export, Token name);
 

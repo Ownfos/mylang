@@ -1,19 +1,21 @@
-#ifndef MYLANG_TYPE_DECL_H
-#define MYLANG_TYPE_DECL_H
+#ifndef MYLANG_TYPE_H
+#define MYLANG_TYPE_H
 
-#include "parser/type/IBaseType.h"
+#include "parser/type/base/IBaseType.h"
 #include <vector>
 #include <memory>
 
 namespace mylang
 {
 
-// Type is a base class of all types, including functions and structs.
+// Type is a tuple of base type and array info.
+// It provides turning every base type into array of base type,
+// and some compile-type type manipulations such as removing an array dimension.
 class Type
 {
 public:
     Type(std::shared_ptr<IBaseType> base_type, const std::vector<int>& array_sizes);
-    
+
     const IBaseType* BaseType() const;
     const std::vector<int>& ArraySize() const;
 
@@ -31,4 +33,4 @@ protected:
 
 } // namespace mylang
 
-#endif // MYLANG_TYPE_DECL_H
+#endif // MYLANG_TYPE_H

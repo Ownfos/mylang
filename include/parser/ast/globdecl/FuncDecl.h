@@ -3,7 +3,7 @@
 
 #include "parser/ast/globdecl/GlobalDecl.h"
 #include "parser/ast/stmt/CompoundStmt.h"
-#include "parser/type/Type.h"
+#include "parser/type/base/FuncType.h"
 #include <vector>
 #include <optional>
 
@@ -13,8 +13,7 @@ namespace mylang
 struct Parameter
 {
     Token name;
-    std::optional<Token> usage;
-    Type type;
+    ParamType type;
 };
 
 class FuncDecl : public GlobalDecl

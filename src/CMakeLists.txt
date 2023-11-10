@@ -12,7 +12,8 @@ add_library(mylanglib
     parser/ast/stmt/CompoundStmt.cpp
     parser/ast/visitor/TreePrinter.cpp
     parser/type/Type.cpp
-    parser/type/PrimitiveType.cpp
+    parser/type/base/DataType.cpp
+    parser/type/base/FuncType.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)

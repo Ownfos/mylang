@@ -2,7 +2,7 @@
 #include "parser/ast/Program.h"
 #include "parser/ast/globdecl/FuncDecl.h"
 #include "parser/ast/globdecl/StructDecl.h"
-#include "parser/type/PrimitiveType.h"
+#include "parser/type/base/DataType.h"
 
 namespace mylang
 {
@@ -172,34 +172,72 @@ std::vector<Parameter> SyntaxAnalyzer::ParseParamList()
     return parameters;
 }
 
-// param ::= identifier ":" param-usage? type
+// param ::= identifier ":" param-type
 Parameter SyntaxAnalyzer::ParseParam()
 {
     auto name = Accept(TokenType::Identifier);
     Accept(TokenType::Colon);
 
-    // Optional usage specification where default is "in".
+    auto param_type = ParseParamType();
+
+    return Parameter{name, param_type};
+}
+
+// param-type ::= param-usage? type
+ParamType SyntaxAnalyzer::ParseParamType()
+{
+    auto usage = ParseParamUsage();
+    auto type = ParseType();
+
+    return ParamType{type, usage};
+}
+
+bool IsFirstOfParamType(TokenType type)
+{
+    return
+        // Pameter usage (optional prefix)
+        type == TokenType::In ||
+        type == TokenType::Out ||
+        type == TokenType::InOut ||
+        // Primitive types
+        type == TokenType::IntType ||
+        type == TokenType::FloatType ||
+        type == TokenType::BoolType ||
+        type == TokenType::StringType ||
+        // Struct type
+        type == TokenType::Identifier ||
+        // Function types
+        type == TokenType::LeftBracket;
+}
+
+ParamUsage SyntaxAnalyzer::ParseParamUsage()
+{
     auto usage = OptionalAcceptOneOf({
         TokenType::In,
         TokenType::Out,
         TokenType::InOut
     });
 
-    auto type = ParseType();
-
-    return Parameter{name, usage, type};
+    // Note: default usage is "in"
+    if (!usage || usage->type == TokenType::In)
+    {
+        return ParamUsage::In;
+    }
+    else if (usage->type == TokenType::Out)
+    {
+        return ParamUsage::Out;
+    }
+    else
+    {
+        ParamUsage::InOut;
+    }
 }
 
+// type       ::= base-type array-part*
+// array-part ::= "[" int-literal "]"
 Type SyntaxAnalyzer::ParseType()
 {
-    // TODO: complete type parsing logic (function, struct)
-    auto type = AcceptOneOf({
-        TokenType::IntType,
-        TokenType::FloatType,
-        TokenType::BoolType,
-        TokenType::StringType
-    });
-    auto base_type = std::make_shared<PrimitiveType>(type);
+    auto base_type = ParseBaseType();
 
     // ("[" int-literal "]")*
     auto array_sizes = std::vector<int>{};
@@ -211,6 +249,52 @@ Type SyntaxAnalyzer::ParseType()
     }
 
     return Type(base_type, array_sizes);
+}
+
+std::shared_ptr<IBaseType> SyntaxAnalyzer::ParseBaseType()
+{
+    // Case 1) primitive types and structs
+    auto type = OptionalAcceptOneOf({
+        TokenType::IntType,
+        TokenType::FloatType,
+        TokenType::BoolType,
+        TokenType::StringType,
+        TokenType::Identifier
+    });
+    if (type)
+    {
+        return std::make_shared<DataType>(type.value());
+    }
+    // Case 2) function type: "[(type 1, type 2, ..., type N) -> type]"
+    else if (OptionalAccept(TokenType::LeftBracket))
+    {
+        // Paramter types: "(type 1, type 2, ..., type N)"
+        Accept(TokenType::LeftParen);
+        auto param_types = std::vector<ParamType>{};
+        if (IsFirstOfParamType(m_lexer.Peek().type))
+        {
+            // First param type comes immediately.
+            param_types.push_back(ParseParamType());
+
+            // Second to last param types come after comma.
+            while (OptionalAccept(TokenType::Comma))
+            {
+                param_types.push_back(ParseParamType());
+            }
+        }
+        Accept(TokenType::RightParen);
+
+        // Return type: "-> type"
+        auto return_type = std::optional<Type>{};
+        if (OptionalAccept(TokenType::Arrow))
+        {
+            return_type = ParseType();
+        }
+
+        Accept(TokenType::RightBracket);
+
+        return std::make_shared<FuncType>(param_types, return_type);
+    }
 }
 
 std::shared_ptr<StructDecl> SyntaxAnalyzer::ParseStructDecl(bool should_export, Token name)

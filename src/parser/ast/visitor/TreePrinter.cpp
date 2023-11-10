@@ -72,12 +72,11 @@ void TreePrinter::Visit(FuncDecl* node)
         );
 
         // Parameters
-        for (const auto& [name, usage, type] : node->Parameters())
+        for (const auto& [name, type] : node->Parameters())
         {
             Indent();
-            m_output_stream << std::format("- parameter name: {}, usage: {}, type: {}\n",
+            m_output_stream << std::format("- parameter name: {}, type: {}\n",
                 name.lexeme,
-                usage ? usage->lexeme : "in",
                 type.ToString()
             );
         }
