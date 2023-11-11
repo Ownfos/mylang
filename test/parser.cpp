@@ -1,6 +1,9 @@
 #include "lexer/DummyLexicalAnalyzer.h"
 #include "parser/routine/ExprParser.h"
+#include "parser/routine/StmtParser.h"
+#include "parser/ast/visitor/TreePrinter.h"
 #include <gtest/gtest.h>
+#include <sstream>
 
 using namespace mylang;
 
@@ -220,4 +223,40 @@ TEST(ExprParser, LogicalOperators)
     auto ast = parser.Parse();
 
     ASSERT_EQ(ast->ToString(), "((true && false) || true)");
+}
+
+TEST(StmtParser, Expression)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::BoolLiteral, "true"},
+        {TokenType::Semicolon, ";"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = StmtParser(token_stream);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+    ASSERT_EQ(output.str(), "[ExprStmt]\n    [Literal]\n    - true\n");
+}
+
+TEST(StmtParser, VariableDeclaration)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::Identifier, "count"},
+        {TokenType::Colon, ":"},
+        {TokenType::IntType, "i32"},
+        {TokenType::Assign, "="},
+        {TokenType::IntLiteral, "0"},
+        {TokenType::Semicolon, ";"},
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = StmtParser(token_stream);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+    ASSERT_EQ(output.str(), "[VarDeclStmt]\n- name: count\n- type: i32\n    [Literal]\n    - 0");
 }
