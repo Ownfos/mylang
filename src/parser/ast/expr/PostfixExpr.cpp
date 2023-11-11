@@ -19,7 +19,7 @@ void PostfixExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 
 std::string PostfixExpr::ToString() const
 {
-    return std::format("({} {})",
+    return std::format("({}{})",
         m_expr->ToString(),
         m_op.lexeme
     );

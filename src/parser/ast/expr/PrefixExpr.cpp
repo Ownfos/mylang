@@ -19,7 +19,7 @@ void PrefixExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 
 std::string PrefixExpr::ToString() const
 {
-    return std::format("({} {})",
+    return std::format("({}{})",
         m_op.lexeme,
         m_expr->ToString()
     );
