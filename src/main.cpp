@@ -1,6 +1,6 @@
 #include "file/DummySourceFile.h"
 #include "lexer/LexicalAnalyzer.h"
-#include "parser/SyntaxAnalyzer.h"
+// #include "parser/SyntaxAnalyzer.h"
 #include "parser/ast/visitor/TreePrinter.h"
 #include "parser/routine/ExprParser.h"
 #include <iostream>

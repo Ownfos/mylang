@@ -367,37 +367,37 @@ std::shared_ptr<CompoundStmt> SyntaxAnalyzer::ParseCompoundStmt()
     return std::make_shared<CompoundStmt>(statements);
 }
 
-std::shared_ptr<IfStmt> ParseIfStmt()
+std::shared_ptr<IfStmt> SyntaxAnalyzer::ParseIfStmt()
 {
     // TODO: implement
     return {};
 }
 
-std::shared_ptr<WhileStmt> ParseWhileStmt()
+std::shared_ptr<WhileStmt> SyntaxAnalyzer::ParseWhileStmt()
 {
     // TODO: implement
     return {};
 }
 
-std::shared_ptr<ForStmt> ParseForStmt()
+std::shared_ptr<ForStmt> SyntaxAnalyzer::ParseForStmt()
 {
     // TODO: implement
     return {};
 }
 
-std::shared_ptr<JumpStmt> ParseJumpStmt()
+std::shared_ptr<JumpStmt> SyntaxAnalyzer::ParseJumpStmt()
 {
     // TODO: implement
     return {};
 }
 
-std::shared_ptr<VarDeclStmt> ParseVarDeclStmt()
+std::shared_ptr<VarDeclStmt> SyntaxAnalyzer::ParseVarDeclStmt()
 {
     // TODO: implement
     return {};
 }
 
-std::shared_ptr<ExprStmt> ParseExprStmt()
+std::shared_ptr<ExprStmt> SyntaxAnalyzer::ParseExprStmt()
 {
     // TODO: implement
     return {};

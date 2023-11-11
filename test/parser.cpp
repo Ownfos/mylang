@@ -167,11 +167,57 @@ TEST(ExprParser, PrefixOperators)
         {TokenType::Increment, "++"},
         {TokenType::Decrement, "--"},
         {TokenType::Not, "!"},
-        {TokenType::IntLiteral, "i"}
+        {TokenType::Identifier, "i"}
     });
     auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
     auto parser = ExprParser(token_stream);
     auto ast = parser.Parse();
 
-    ASSERT_EQ(ast->ToString(), "(++ (-- (! i)))");
+    ASSERT_EQ(ast->ToString(), "(++(--(!i)))");
+}
+
+TEST(ExprParser, PostfixOperators)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::Identifier, "i"},
+        {TokenType::Increment, "++"},
+        {TokenType::Decrement, "--"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = ExprParser(token_stream);
+    auto ast = parser.Parse();
+
+    ASSERT_EQ(ast->ToString(), "((i++)--)");
+}
+
+TEST(ExprParser, Assignments)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::Identifier, "i"},
+        {TokenType::Assign, "="},
+        {TokenType::Identifier, "j"},
+        {TokenType::PlusAssign, "+="},
+        {TokenType::IntLiteral, "1"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = ExprParser(token_stream);
+    auto ast = parser.Parse();
+
+    ASSERT_EQ(ast->ToString(), "(i = (j += 1))");
+}
+
+TEST(ExprParser, LogicalOperators)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::BoolLiteral, "true"},
+        {TokenType::And, "&&"},
+        {TokenType::BoolLiteral, "false"},
+        {TokenType::Or, "||"},
+        {TokenType::BoolLiteral, "true"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = ExprParser(token_stream);
+    auto ast = parser.Parse();
+
+    ASSERT_EQ(ast->ToString(), "((true && false) || true)");
 }

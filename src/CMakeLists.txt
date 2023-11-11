@@ -7,7 +7,6 @@ add_library(mylanglib
     lexer/LexicalAnalyzer.cpp
     lexer/LexicalError.cpp
 
-    parser/SyntaxAnalyzer.cpp
     parser/ast/Program.cpp
 
     parser/ast/expr/ArrayAccessExpr.cpp
@@ -23,13 +22,22 @@ add_library(mylanglib
     parser/ast/globdecl/FuncDecl.cpp
 
     parser/ast/stmt/CompoundStmt.cpp
+    parser/ast/stmt/IfStmt.cpp
+    parser/ast/stmt/ForStmt.cpp
+    parser/ast/stmt/WhileStmt.cpp
+    parser/ast/stmt/JumpStmt.cpp
+    parser/ast/stmt/VarDeclStmt.cpp
+    parser/ast/stmt/ExprStmt.cpp
+
     parser/ast/visitor/TreePrinter.cpp
 
     parser/type/Type.cpp
     parser/type/base/DataType.cpp
     parser/type/base/FuncType.cpp
+
     parser/routine/TypeParser.cpp
     parser/routine/ExprParser.cpp
+    parser/routine/StmtParser.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)

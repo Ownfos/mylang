@@ -8,7 +8,14 @@ namespace mylang
 class Program;
 class FuncDecl;
 class StructDecl;
+
 class CompoundStmt;
+class IfStmt;
+class ForStmt;
+class WhileStmt;
+class JumpStmt;
+class VarDeclStmt;
+class ExprStmt;
 
 class ArrayAccessExpr;
 class BinaryExpr;
@@ -31,7 +38,14 @@ public:
     virtual void Visit(Program* node) = 0;
     virtual void Visit(FuncDecl* node) = 0;
     virtual void Visit(StructDecl* node) = 0;
+
     virtual void Visit(CompoundStmt* node) = 0;
+    virtual void Visit(IfStmt* node) = 0;
+    virtual void Visit(ForStmt* node) = 0;
+    virtual void Visit(WhileStmt* node) = 0;
+    virtual void Visit(JumpStmt* node) = 0;
+    virtual void Visit(VarDeclStmt* node) = 0;
+    virtual void Visit(ExprStmt* node) = 0;
 
     virtual void Visit(ArrayAccessExpr* node) = 0;
     virtual void Visit(BinaryExpr* node) = 0;

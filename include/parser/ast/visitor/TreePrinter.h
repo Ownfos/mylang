@@ -18,7 +18,14 @@ public:
     virtual void Visit(Program* node) override;
     virtual void Visit(FuncDecl* node) override;
     virtual void Visit(StructDecl* node) override;
+
     virtual void Visit(CompoundStmt* node) override;
+    virtual void Visit(IfStmt* node) override;
+    virtual void Visit(ForStmt* node) override;
+    virtual void Visit(WhileStmt* node) override;
+    virtual void Visit(JumpStmt* node) override;
+    virtual void Visit(VarDeclStmt* node) override;
+    virtual void Visit(ExprStmt* node) override;
 
     virtual void Visit(ArrayAccessExpr* node) override;
     virtual void Visit(BinaryExpr* node) override;

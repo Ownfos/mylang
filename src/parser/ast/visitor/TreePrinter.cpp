@@ -2,7 +2,15 @@
 #include "parser/ast/Program.h"
 #include "parser/ast/globdecl/FuncDecl.h"
 #include "parser/ast/globdecl/StructDecl.h"
+
 #include "parser/ast/stmt/CompoundStmt.h"
+#include "parser/ast/stmt/IfStmt.h"
+#include "parser/ast/stmt/ForStmt.h"
+#include "parser/ast/stmt/WhileStmt.h"
+#include "parser/ast/stmt/JumpStmt.h"
+#include "parser/ast/stmt/VarDeclStmt.h"
+#include "parser/ast/stmt/ExprStmt.h"
+
 #include "parser/ast/expr/ArrayAccessExpr.h"
 #include "parser/ast/expr/BinaryExpr.h"
 #include "parser/ast/expr/FuncCallExpr.h"
@@ -100,6 +108,61 @@ void TreePrinter::Visit(CompoundStmt* node)
 {
     Indent();
     m_output_stream << "[CompoundStmt]\n";
+}
+
+void TreePrinter::Visit(IfStmt* node)
+{
+    Indent();
+    m_output_stream << "[IfStmt]\n";
+}
+
+void TreePrinter::Visit(ForStmt* node)
+{
+    Indent();
+    m_output_stream << "[ForStmt]\n";
+}
+
+void TreePrinter::Visit(WhileStmt* node)
+{
+    Indent();
+    m_output_stream << "[WhileStmt]\n";
+}
+
+void TreePrinter::Visit(JumpStmt* node)
+{
+    Indent();
+    m_output_stream << "[JumpStmt]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << std::format("- jump type: {}",
+            node->JumpType().lexeme
+        );
+    }
+}
+
+void TreePrinter::Visit(VarDeclStmt* node)
+{
+    Indent();
+    m_output_stream << "[VarDeclStmt]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << std::format("- name: {}",
+            node->Name().lexeme
+        );
+
+        Indent();
+        m_output_stream << std::format("- type: {}",
+            node->TypeSpecifier().ToString()
+        );
+    }
+}
+
+void TreePrinter::Visit(ExprStmt* node)
+{
+    Indent();
+    m_output_stream << "[ExprStmt]\n";
 }
 
 void TreePrinter::Visit(ArrayAccessExpr* node)
