@@ -20,6 +20,15 @@ public:
     virtual void Visit(StructDecl* node) override;
     virtual void Visit(CompoundStmt* node) override;
 
+    virtual void Visit(ArrayAccessExpr* node) override;
+    virtual void Visit(BinaryExpr* node) override;
+    virtual void Visit(FuncCallExpr* node) override;
+    virtual void Visit(Identifier* node) override;
+    virtual void Visit(Literal* node) override;
+    virtual void Visit(MemberAccessExpr* node) override;
+    virtual void Visit(PostfixExpr* node) override;
+    virtual void Visit(PrefixExpr* node) override;
+
 private:
     void Indent();
 

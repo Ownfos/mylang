@@ -10,6 +10,15 @@ class FuncDecl;
 class StructDecl;
 class CompoundStmt;
 
+class ArrayAccessExpr;
+class BinaryExpr;
+class FuncCallExpr;
+class Identifier;
+class Literal;
+class MemberAccessExpr;
+class PostfixExpr;
+class PrefixExpr;
+
 class IAbstractSyntaxTreeVisitor
 {
 public:
@@ -23,6 +32,15 @@ public:
     virtual void Visit(FuncDecl* node) = 0;
     virtual void Visit(StructDecl* node) = 0;
     virtual void Visit(CompoundStmt* node) = 0;
+
+    virtual void Visit(ArrayAccessExpr* node) = 0;
+    virtual void Visit(BinaryExpr* node) = 0;
+    virtual void Visit(FuncCallExpr* node) = 0;
+    virtual void Visit(Identifier* node) = 0;
+    virtual void Visit(Literal* node) = 0;
+    virtual void Visit(MemberAccessExpr* node) = 0;
+    virtual void Visit(PostfixExpr* node) = 0;
+    virtual void Visit(PrefixExpr* node) = 0;
 };
 
 } // namespace mylang

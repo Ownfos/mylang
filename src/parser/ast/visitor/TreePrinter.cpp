@@ -3,6 +3,14 @@
 #include "parser/ast/globdecl/FuncDecl.h"
 #include "parser/ast/globdecl/StructDecl.h"
 #include "parser/ast/stmt/CompoundStmt.h"
+#include "parser/ast/expr/ArrayAccessExpr.h"
+#include "parser/ast/expr/BinaryExpr.h"
+#include "parser/ast/expr/FuncCallExpr.h"
+#include "parser/ast/expr/Identifier.h"
+#include "parser/ast/expr/Literal.h"
+#include "parser/ast/expr/MemberAccessExpr.h"
+#include "parser/ast/expr/PostfixExpr.h"
+#include "parser/ast/expr/PrefixExpr.h"
 #include <format>
 
 namespace mylang
@@ -92,6 +100,94 @@ void TreePrinter::Visit(CompoundStmt* node)
 {
     Indent();
     m_output_stream << "[CompoundStmt]\n";
+}
+
+void TreePrinter::Visit(ArrayAccessExpr* node)
+{
+    Indent();
+    m_output_stream << "[ArrayAccessExpr]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << "- " << node->ToString() << "\n";
+    }
+}
+
+void TreePrinter::Visit(BinaryExpr* node)
+{
+    Indent();
+    m_output_stream << "[BinaryExpr]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << "- " << node->ToString() << "\n";
+    }
+}
+
+void TreePrinter::Visit(FuncCallExpr* node)
+{
+    Indent();
+    m_output_stream << "[FuncCallExpr]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << "- " << node->ToString() << "\n";
+    }
+}
+
+void TreePrinter::Visit(Identifier* node)
+{
+    Indent();
+    m_output_stream << "[Identifier]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << "- " << node->ToString() << "\n";
+    }
+}
+
+void TreePrinter::Visit(Literal* node)
+{
+    Indent();
+    m_output_stream << "[Literal]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << "- " << node->ToString() << "\n";
+    }
+}
+
+void TreePrinter::Visit(MemberAccessExpr* node)
+{
+    Indent();
+    m_output_stream << "[MemberAccessExpr]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << "- " << node->ToString() << "\n";
+    }
+}
+
+void TreePrinter::Visit(PostfixExpr* node)
+{
+    Indent();
+    m_output_stream << "[PostfixExpr]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << "- " << node->ToString() << "\n";
+    }
+}
+
+void TreePrinter::Visit(PrefixExpr* node)
+{
+    Indent();
+    m_output_stream << "[PrefixExpr]\n";
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << "- " << node->ToString() << "\n";
+    }
 }
 
 void TreePrinter::Indent()

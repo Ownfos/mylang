@@ -263,7 +263,7 @@ std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
         if (m_lookahead.Peek() == '+')
         {
             m_lookahead.Accept();
-            return CreateToken(TokenType::UnaryPlus);
+            return CreateToken(TokenType::Increment);
         }
         // '+='
         else if (m_lookahead.Peek() == '=')
@@ -296,7 +296,7 @@ std::optional<Token> LexicalAnalyzer::TryFindAtMostTwoCharToken()
         else if (m_lookahead.Peek() == '-')
         {
             m_lookahead.Accept();
-            return CreateToken(TokenType::UnaryMinus);
+            return CreateToken(TokenType::Decrement);
         }
         // '-'
         else

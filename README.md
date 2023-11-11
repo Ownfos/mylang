@@ -111,8 +111,8 @@ var-init      ::= expr | "{" var-init ("," var-init)* "}"
 ```
 type            ::= base-type array-part*
 
-base-type       ::= primitive-type | struct-type | func-type
-primitive-type  ::= "i32" | "f32" | "str" | "bool"
+base-type       ::= data-type | func-type
+data-type       ::= "i32" | "f32" | "str" | "bool" | struct-type
 struct-type     ::= identifier
 func-type       ::= "[" "(" param-type-list? ")" ("->" type)? "]"
 param-type-list ::= param-type ("," param-type)*
@@ -148,7 +148,7 @@ compare-op    ::= "==" | "!=" | ">=" | "<=" | "<" | ">"
 add-expr      ::= mult-expr (("+" | "-") mult-expr)*
 mult-expr     ::= prefix-expr (("*" | "/") prefix-expr)*
 
-prefix-expr   ::= prefix-op? postfix-expr
+prefix-expr   ::= prefix-op* postfix-expr
 prefix-op     ::= "!" | "+" | "-" | "++" | "--"
 
 postfix-expr  ::= primary-expr postfix-op*
