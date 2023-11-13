@@ -336,7 +336,12 @@ TEST(StmtParser, Expression)
     auto output = std::ostringstream();
     auto printer = TreePrinter(output);
     ast->Accept(&printer);
-    ASSERT_EQ(output.str(), "[ExprStmt]\n    [Literal]\n    - true\n");
+
+    auto expected =
+        "[ExprStmt]\n"
+        "    [Literal]\n"
+        "    - true\n";
+    ASSERT_EQ(output.str(), expected);
 }
 
 TEST(StmtParser, VariableDeclaration)
@@ -358,7 +363,13 @@ TEST(StmtParser, VariableDeclaration)
     auto output = std::ostringstream();
     auto printer = TreePrinter(output);
     ast->Accept(&printer);
-    ASSERT_EQ(output.str(), "[VarDeclStmt]\n- name: count\n- type: i32\n    [Literal]\n    - 0\n");
+
+    auto expected =
+        "[VarDeclStmt]\n"
+        "- name: count\n"
+        "- type: i32\n"
+        "    [Literal]\n    - 0\n";
+    ASSERT_EQ(output.str(), expected);
 }
 
 TEST(StmtParser, CompoundStatement)
@@ -400,10 +411,10 @@ TEST(StmtParser, IfStatement)
     ast->Accept(&printer);
 
     auto expected =
-    "[IfStmt]\n"
-    "    [Literal]\n"
-    "    - true\n"
-    "    [CompoundStmt]\n";
+        "[IfStmt]\n"
+        "    [Literal]\n"
+        "    - true\n"
+        "    [CompoundStmt]\n";
     ASSERT_EQ(output.str(), expected);
 }
 
@@ -431,11 +442,11 @@ TEST(StmtParser, IfElseStatement)
     ast->Accept(&printer);
 
     auto expected =
-    "[IfStmt]\n"
-    "    [Literal]\n"
-    "    - true\n"
-    "    [CompoundStmt]\n"
-    "    [CompoundStmt]\n";
+        "[IfStmt]\n"
+        "    [Literal]\n"
+        "    - true\n"
+        "    [CompoundStmt]\n"
+        "    [CompoundStmt]\n";
     ASSERT_EQ(output.str(), expected);
 }
 
