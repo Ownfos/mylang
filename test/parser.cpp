@@ -1,6 +1,7 @@
 #include "lexer/DummyLexicalAnalyzer.h"
 #include "parser/routine/ExprParser.h"
 #include "parser/routine/StmtParser.h"
+#include "parser/routine/TypeParser.h"
 #include "parser/ast/visitor/TreePrinter.h"
 #include <gtest/gtest.h>
 #include <sstream>
@@ -232,7 +233,9 @@ TEST(StmtParser, Expression)
         {TokenType::Semicolon, ";"}
     });
     auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = StmtParser(token_stream);
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto parser = StmtParser(token_stream, expr_parser, type_parser);
     auto ast = parser.Parse();
 
     auto output = std::ostringstream();
@@ -252,11 +255,13 @@ TEST(StmtParser, VariableDeclaration)
         {TokenType::Semicolon, ";"},
     });
     auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = StmtParser(token_stream);
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto parser = StmtParser(token_stream, expr_parser, type_parser);
     auto ast = parser.Parse();
 
     auto output = std::ostringstream();
     auto printer = TreePrinter(output);
     ast->Accept(&printer);
-    ASSERT_EQ(output.str(), "[VarDeclStmt]\n- name: count\n- type: i32\n    [Literal]\n    - 0");
+    ASSERT_EQ(output.str(), "[VarDeclStmt]\n- name: count\n- type: i32\n    [Literal]\n    - 0\n");
 }
