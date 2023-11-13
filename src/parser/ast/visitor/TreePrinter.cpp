@@ -135,7 +135,7 @@ void TreePrinter::Visit(JumpStmt* node)
     if (m_verbose)
     {
         Indent();
-        m_output_stream << std::format("- jump type: {}",
+        m_output_stream << std::format("- jump type: {}\n",
             node->JumpType().lexeme
         );
     }
@@ -148,12 +148,12 @@ void TreePrinter::Visit(VarDeclStmt* node)
     if (m_verbose)
     {
         Indent();
-        m_output_stream << std::format("- name: {}",
+        m_output_stream << std::format("- name: {}\n",
             node->Name().lexeme
         );
 
         Indent();
-        m_output_stream << std::format("- type: {}",
+        m_output_stream << std::format("- type: {}\n",
             node->TypeSpecifier().ToString()
         );
     }
