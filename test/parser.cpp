@@ -360,3 +360,120 @@ TEST(StmtParser, VariableDeclaration)
     ast->Accept(&printer);
     ASSERT_EQ(output.str(), "[VarDeclStmt]\n- name: count\n- type: i32\n    [Literal]\n    - 0\n");
 }
+
+TEST(StmtParser, CompoundStatement)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto parser = StmtParser(token_stream, expr_parser, type_parser);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+    ASSERT_EQ(output.str(), "[CompoundStmt]\n");
+}
+
+TEST(StmtParser, IfStatement)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::If, "if"},
+        {TokenType::LeftParen, "("},
+        {TokenType::BoolLiteral, "true"},
+        {TokenType::RightParen, ")"},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto parser = StmtParser(token_stream, expr_parser, type_parser);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+
+    auto expected =
+    "[IfStmt]\n"
+    "    [Literal]\n"
+    "    - true\n"
+    "    [CompoundStmt]\n";
+    ASSERT_EQ(output.str(), expected);
+}
+
+TEST(StmtParser, IfElseStatement)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::If, "if"},
+        {TokenType::LeftParen, "("},
+        {TokenType::BoolLiteral, "true"},
+        {TokenType::RightParen, ")"},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"},
+        {TokenType::Else, "else"},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"},
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto parser = StmtParser(token_stream, expr_parser, type_parser);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+
+    auto expected =
+    "[IfStmt]\n"
+    "    [Literal]\n"
+    "    - true\n"
+    "    [CompoundStmt]\n"
+    "    [CompoundStmt]\n";
+    ASSERT_EQ(output.str(), expected);
+}
+
+TEST(StmtParser, IfElseIfStatement)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::If, "if"},
+        {TokenType::LeftParen, "("},
+        {TokenType::BoolLiteral, "true"},
+        {TokenType::RightParen, ")"},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"},
+        {TokenType::Else, "else"},
+        {TokenType::If, "if"},
+        {TokenType::LeftParen, "("},
+        {TokenType::BoolLiteral, "false"},
+        {TokenType::RightParen, ")"},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"},
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto parser = StmtParser(token_stream, expr_parser, type_parser);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+
+    auto expected =
+        "[IfStmt]\n"
+        "    [Literal]\n"
+        "    - true\n"
+        "    [CompoundStmt]\n"
+        "    [IfStmt]\n"
+        "        [Literal]\n"
+        "        - false\n"
+        "        [CompoundStmt]\n";
+    ASSERT_EQ(output.str(), expected);
+}

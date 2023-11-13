@@ -1,4 +1,5 @@
 #include "parser/routine/StmtParser.h"
+#include "parser/ast/stmt/CompoundStmt.h"
 #include "parser/ast/stmt/IfStmt.h"
 #include "parser/ast/stmt/WhileStmt.h"
 #include "parser/ast/stmt/ForStmt.h"
@@ -83,16 +84,45 @@ std::shared_ptr<Stmt> StmtParser::Parse()
     }
 }
 
+// compound-stmt ::= "{" stmt* "}"
 std::shared_ptr<Stmt> StmtParser::ParseCompoundStmt()
 {
-    // TODO: implement
-    return {};
+    auto statements = std::vector<std::shared_ptr<Stmt>>{};
+    Accept(TokenType::LeftBrace);
+    while (CanStartParsing())
+    {
+        statements.push_back(Parse());
+    }
+    Accept(TokenType::RightBrace);
+    return std::make_shared<CompoundStmt>(statements);
 }
 
+// if-stmt ::= "if" "(" expr ")" compound-stmt ("else" (if-stmt | compound-stmt))?
 std::shared_ptr<Stmt> StmtParser::ParseIfStmt()
 {
-    // TODO: implement
-    return {};
+    Accept(TokenType::If);
+    Accept(TokenType::LeftParen);
+    auto condition = m_expr_parser->Parse();
+    Accept(TokenType::RightParen);
+    auto then_branch = ParseCompoundStmt();
+
+    // Parse optional 'else' or 'else-if' branch.
+    auto else_branch = std::shared_ptr<Stmt>{};
+    if (OptionalAccept(TokenType::Else))
+    {
+        // Case 1) else if (...) {...}
+        if (Peek() == TokenType::If)
+        {
+            else_branch = ParseIfStmt();
+        }
+        // Case 2) else {...}
+        else
+        {
+            else_branch = ParseCompoundStmt();
+        }
+    }
+
+    return std::make_shared<IfStmt>(condition, then_branch, else_branch);
 }
 
 std::shared_ptr<Stmt> StmtParser::ParseForStmt()
