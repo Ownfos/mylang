@@ -8,6 +8,101 @@
 
 using namespace mylang;
 
+TEST(TypeParser, Primitive)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::IntType, "i32"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = TypeParser(token_stream);
+    auto type = parser.Parse();
+
+    ASSERT_EQ(type.ToString(), "i32");
+}
+
+TEST(TypeParser, SimpleArray)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::IntType, "i32"},
+        {TokenType::LeftBracket, "["},
+        {TokenType::IntLiteral, "100"},
+        {TokenType::RightBracket, "]"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = TypeParser(token_stream);
+    auto type = parser.Parse();
+
+    ASSERT_EQ(type.ToString(), "i32[100]");
+}
+
+TEST(TypeParser, MultiDimensionArray)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::IntType, "i32"},
+        {TokenType::LeftBracket, "["},
+        {TokenType::IntLiteral, "10"},
+        {TokenType::RightBracket, "]"},
+        {TokenType::LeftBracket, "["},
+        {TokenType::IntLiteral, "20"},
+        {TokenType::RightBracket, "]"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = TypeParser(token_stream);
+    auto type = parser.Parse();
+
+    ASSERT_EQ(type.ToString(), "i32[10][20]");
+}
+
+TEST(TypeParser, SimpleCallable)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::LeftBracket, "["},
+        {TokenType::LeftParen, "("},
+        {TokenType::RightParen, ")"},
+        {TokenType::RightBracket, "]"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = TypeParser(token_stream);
+    auto type = parser.Parse();
+
+    ASSERT_EQ(type.ToString(), "[()]");
+}
+
+TEST(TypeParser, SimpleCallableWithReturn)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::LeftBracket, "["},
+        {TokenType::LeftParen, "("},
+        {TokenType::RightParen, ")"},
+        {TokenType::Arrow, "->"},
+        {TokenType::BoolType, "bool"},
+        {TokenType::RightBracket, "]"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = TypeParser(token_stream);
+    auto type = parser.Parse();
+
+    ASSERT_EQ(type.ToString(), "[() -> bool]");
+}
+
+TEST(TypeParser, TwoArgCallable)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::LeftBracket, "["},
+        {TokenType::LeftParen, "("},
+        {TokenType::IntType, "i32"},
+        {TokenType::Comma, ","},
+        {TokenType::StringType, "str"},
+        {TokenType::RightParen, ")"},
+        {TokenType::RightBracket, "]"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto parser = TypeParser(token_stream);
+    auto type = parser.Parse();
+
+    ASSERT_EQ(type.ToString(), "[(in i32, in str)]");
+}
+
 TEST(ExprParser, Identifier)
 {
     auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
