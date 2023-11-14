@@ -102,6 +102,19 @@ void TreePrinter::Visit(FuncDecl* node)
 void TreePrinter::Visit(StructDecl* node)
 {
     Indent();
+    m_output_stream << "[StructDecl]\n";
+
+    if (m_verbose)
+    {
+        for (const auto& member : node->Members())
+        {
+            Indent();
+            m_output_stream << std::format("- member name: {}, type: {}\n",
+                member.name.lexeme,
+                member.type.ToString()
+            );
+        }
+    }
 }
 
 void TreePrinter::Visit(CompoundStmt* node)

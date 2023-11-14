@@ -20,6 +20,7 @@ add_library(mylanglib
 
     parser/ast/globdecl/GlobalDecl.cpp
     parser/ast/globdecl/FuncDecl.cpp
+    parser/ast/globdecl/StructDecl.cpp
 
     parser/ast/stmt/CompoundStmt.cpp
     parser/ast/stmt/IfStmt.cpp
