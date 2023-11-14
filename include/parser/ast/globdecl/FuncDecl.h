@@ -2,7 +2,7 @@
 #define MYLANG_FUNC_DECL_H
 
 #include "parser/ast/globdecl/GlobalDecl.h"
-#include "parser/ast/stmt/CompoundStmt.h"
+#include "parser/ast/stmt/Stmt.h"
 #include "parser/type/base/FuncType.h"
 #include <vector>
 #include <optional>
@@ -19,7 +19,9 @@ struct Parameter
 class FuncDecl : public GlobalDecl
 {
 public:
-    FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<CompoundStmt> body);
+    // 'should_export' is true iff "export" prefix was found.
+    // 'return_Type' can be empty if void is intended.
+    FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<Stmt> body);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
 
@@ -29,7 +31,7 @@ public:
 private:
     std::optional<Type> m_return_type;
     std::vector<Parameter> m_parameters;
-    std::shared_ptr<CompoundStmt> m_body;
+    std::shared_ptr<Stmt> m_body;
 };
 
 } // namespace mylang

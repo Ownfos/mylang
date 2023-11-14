@@ -58,7 +58,7 @@ import logger;
 ```
 global-decl ::= "export"? identifier ":" (func-decl | struct-decl)
 
-func-decl   ::= "func" "=" "(" param-list? ")" ("->" type)? compound-stmt
+func-decl   ::= "func" "=" "(" param-list? ")" ("->" type)? stmt
 
 param-list  ::= param ("," param)*
 param       ::= identifier ":" param-type

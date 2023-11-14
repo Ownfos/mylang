@@ -4,7 +4,7 @@
 namespace mylang
 {
 
-FuncDecl::FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<CompoundStmt> body)
+FuncDecl::FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<Stmt> body)
     : GlobalDecl(should_export, name)
     , m_return_type(return_type)
     , m_parameters(parameters)

@@ -2,6 +2,7 @@
 #include "parser/routine/ExprParser.h"
 #include "parser/routine/StmtParser.h"
 #include "parser/routine/TypeParser.h"
+#include "parser/routine/GlobalDeclParser.h"
 #include "parser/ast/visitor/TreePrinter.h"
 #include <gtest/gtest.h>
 #include <sstream>
@@ -624,6 +625,111 @@ TEST(StmtParser, ForStatementWithInit)
         "    - type: i32\n"
         "        [Literal]\n"
         "        - 0\n"
+        "    [CompoundStmt]\n";
+    ASSERT_EQ(output.str(), expected);
+}
+
+TEST(GlobalDeclParser, SimpleFunction)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::Identifier, "foo"},
+        {TokenType::Colon, ":"},
+        {TokenType::Func, "func"},
+        {TokenType::Assign, "="},
+        {TokenType::LeftParen, "("},
+        {TokenType::RightParen, ")"},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto stmt_parser = std::make_shared<StmtParser>(token_stream, expr_parser, type_parser);
+    auto parser = GlobalDeclParser(token_stream, stmt_parser, type_parser);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+
+    auto expected =
+        "[FuncDecl]\n"
+        "- name: foo\n"
+        "- return type: void\n"
+        "    [CompoundStmt]\n";
+    ASSERT_EQ(output.str(), expected);
+}
+
+TEST(GlobalDeclParser, TwoArgsFunction)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::Identifier, "foo"},
+        {TokenType::Colon, ":"},
+        {TokenType::Func, "func"},
+        {TokenType::Assign, "="},
+        {TokenType::LeftParen, "("},
+        {TokenType::Identifier, "a"},
+        {TokenType::Colon, ":"},
+        {TokenType::IntType, "i32"},
+        {TokenType::Comma, ","},
+        {TokenType::Identifier, "b"},
+        {TokenType::Colon, ":"},
+        {TokenType::Out, "out"},
+        {TokenType::IntType, "i32"},
+        {TokenType::RightParen, ")"},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto stmt_parser = std::make_shared<StmtParser>(token_stream, expr_parser, type_parser);
+    auto parser = GlobalDeclParser(token_stream, stmt_parser, type_parser);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+
+    auto expected =
+        "[FuncDecl]\n"
+        "- name: foo\n"
+        "- return type: void\n"
+        "- parameter name: a, type: in i32\n"
+        "- parameter name: b, type: out i32\n"
+        "    [CompoundStmt]\n";
+    ASSERT_EQ(output.str(), expected);
+}
+
+TEST(GlobalDeclParser, FunctionWithReturnType)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+        {TokenType::Identifier, "foo"},
+        {TokenType::Colon, ":"},
+        {TokenType::Func, "func"},
+        {TokenType::Assign, "="},
+        {TokenType::LeftParen, "("},
+        {TokenType::RightParen, ")"},
+        {TokenType::Arrow, "->"},
+        {TokenType::BoolType, "bool"},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"}
+    });
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto stmt_parser = std::make_shared<StmtParser>(token_stream, expr_parser, type_parser);
+    auto parser = GlobalDeclParser(token_stream, stmt_parser, type_parser);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+
+    auto expected =
+        "[FuncDecl]\n"
+        "- name: foo\n"
+        "- return type: bool\n"
         "    [CompoundStmt]\n";
     ASSERT_EQ(output.str(), expected);
 }
