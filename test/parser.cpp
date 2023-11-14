@@ -3,6 +3,7 @@
 #include "parser/routine/StmtParser.h"
 #include "parser/routine/TypeParser.h"
 #include "parser/routine/GlobalDeclParser.h"
+#include "parser/routine/ProgramParser.h"
 #include "parser/ast/visitor/TreePrinter.h"
 #include <gtest/gtest.h>
 #include <sstream>
@@ -686,4 +687,61 @@ TEST(GlobalDeclParser, StructDecl)
         "- member name: z, type: f32\n";
         
     TestGlobalDeclParser(tokens, expected);
+}
+
+void TestProgramParser(const std::vector<Token>& tokens, std::string_view expected)
+{
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(tokens);
+    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+    auto expr_parser = std::make_shared<ExprParser>(token_stream);
+    auto type_parser = std::make_shared<TypeParser>(token_stream);
+    auto stmt_parser = std::make_shared<StmtParser>(token_stream, expr_parser, type_parser);
+    auto global_decl_parser = std::make_shared<GlobalDeclParser>(token_stream, stmt_parser, type_parser);
+    auto parser = ProgramParser(token_stream, global_decl_parser);
+    auto ast = parser.Parse();
+
+    auto output = std::ostringstream();
+    auto printer = TreePrinter(output);
+    ast->Accept(&printer);
+
+    ASSERT_EQ(output.str(), expected);
+}
+
+TEST(ProgramParser, SimpleProgram)
+{
+    auto tokens = std::vector<Token>{
+        {TokenType::Module, "module"},
+        {TokenType::Identifier, "test"},
+        {TokenType::Semicolon, ";"}
+    };
+
+    auto expected =
+        "[Program]\n"
+        "- module: test\n";
+        
+    TestProgramParser(tokens, expected);
+}
+
+TEST(ProgramParser, ProgramWithImports)
+{
+    auto tokens = std::vector<Token>{
+        {TokenType::Module, "module"},
+        {TokenType::Identifier, "test"},
+        {TokenType::Semicolon, ";"},
+        {TokenType::Import, "import"},
+        {TokenType::Identifier, "math"},
+        {TokenType::Semicolon, ";"},
+        {TokenType::Import, "import"},
+        {TokenType::Export, "export"},
+        {TokenType::Identifier, "random"},
+        {TokenType::Semicolon, ";"},
+    };
+
+    auto expected =
+        "[Program]\n"
+        "- module: test\n"
+        "- imported module: math, export: false\n"
+        "- imported module: random, export: true\n";
+        
+    TestProgramParser(tokens, expected);
 }

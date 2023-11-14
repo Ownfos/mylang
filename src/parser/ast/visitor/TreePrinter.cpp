@@ -58,7 +58,7 @@ void TreePrinter::Visit(Program* node)
         for (const auto& import_info : node->ImportList())
         {
             Indent();
-            m_output_stream << std::format("- imported module: {}, should exported: {}\n",
+            m_output_stream << std::format("- imported module: {}, export: {}\n",
                 import_info.name.lexeme,
                 import_info.should_export
             );
