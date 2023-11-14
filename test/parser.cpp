@@ -560,18 +560,9 @@ TEST(StmtParser, ForStatementWithInit)
     TestStmtParser(tokens, expected);
 }
 
-TEST(GlobalDeclParser, SimpleFunction)
+void TestGlobalDeclParser(const std::vector<Token>& tokens, std::string_view expected)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
-        {TokenType::Identifier, "foo"},
-        {TokenType::Colon, ":"},
-        {TokenType::Func, "func"},
-        {TokenType::Assign, "="},
-        {TokenType::LeftParen, "("},
-        {TokenType::RightParen, ")"},
-        {TokenType::LeftBrace, "{"},
-        {TokenType::RightBrace, "}"}
-    });
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(tokens);
     auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
     auto expr_parser = std::make_shared<ExprParser>(token_stream);
     auto type_parser = std::make_shared<TypeParser>(token_stream);
@@ -583,17 +574,34 @@ TEST(GlobalDeclParser, SimpleFunction)
     auto printer = TreePrinter(output);
     ast->Accept(&printer);
 
+    ASSERT_EQ(output.str(), expected);
+}
+
+TEST(GlobalDeclParser, SimpleFunction)
+{
+    auto tokens = std::vector<Token>{
+        {TokenType::Identifier, "foo"},
+        {TokenType::Colon, ":"},
+        {TokenType::Func, "func"},
+        {TokenType::Assign, "="},
+        {TokenType::LeftParen, "("},
+        {TokenType::RightParen, ")"},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::RightBrace, "}"}
+    };
+
     auto expected =
         "[FuncDecl]\n"
         "- name: foo\n"
         "- return type: void\n"
         "    [CompoundStmt]\n";
-    ASSERT_EQ(output.str(), expected);
+        
+    TestGlobalDeclParser(tokens, expected);
 }
 
 TEST(GlobalDeclParser, TwoArgsFunction)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "foo"},
         {TokenType::Colon, ":"},
         {TokenType::Func, "func"},
@@ -610,17 +618,7 @@ TEST(GlobalDeclParser, TwoArgsFunction)
         {TokenType::RightParen, ")"},
         {TokenType::LeftBrace, "{"},
         {TokenType::RightBrace, "}"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto stmt_parser = std::make_shared<StmtParser>(token_stream, expr_parser, type_parser);
-    auto parser = GlobalDeclParser(token_stream, stmt_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+    };
 
     auto expected =
         "[FuncDecl]\n"
@@ -629,12 +627,13 @@ TEST(GlobalDeclParser, TwoArgsFunction)
         "- parameter name: a, type: in i32\n"
         "- parameter name: b, type: out i32\n"
         "    [CompoundStmt]\n";
-    ASSERT_EQ(output.str(), expected);
+        
+    TestGlobalDeclParser(tokens, expected);
 }
 
 TEST(GlobalDeclParser, FunctionWithReturnType)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "foo"},
         {TokenType::Colon, ":"},
         {TokenType::Func, "func"},
@@ -645,22 +644,13 @@ TEST(GlobalDeclParser, FunctionWithReturnType)
         {TokenType::BoolType, "bool"},
         {TokenType::LeftBrace, "{"},
         {TokenType::RightBrace, "}"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto stmt_parser = std::make_shared<StmtParser>(token_stream, expr_parser, type_parser);
-    auto parser = GlobalDeclParser(token_stream, stmt_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+    };
 
     auto expected =
         "[FuncDecl]\n"
         "- name: foo\n"
         "- return type: bool\n"
         "    [CompoundStmt]\n";
-    ASSERT_EQ(output.str(), expected);
+        
+    TestGlobalDeclParser(tokens, expected);
 }
