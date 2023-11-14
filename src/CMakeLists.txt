@@ -41,6 +41,8 @@ add_library(mylanglib
     parser/routine/StmtParser.cpp
     parser/routine/GlobalDeclParser.cpp
     parser/routine/ProgramParser.cpp
+
+    parser/SyntaxAnalyzer.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)

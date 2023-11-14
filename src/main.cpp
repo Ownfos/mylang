@@ -1,8 +1,7 @@
 #include "file/DummySourceFile.h"
 #include "lexer/LexicalAnalyzer.h"
-// #include "parser/SyntaxAnalyzer.h"
+#include "parser/SyntaxAnalyzer.h"
 #include "parser/ast/visitor/TreePrinter.h"
-#include "parser/routine/ExprParser.h"
 #include <iostream>
 #include <format>
 
@@ -12,20 +11,33 @@ int main(int argc, char** argv)
 {
     try
     {
-        // auto source_code = std::string("module math;\nimport a;\nimport export b;\nfoo: func = (a:i32[2][3], b:out i32)->str{}\ngoo: func = (callback: [(i32, inout str)->bool]){}");
-        auto source_code = std::string("1+2*3");
+        auto source_code =
+            "module math;\n"
+            "import a;\n"
+            "import export b;\n"
+            "foo: func = (a:i32[2][3], b:out i32)->str\n"
+            "{\n"
+            "    if (b + a[1][2] > 0)\n"
+            "    {\n"
+            "        return \"haha\";\n"
+            "    }\n"
+            "    else\n"
+            "    {\n"
+            "        return \"hoho\";\n"
+            "    }\n"
+            "}\n"
+            "goo: func = (callback: [(i32, inout str)->bool]){}\n";
         if (argc > 1)
         {
-            source_code = std::string(argv[1]);
+            source_code = argv[1];
         }
         std::cout << "[source code]\n" << source_code << "\n\n";
 
         auto source_file = std::make_unique<DummySourceFile>(std::move(source_code));
         auto lexer = std::make_unique<LexicalAnalyzer>(std::move(source_file));
-        auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
+        auto syntax_analyzer = SyntaxAnalyzer(std::move(lexer));
 
-        auto parser = ExprParser(token_stream);
-        auto ast = parser.Parse();
+        auto ast = syntax_analyzer.GenerateAST();
 
         auto printer = TreePrinter(std::cout);
         ast->Accept(&printer);
