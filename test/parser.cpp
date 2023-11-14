@@ -322,12 +322,9 @@ TEST(ExprParser, LogicalOperators)
     ASSERT_EQ(ast->ToString(), "((true && false) || true)");
 }
 
-TEST(StmtParser, Expression)
+void TestStmtParser(const std::vector<Token>& tokens, std::string_view expected)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
-        {TokenType::BoolLiteral, "true"},
-        {TokenType::Semicolon, ";"}
-    });
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(tokens);
     auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
     auto expr_parser = std::make_shared<ExprParser>(token_stream);
     auto type_parser = std::make_shared<TypeParser>(token_stream);
@@ -337,91 +334,81 @@ TEST(StmtParser, Expression)
     auto output = std::ostringstream();
     auto printer = TreePrinter(output);
     ast->Accept(&printer);
+
+    ASSERT_EQ(output.str(), expected);
+}
+
+TEST(StmtParser, Expression)
+{
+    auto tokens = std::vector<Token>{
+        {TokenType::BoolLiteral, "true"},
+        {TokenType::Semicolon, ";"}
+    };
 
     auto expected =
         "[ExprStmt]\n"
         "    [Literal]\n"
         "    - true\n";
-    ASSERT_EQ(output.str(), expected);
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, VariableDeclaration)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "count"},
         {TokenType::Colon, ":"},
         {TokenType::IntType, "i32"},
         {TokenType::Assign, "="},
         {TokenType::IntLiteral, "0"},
-        {TokenType::Semicolon, ";"},
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+        {TokenType::Semicolon, ";"}
+    };
 
     auto expected =
         "[VarDeclStmt]\n"
         "- name: count\n"
         "- type: i32\n"
-        "    [Literal]\n    - 0\n";
-    ASSERT_EQ(output.str(), expected);
+        "    [Literal]\n"
+        "    - 0\n";
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, CompoundStatement)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::LeftBrace, "{"},
         {TokenType::RightBrace, "}"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
+    };
 
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
-    ASSERT_EQ(output.str(), "[CompoundStmt]\n");
+    auto expected = "[CompoundStmt]\n";
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, IfStatement)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::If, "if"},
         {TokenType::LeftParen, "("},
         {TokenType::BoolLiteral, "true"},
         {TokenType::RightParen, ")"},
         {TokenType::LeftBrace, "{"},
         {TokenType::RightBrace, "}"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
+    };
 
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
-
-    auto expected =
+    auto expected = 
         "[IfStmt]\n"
         "    [Literal]\n"
         "    - true\n"
         "    [CompoundStmt]\n";
-    ASSERT_EQ(output.str(), expected);
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, IfElseStatement)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::If, "if"},
         {TokenType::LeftParen, "("},
         {TokenType::BoolLiteral, "true"},
@@ -430,17 +417,8 @@ TEST(StmtParser, IfElseStatement)
         {TokenType::RightBrace, "}"},
         {TokenType::Else, "else"},
         {TokenType::LeftBrace, "{"},
-        {TokenType::RightBrace, "}"},
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+        {TokenType::RightBrace, "}"}
+    };
 
     auto expected =
         "[IfStmt]\n"
@@ -448,12 +426,13 @@ TEST(StmtParser, IfElseStatement)
         "    - true\n"
         "    [CompoundStmt]\n"
         "    [CompoundStmt]\n";
-    ASSERT_EQ(output.str(), expected);
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, IfElseIfStatement)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::If, "if"},
         {TokenType::LeftParen, "("},
         {TokenType::BoolLiteral, "true"},
@@ -466,17 +445,8 @@ TEST(StmtParser, IfElseIfStatement)
         {TokenType::BoolLiteral, "false"},
         {TokenType::RightParen, ")"},
         {TokenType::LeftBrace, "{"},
-        {TokenType::RightBrace, "}"},
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+        {TokenType::RightBrace, "}"}
+    };
 
     auto expected =
         "[IfStmt]\n"
@@ -487,87 +457,64 @@ TEST(StmtParser, IfElseIfStatement)
         "        [Literal]\n"
         "        - false\n"
         "        [CompoundStmt]\n";
-    ASSERT_EQ(output.str(), expected);
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, WhileStatement)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::While, "while"},
         {TokenType::LeftParen, "("},
         {TokenType::BoolLiteral, "true"},
         {TokenType::RightParen, ")"},
         {TokenType::LeftBrace, "{"},
         {TokenType::RightBrace, "}"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+    };
 
     auto expected =
         "[WhileStmt]\n"
         "    [Literal]\n"
         "    - true\n"
         "    [CompoundStmt]\n";
-    ASSERT_EQ(output.str(), expected);
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, ReturnStatement)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Return, "return"},
         {TokenType::Semicolon, ";"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+    };
 
     auto expected =
         "[JumpStmt]\n"
         "- jump type: return\n";
-    ASSERT_EQ(output.str(), expected);
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, ReturnExprStatement)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Return, "return"},
         {TokenType::IntLiteral, "0"},
         {TokenType::Semicolon, ";"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+    };
 
     auto expected =
         "[JumpStmt]\n"
         "- jump type: return\n"
         "    [Literal]\n"
         "    - 0\n";
-    ASSERT_EQ(output.str(), expected);
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, SimpleForStatement)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::For, "for"},
         {TokenType::LeftParen, "("},
         {TokenType::Semicolon, ";"},
@@ -575,26 +522,18 @@ TEST(StmtParser, SimpleForStatement)
         {TokenType::RightParen, ")"},
         {TokenType::LeftBrace, "{"},
         {TokenType::RightBrace, "}"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+    };
 
     auto expected =
         "[ForStmt]\n"
         "    [CompoundStmt]\n";
-    ASSERT_EQ(output.str(), expected);
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(StmtParser, ForStatementWithInit)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::For, "for"},
         {TokenType::LeftParen, "("},
         {TokenType::Identifier, "i"},
@@ -607,16 +546,7 @@ TEST(StmtParser, ForStatementWithInit)
         {TokenType::RightParen, ")"},
         {TokenType::LeftBrace, "{"},
         {TokenType::RightBrace, "}"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto expr_parser = std::make_shared<ExprParser>(token_stream);
-    auto type_parser = std::make_shared<TypeParser>(token_stream);
-    auto parser = StmtParser(token_stream, expr_parser, type_parser);
-    auto ast = parser.Parse();
-
-    auto output = std::ostringstream();
-    auto printer = TreePrinter(output);
-    ast->Accept(&printer);
+    };
 
     auto expected =
         "[ForStmt]\n"
@@ -626,7 +556,8 @@ TEST(StmtParser, ForStatementWithInit)
         "        [Literal]\n"
         "        - 0\n"
         "    [CompoundStmt]\n";
-    ASSERT_EQ(output.str(), expected);
+    
+    TestStmtParser(tokens, expected);
 }
 
 TEST(GlobalDeclParser, SimpleFunction)
