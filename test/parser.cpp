@@ -9,36 +9,44 @@
 
 using namespace mylang;
 
-TEST(TypeParser, Primitive)
+void TestTypeParser(const std::vector<Token>& tokens, std::string_view expected)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
-        {TokenType::IntType, "i32"}
-    });
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(tokens);
     auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
     auto parser = TypeParser(token_stream);
     auto type = parser.Parse();
 
-    ASSERT_EQ(type.ToString(), "i32");
+    ASSERT_EQ(type.ToString(), expected);
+}
+
+TEST(TypeParser, Primitive)
+{
+    auto tokens = std::vector<Token>{
+        {TokenType::IntType, "i32"}
+    };
+
+    auto expected = "i32";
+
+    TestTypeParser(tokens, expected);
 }
 
 TEST(TypeParser, SimpleArray)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::IntType, "i32"},
         {TokenType::LeftBracket, "["},
         {TokenType::IntLiteral, "100"},
         {TokenType::RightBracket, "]"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = TypeParser(token_stream);
-    auto type = parser.Parse();
+    };
 
-    ASSERT_EQ(type.ToString(), "i32[100]");
+    auto expected = "i32[100]";
+
+    TestTypeParser(tokens, expected);
 }
 
 TEST(TypeParser, MultiDimensionArray)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::IntType, "i32"},
         {TokenType::LeftBracket, "["},
         {TokenType::IntLiteral, "10"},
@@ -46,49 +54,46 @@ TEST(TypeParser, MultiDimensionArray)
         {TokenType::LeftBracket, "["},
         {TokenType::IntLiteral, "20"},
         {TokenType::RightBracket, "]"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = TypeParser(token_stream);
-    auto type = parser.Parse();
+    };
+    
+    auto expected = "i32[10][20]";
 
-    ASSERT_EQ(type.ToString(), "i32[10][20]");
+    TestTypeParser(tokens, expected);
 }
 
 TEST(TypeParser, SimpleCallable)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::LeftBracket, "["},
         {TokenType::LeftParen, "("},
         {TokenType::RightParen, ")"},
         {TokenType::RightBracket, "]"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = TypeParser(token_stream);
-    auto type = parser.Parse();
+    };
+    
+    auto expected = "[()]";
 
-    ASSERT_EQ(type.ToString(), "[()]");
+    TestTypeParser(tokens, expected);
 }
 
 TEST(TypeParser, SimpleCallableWithReturn)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::LeftBracket, "["},
         {TokenType::LeftParen, "("},
         {TokenType::RightParen, ")"},
         {TokenType::Arrow, "->"},
         {TokenType::BoolType, "bool"},
         {TokenType::RightBracket, "]"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = TypeParser(token_stream);
-    auto type = parser.Parse();
+    };
 
-    ASSERT_EQ(type.ToString(), "[() -> bool]");
+    auto expected = "[() -> bool]";
+
+    TestTypeParser(tokens, expected);
 }
 
 TEST(TypeParser, TwoArgCallable)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::LeftBracket, "["},
         {TokenType::LeftParen, "("},
         {TokenType::IntType, "i32"},
@@ -96,12 +101,11 @@ TEST(TypeParser, TwoArgCallable)
         {TokenType::StringType, "str"},
         {TokenType::RightParen, ")"},
         {TokenType::RightBracket, "]"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = TypeParser(token_stream);
-    auto type = parser.Parse();
+    };
 
-    ASSERT_EQ(type.ToString(), "[(in i32, in str)]");
+    auto expected = "[(in i32, in str)]";
+
+    TestTypeParser(tokens, expected);
 }
 
 TEST(ExprParser, Identifier)
