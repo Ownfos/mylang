@@ -108,96 +108,100 @@ TEST(TypeParser, TwoArgCallable)
     TestTypeParser(tokens, expected);
 }
 
-TEST(ExprParser, Identifier)
+void TestExprParser(const std::vector<Token>& tokens, std::string_view expected)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
-        {TokenType::Identifier, "foo"}
-    });
+    auto lexer = std::make_unique<DummyLexicalAnalyzer>(tokens);
     auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
     auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    auto type = parser.Parse();
 
-    ASSERT_EQ(ast->ToString(), "foo");
+    ASSERT_EQ(type->ToString(), expected);
+}
+
+TEST(ExprParser, Identifier)
+{
+    auto tokens = std::vector<Token>{
+        {TokenType::Identifier, "foo"}
+    };
+
+    auto expected = "foo";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, BasicOperators)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::IntLiteral, "1"},
         {TokenType::Plus, "+"},
         {TokenType::IntLiteral, "2"},
         {TokenType::Multiply, "*"},
         {TokenType::FloatLiteral, "3.0"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "(1 + (2 * 3.0))");
+    auto expected = "(1 + (2 * 3.0))";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, MemberAccess)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "something"},
         {TokenType::Period, "."},
         {TokenType::Identifier, "member"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "something.member");
+    auto expected = "something.member";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, ConsecutiveMemberAcccess)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "something"},
         {TokenType::Period, "."},
         {TokenType::Identifier, "member1"},
         {TokenType::Period, "."},
         {TokenType::Identifier, "member2"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "something.member1.member2");
+    auto expected = "something.member1.member2";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, FuncCallNoArg)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "foo"},
         {TokenType::LeftParen, "("},
         {TokenType::RightParen, ")"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "foo()");
+    auto expected = "foo()";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, FuncCallSingleArg)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "foo"},
         {TokenType::LeftParen, "("},
         {TokenType::StringLiteral, "\"hello, world!\""},
         {TokenType::RightParen, ")"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "foo(\"hello, world!\")");
+    auto expected = "foo(\"hello, world!\")";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, FuncCallMultipleArg)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "foo"},
         {TokenType::LeftParen, "("},
         {TokenType::IntLiteral, "1"},
@@ -206,32 +210,30 @@ TEST(ExprParser, FuncCallMultipleArg)
         {TokenType::Comma, ","},
         {TokenType::IntLiteral, "3"},
         {TokenType::RightParen, ")"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "foo(1, 2, 3)");
+    auto expected = "foo(1, 2, 3)";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, ArrayAccess)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "arr"},
         {TokenType::LeftBracket, "["},
         {TokenType::IntLiteral, "1"},
         {TokenType::RightBracket, "]"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "arr[1]");
+    auto expected = "arr[1]";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, ConsecutiveArrayAccess)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "arr"},
         {TokenType::LeftBracket, "["},
         {TokenType::IntLiteral, "1"},
@@ -239,17 +241,16 @@ TEST(ExprParser, ConsecutiveArrayAccess)
         {TokenType::LeftBracket, "["},
         {TokenType::IntLiteral, "2"},
         {TokenType::RightBracket, "]"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "arr[1][2]");
+    auto expected = "arr[1][2]";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, ExprWithParenthesis)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::LeftParen, "("},
         {TokenType::IntLiteral, "1"},
         {TokenType::Plus, "+"},
@@ -257,73 +258,68 @@ TEST(ExprParser, ExprWithParenthesis)
         {TokenType::RightParen, ")"},
         {TokenType::Divide, "/"},
         {TokenType::IntLiteral, "3"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "((1 + 2) / 3)");
+    auto expected = "((1 + 2) / 3)";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, PrefixOperators)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Increment, "++"},
         {TokenType::Decrement, "--"},
         {TokenType::Not, "!"},
         {TokenType::Identifier, "i"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "(++(--(!i)))");
+    auto expected = "(++(--(!i)))";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, PostfixOperators)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "i"},
         {TokenType::Increment, "++"},
         {TokenType::Decrement, "--"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "((i++)--)");
+    auto expected = "((i++)--)";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, Assignments)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::Identifier, "i"},
         {TokenType::Assign, "="},
         {TokenType::Identifier, "j"},
         {TokenType::PlusAssign, "+="},
         {TokenType::IntLiteral, "1"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "(i = (j += 1))");
+    auto expected = "(i = (j += 1))";
+
+    TestExprParser(tokens, expected);
 }
 
 TEST(ExprParser, LogicalOperators)
 {
-    auto lexer = std::make_unique<DummyLexicalAnalyzer>(std::vector<Token>{
+    auto tokens = std::vector<Token>{
         {TokenType::BoolLiteral, "true"},
         {TokenType::And, "&&"},
         {TokenType::BoolLiteral, "false"},
         {TokenType::Or, "||"},
         {TokenType::BoolLiteral, "true"}
-    });
-    auto token_stream = std::make_shared<BufferedStream<Token>>(std::move(lexer));
-    auto parser = ExprParser(token_stream);
-    auto ast = parser.Parse();
+    };
 
-    ASSERT_EQ(ast->ToString(), "((true && false) || true)");
+    auto expected = "((true && false) || true)";
+
+    TestExprParser(tokens, expected);
 }
 
 void TestStmtParser(const std::vector<Token>& tokens, std::string_view expected)
