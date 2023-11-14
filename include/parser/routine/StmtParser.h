@@ -22,6 +22,8 @@ public:
     virtual std::shared_ptr<Stmt> Parse() override;
 
 private:
+    bool CanStartParsingVarDecl();
+
     std::shared_ptr<Stmt> ParseCompoundStmt();
     std::shared_ptr<Stmt> ParseIfStmt();
     std::shared_ptr<Stmt> ParseForStmt();

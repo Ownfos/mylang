@@ -5,10 +5,10 @@ namespace mylang
 {
 
 ForStmt::ForStmt(
-        std::shared_ptr<Stmt> initializer,
-        std::shared_ptr<Expr> condition,
-        std::shared_ptr<Expr> increment_expr,
-        std::shared_ptr<Stmt> body
+    std::shared_ptr<Stmt> initializer,
+    std::shared_ptr<Expr> condition,
+    std::shared_ptr<Expr> increment_expr,
+    std::shared_ptr<Stmt> body
 )
     : m_initializer(initializer)
     , m_condition(condition)
