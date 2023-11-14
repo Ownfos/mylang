@@ -9,6 +9,7 @@
 namespace mylang
 {
 
+struct MemberVariable;
 struct Parameter;
 enum class ParamUsage;
 
@@ -31,6 +32,8 @@ private:
     std::vector<Parameter> ParseParamList();
     Parameter ParseParam();
     ParamUsage ParseParamUsage();
+
+    MemberVariable ParseMemberDecl();
 
     std::shared_ptr<IParseRoutine<std::shared_ptr<Stmt>>> m_stmt_parser;
     std::shared_ptr<IParseRoutine<Type>> m_type_parser;

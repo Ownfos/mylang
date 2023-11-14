@@ -106,6 +106,13 @@ void TreePrinter::Visit(StructDecl* node)
 
     if (m_verbose)
     {
+        // Struct name
+        Indent();
+        m_output_stream << std::format("- name: {}\n",
+            node->Name().lexeme
+        );
+
+        // Member variables
         for (const auto& member : node->Members())
         {
             Indent();

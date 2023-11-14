@@ -654,3 +654,36 @@ TEST(GlobalDeclParser, FunctionWithReturnType)
         
     TestGlobalDeclParser(tokens, expected);
 }
+
+TEST(GlobalDeclParser, StructDecl)
+{
+    auto tokens = std::vector<Token>{
+        {TokenType::Identifier, "vec3"},
+        {TokenType::Colon, ":"},
+        {TokenType::Struct, "struct"},
+        {TokenType::Assign, "="},
+        {TokenType::LeftBrace, "{"},
+        {TokenType::Identifier, "x"},
+        {TokenType::Colon, ":"},
+        {TokenType::FloatType, "f32"},
+        {TokenType::Semicolon, ";"},
+        {TokenType::Identifier, "y"},
+        {TokenType::Colon, ":"},
+        {TokenType::FloatType, "f32"},
+        {TokenType::Semicolon, ";"},
+        {TokenType::Identifier, "z"},
+        {TokenType::Colon, ":"},
+        {TokenType::FloatType, "f32"},
+        {TokenType::Semicolon, ";"},
+        {TokenType::RightBrace, "}"}
+    };
+
+    auto expected =
+        "[StructDecl]\n"
+        "- name: vec3\n"
+        "- member name: x, type: f32\n"
+        "- member name: y, type: f32\n"
+        "- member name: z, type: f32\n";
+        
+    TestGlobalDeclParser(tokens, expected);
+}

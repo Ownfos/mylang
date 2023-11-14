@@ -119,10 +119,34 @@ ParamUsage GlobalDeclParser::ParseParamUsage()
     }
 }
 
+// struct-decl ::= "struct" "=" "{" member-decl* "}"
 std::shared_ptr<GlobalDecl> GlobalDeclParser::ParseStructDecl(bool should_export, const Token& name)
 {
-    // TODO: implement
-    return {};
+    Accept(TokenType::Struct);
+    Accept(TokenType::Assign);
+    Accept(TokenType::LeftBrace);
+
+    // List of member variables.
+    auto members = std::vector<MemberVariable>{};
+    while (Peek() == TokenType::Identifier)
+    {
+        members.push_back(ParseMemberDecl());
+    }
+
+    Accept(TokenType::RightBrace);
+
+    return std::make_shared<StructDecl>(should_export, name, members);
+}
+
+// member-decl ::= identifier ":" type ";"
+MemberVariable GlobalDeclParser::ParseMemberDecl()
+{
+    auto name = Accept(TokenType::Identifier);
+    Accept(TokenType::Colon);
+    auto type = m_type_parser->Parse();
+    Accept(TokenType::Semicolon);
+
+    return MemberVariable{name, type};
 }
 
 } // namespace mylang
