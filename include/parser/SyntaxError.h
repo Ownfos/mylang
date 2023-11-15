@@ -21,6 +21,8 @@ private:
     std::string m_message;
 };
 
+// Baseclass for errors generated during syntax analysis.
+// SyntaxAnalyzer catches all ParseRoutineError to generate SyntaxError.
 class ParseRoutineError
 {
 public:
@@ -28,6 +30,8 @@ public:
     virtual std::string_view Description() const = 0;
 };
 
+// This error occurs when IParseRoutine<T>::Accept()
+// or IParseRoutine<T>::AcceptOneOf() fails.
 class UnexpectedTokenError : public ParseRoutineError
 {
 public:
@@ -48,6 +52,16 @@ private:
     std::string m_message;
 };
 
+// A nested exception used to provide where the pattern mismatch happened.
+//
+// Since PatternMismatchError can nest a PatternMismatchError,
+// the overall Description() will involve full call stack information.
+//
+// example)
+// failed to match pattern: aaa ::= bbb
+// -> failed to match pattern: bbb ::= ccc
+// -> failed to match pattern: ccc ::= identifier
+// -> unexpected token ...
 class PatternMismatchError : public ParseRoutineError
 {
 public:
