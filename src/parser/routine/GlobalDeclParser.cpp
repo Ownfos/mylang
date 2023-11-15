@@ -23,77 +23,105 @@ bool GlobalDeclParser::CanStartParsing()
 // global-decl ::= "export"? identifier ":" (func-decl | struct-decl)
 std::shared_ptr<GlobalDecl> GlobalDeclParser::Parse()
 {
-    auto should_export = OptionalAccept(TokenType::Export).has_value();
-    auto name = Accept(TokenType::Identifier);
-    Accept(TokenType::Colon);
+    try
+    {
+        auto should_export = OptionalAccept(TokenType::Export).has_value();
+        auto name = Accept(TokenType::Identifier);
+        Accept(TokenType::Colon);
 
-    if (Peek() == TokenType::Func)
-    {
-        return ParseFuncDecl(should_export, name);
+        if (Peek() == TokenType::Func)
+        {
+            return ParseFuncDecl(should_export, name);
+        }
+        else
+        {
+            return ParseStructDecl(should_export, name);
+        }
     }
-    else
+    catch(const ParseRoutineError& e)
     {
-        return ParseStructDecl(should_export, name);
+        throw PatternMismatchError(e, "global-decl ::= \"export\"? identifier \":\" (func-decl | struct-decl)");
     }
 }
 
 // func-decl ::= "func" "=" "(" param-list? ")" ("->" type)? stmt
 std::shared_ptr<GlobalDecl> GlobalDeclParser::ParseFuncDecl(bool should_export, const Token& name)
 {
-    Accept(TokenType::Func);
-    Accept(TokenType::Assign);
-    Accept(TokenType::LeftParen);
-    auto parameters = std::vector<Parameter>{};
-    if (Peek() == TokenType::Identifier)
+    try
     {
-        parameters = ParseParamList();
-    }
-    Accept(TokenType::RightParen);
+        Accept(TokenType::Func);
+        Accept(TokenType::Assign);
+        Accept(TokenType::LeftParen);
+        auto parameters = std::vector<Parameter>{};
+        if (Peek() == TokenType::Identifier)
+        {
+            parameters = ParseParamList();
+        }
+        Accept(TokenType::RightParen);
 
-    auto return_type = std::optional<Type>{};
-    if (OptionalAccept(TokenType::Arrow))
+        auto return_type = std::optional<Type>{};
+        if (OptionalAccept(TokenType::Arrow))
+        {
+            return_type = m_type_parser->Parse();
+        }
+
+        auto body = m_stmt_parser->Parse();
+
+        return std::make_shared<FuncDecl>(
+            should_export,
+            name,
+            return_type,
+            parameters,
+            body
+        );
+    }
+    catch(const ParseRoutineError& e)
     {
-        return_type = m_type_parser->Parse();
+        throw PatternMismatchError(e, "func-decl ::= \"func\" \"=\" \"(\" param-list? \")\" (\"->\" type)? stmt");
     }
-
-    auto body = m_stmt_parser->Parse();
-
-    return std::make_shared<FuncDecl>(
-        should_export,
-        name,
-        return_type,
-        parameters,
-        body
-    );
 }
 
 // param-list ::= param ("," param)*
 std::vector<Parameter> GlobalDeclParser::ParseParamList()
 {
-    auto parameters = std::vector<Parameter>{};
-
-    // First parameter comes immediately.
-    parameters.push_back(ParseParam());
-
-    // Following paramters have leading comma as a separator.
-    while (OptionalAccept(TokenType::Comma))
+    try
     {
-        parameters.push_back(ParseParam());
-    }
+        auto parameters = std::vector<Parameter>{};
 
-    return parameters;
+        // First parameter comes immediately.
+        parameters.push_back(ParseParam());
+
+        // Following paramters have leading comma as a separator.
+        while (OptionalAccept(TokenType::Comma))
+        {
+            parameters.push_back(ParseParam());
+        }
+
+        return parameters;
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "param-list ::= param (\",\" param)*");
+    }
 }
 
 // param ::= identifier ":" param-type
 Parameter GlobalDeclParser::ParseParam()
 {
-    auto name = Accept(TokenType::Identifier);
-    Accept(TokenType::Colon);
+    try
+    {
+        auto name = Accept(TokenType::Identifier);
+        Accept(TokenType::Colon);
 
-    auto usage = ParseParamUsage();
-    auto type = m_type_parser->Parse();
+        auto usage = ParseParamUsage();
+        auto type = m_type_parser->Parse();
 
-    return Parameter{name, ParamType{type, usage}};
+        return Parameter{name, ParamType{type, usage}};
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "param ::= identifier \":\" param-type");
+    }
 }
 
 ParamUsage GlobalDeclParser::ParseParamUsage()
@@ -122,31 +150,45 @@ ParamUsage GlobalDeclParser::ParseParamUsage()
 // struct-decl ::= "struct" "=" "{" member-decl* "}"
 std::shared_ptr<GlobalDecl> GlobalDeclParser::ParseStructDecl(bool should_export, const Token& name)
 {
-    Accept(TokenType::Struct);
-    Accept(TokenType::Assign);
-    Accept(TokenType::LeftBrace);
-
-    // List of member variables.
-    auto members = std::vector<MemberVariable>{};
-    while (Peek() == TokenType::Identifier)
+    try
     {
-        members.push_back(ParseMemberDecl());
+        Accept(TokenType::Struct);
+        Accept(TokenType::Assign);
+        Accept(TokenType::LeftBrace);
+
+        // List of member variables.
+        auto members = std::vector<MemberVariable>{};
+        while (Peek() == TokenType::Identifier)
+        {
+            members.push_back(ParseMemberDecl());
+        }
+
+        Accept(TokenType::RightBrace);
+
+        return std::make_shared<StructDecl>(should_export, name, members);
     }
-
-    Accept(TokenType::RightBrace);
-
-    return std::make_shared<StructDecl>(should_export, name, members);
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "struct-decl ::= \"struct\" \"=\" \"{\" member-decl* \"}\"");
+    }
 }
 
 // member-decl ::= identifier ":" type ";"
 MemberVariable GlobalDeclParser::ParseMemberDecl()
 {
-    auto name = Accept(TokenType::Identifier);
-    Accept(TokenType::Colon);
-    auto type = m_type_parser->Parse();
-    Accept(TokenType::Semicolon);
+    try
+    {
+        auto name = Accept(TokenType::Identifier);
+        Accept(TokenType::Colon);
+        auto type = m_type_parser->Parse();
+        Accept(TokenType::Semicolon);
 
-    return MemberVariable{name, type};
+        return MemberVariable{name, type};
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "member-decl ::= identifier \":\" type \";\"");
+    }
 }
 
 } // namespace mylang

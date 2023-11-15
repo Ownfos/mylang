@@ -63,150 +63,193 @@ bool StmtParser::CanStartParsingVarDecl()
 //       | jump-stmt
 std::shared_ptr<Stmt> StmtParser::Parse()
 {
-    switch(Peek())
+    try
     {
-    case TokenType::LeftBrace:
-        return ParseCompoundStmt();
-    case TokenType::If:
-        return ParseIfStmt();
-    case TokenType::For:
-        return ParseForStmt();
-    case TokenType::While:
-        return ParseWhileStmt();
-    default:
-        if (CanStartParsingVarDecl())
+        switch(Peek())
         {
-            return ParseVarDeclStmt();
-        }
-        else if (m_expr_parser->CanStartParsing())
-        {
-            return ParseExprStmt();
-        }
-        else
-        {
-            return ParseJumpStmt();
+        case TokenType::LeftBrace:
+            return ParseCompoundStmt();
+        case TokenType::If:
+            return ParseIfStmt();
+        case TokenType::For:
+            return ParseForStmt();
+        case TokenType::While:
+            return ParseWhileStmt();
+        default:
+            if (CanStartParsingVarDecl())
+            {
+                return ParseVarDeclStmt();
+            }
+            else if (m_expr_parser->CanStartParsing())
+            {
+                return ParseExprStmt();
+            }
+            else
+            {
+                return ParseJumpStmt();
+            }
         }
     }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "stmt ::= expr-stmt | var-decl-stmt | if-stmt | for-stmt | while-stmt | jump-stmt");
+    }
+    
 }
 
 // compound-stmt ::= "{" stmt* "}"
 std::shared_ptr<Stmt> StmtParser::ParseCompoundStmt()
 {
-    auto statements = std::vector<std::shared_ptr<Stmt>>{};
-    Accept(TokenType::LeftBrace);
-    while (CanStartParsing())
+    try
     {
-        statements.push_back(Parse());
+        auto statements = std::vector<std::shared_ptr<Stmt>>{};
+        Accept(TokenType::LeftBrace);
+        while (CanStartParsing())
+        {
+            statements.push_back(Parse());
+        }
+        Accept(TokenType::RightBrace);
+        return std::make_shared<CompoundStmt>(statements);
     }
-    Accept(TokenType::RightBrace);
-    return std::make_shared<CompoundStmt>(statements);
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "compound-stmt ::= \"{\" stmt* \"}\"");
+    }
 }
 
 // if-stmt ::= "if" "(" expr ")" compound-stmt ("else" (if-stmt | compound-stmt))?
 std::shared_ptr<Stmt> StmtParser::ParseIfStmt()
 {
-    Accept(TokenType::If);
-    Accept(TokenType::LeftParen);
-    auto condition = m_expr_parser->Parse();
-    Accept(TokenType::RightParen);
-    auto then_branch = ParseCompoundStmt();
-
-    // Parse optional 'else' or 'else-if' branch.
-    auto else_branch = std::shared_ptr<Stmt>{};
-    if (OptionalAccept(TokenType::Else))
+    try
     {
-        // Case 1) else if (...) {...}
-        if (Peek() == TokenType::If)
-        {
-            else_branch = ParseIfStmt();
-        }
-        // Case 2) else {...}
-        else
-        {
-            else_branch = ParseCompoundStmt();
-        }
-    }
+        Accept(TokenType::If);
+        Accept(TokenType::LeftParen);
+        auto condition = m_expr_parser->Parse();
+        Accept(TokenType::RightParen);
+        auto then_branch = ParseCompoundStmt();
 
-    return std::make_shared<IfStmt>(condition, then_branch, else_branch);
+        // Parse optional 'else' or 'else-if' branch.
+        auto else_branch = std::shared_ptr<Stmt>{};
+        if (OptionalAccept(TokenType::Else))
+        {
+            // Case 1) else if (...) {...}
+            if (Peek() == TokenType::If)
+            {
+                else_branch = ParseIfStmt();
+            }
+            // Case 2) else {...}
+            else
+            {
+                else_branch = ParseCompoundStmt();
+            }
+        }
+
+        return std::make_shared<IfStmt>(condition, then_branch, else_branch);
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "if-stmt ::= \"if\" \"(\" expr \")\" compound-stmt (\"else\" (if-stmt | compound-stmt))?");
+    }
 }
 
 // for-stmt ::= "for" "(" (var-decl | expr)? ";" expr? ";" expr? ")" compound-stmt
 std::shared_ptr<Stmt> StmtParser::ParseForStmt()
 {
-    Accept(TokenType::For);
-    Accept(TokenType::LeftParen);
+    try
+    {
+        Accept(TokenType::For);
+        Accept(TokenType::LeftParen);
 
-    // Optional initializer ::= (var-decl | expr)? ";"
-    auto initializer = std::shared_ptr<Stmt>{};
-    if (CanStartParsingVarDecl())
-    {
-        initializer = ParseVarDeclStmt();
-    }
-    else if (m_expr_parser->CanStartParsing())
-    {
-        initializer = ParseExprStmt();
-    }
-    else
-    {
-        // Note: ParseVarDeclStmt() and ParseExprStmt() accept ";"
-        // at the end, so we should only accept ";" if neither existed.
+        // Optional initializer ::= (var-decl | expr)? ";"
+        auto initializer = std::shared_ptr<Stmt>{};
+        if (CanStartParsingVarDecl())
+        {
+            initializer = ParseVarDeclStmt();
+        }
+        else if (m_expr_parser->CanStartParsing())
+        {
+            initializer = ParseExprStmt();
+        }
+        else
+        {
+            // Note: ParseVarDeclStmt() and ParseExprStmt() accept ";"
+            // at the end, so we should only accept ";" if neither existed.
+            Accept(TokenType::Semicolon);
+        }
+
+        // Optional condition expr
+        auto condition = std::shared_ptr<Expr>{};
+        if (m_expr_parser->CanStartParsing())
+        {
+            condition = m_expr_parser->Parse();
+        }
         Accept(TokenType::Semicolon);
-    }
 
-    // Optional condition expr
-    auto condition = std::shared_ptr<Expr>{};
-    if (m_expr_parser->CanStartParsing())
+        // Optional increment expr
+        auto increment_expr = std::shared_ptr<Expr>{};
+        if (m_expr_parser->CanStartParsing())
+        {
+            increment_expr = m_expr_parser->Parse();
+        }
+
+        Accept(TokenType::RightParen);
+
+        auto body = ParseCompoundStmt();
+
+        return std::make_shared<ForStmt>(
+            initializer,
+            condition,
+            increment_expr,
+            body
+        );
+    }
+    catch(const ParseRoutineError& e)
     {
-        condition = m_expr_parser->Parse();
+        throw PatternMismatchError(e, "for-stmt ::= \"for\" \"(\" (var-decl | expr)? \";\" expr? \";\" expr? \")\" compound-stmt");
     }
-    Accept(TokenType::Semicolon);
-
-    // Optional increment expr
-    auto increment_expr = std::shared_ptr<Expr>{};
-    if (m_expr_parser->CanStartParsing())
-    {
-        increment_expr = m_expr_parser->Parse();
-    }
-
-    Accept(TokenType::RightParen);
-
-    auto body = ParseCompoundStmt();
-
-    return std::make_shared<ForStmt>(
-        initializer,
-        condition,
-        increment_expr,
-        body
-    );
 }
 
 // while-stmt ::= "while" "(" expr ")" compound-stmt
 std::shared_ptr<Stmt> StmtParser::ParseWhileStmt()
 {
-    Accept(TokenType::While);
-    Accept(TokenType::LeftParen);
-    auto condition = m_expr_parser->Parse();
-    Accept(TokenType::RightParen);
-    auto body = ParseCompoundStmt();
+    try
+    {
+        Accept(TokenType::While);
+        Accept(TokenType::LeftParen);
+        auto condition = m_expr_parser->Parse();
+        Accept(TokenType::RightParen);
+        auto body = ParseCompoundStmt();
 
-    return std::make_shared<WhileStmt>(condition, body);
+        return std::make_shared<WhileStmt>(condition, body);
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "while-stmt ::= \"while\" \"(\" expr \")\" compound-stmt");
+    }
 }
 
 // jump-stmt ::= ("return" expr? | "break" | "continue") ";"
 std::shared_ptr<Stmt> StmtParser::ParseJumpStmt()
 {
-    auto jump_type = AcceptOneOf(JumpTypes());
-
-    // Optional return value expr
-    auto expr = std::shared_ptr<Expr>{};
-    if (jump_type.type == TokenType::Return && m_expr_parser->CanStartParsing())
+    try
     {
-        expr = m_expr_parser->Parse();
+        auto jump_type = AcceptOneOf(JumpTypes());
+
+        // Optional return value expr
+        auto expr = std::shared_ptr<Expr>{};
+        if (jump_type.type == TokenType::Return && m_expr_parser->CanStartParsing())
+        {
+            expr = m_expr_parser->Parse();
+        }
+
+        Accept(TokenType::Semicolon);
+
+        return std::make_shared<JumpStmt>(jump_type, expr);
     }
-
-    Accept(TokenType::Semicolon);
-
-    return std::make_shared<JumpStmt>(jump_type, expr);
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "jump-stmt :: (\"return\" expr? | \"break\" | \"continue\") \";\"");
+    }
 }
 
 // var-decl-stmt ::= var-decl ";"
@@ -214,22 +257,36 @@ std::shared_ptr<Stmt> StmtParser::ParseJumpStmt()
 // var-init      ::= expr | "{" var-init ("," var-init)* "}"
 std::shared_ptr<Stmt> StmtParser::ParseVarDeclStmt()
 {
-    auto id = Accept(TokenType::Identifier);
-    Accept(TokenType::Colon);
-    auto type = m_type_parser->Parse();
-    Accept(TokenType::Assign);
-    auto expr = m_expr_parser->Parse();
-    Accept(TokenType::Semicolon);
-    return std::make_shared<VarDeclStmt>(id, type, expr);
-    // TODO: implement initializer list parsing
+    try
+    {
+        auto id = Accept(TokenType::Identifier);
+        Accept(TokenType::Colon);
+        auto type = m_type_parser->Parse();
+        Accept(TokenType::Assign);
+        auto expr = m_expr_parser->Parse();
+        Accept(TokenType::Semicolon);
+        return std::make_shared<VarDeclStmt>(id, type, expr);
+        // TODO: implement initializer list parsing
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "var-decl-stmt ::= identifier  \":\" type \"=\" expr");
+    }
 }
 
 // expr-stmt ::= expr ";"
 std::shared_ptr<Stmt> StmtParser::ParseExprStmt()
 {
-    auto expr = m_expr_parser->Parse();
-    Accept(TokenType::Semicolon);
-    return std::make_shared<ExprStmt>(expr);
+    try
+    {
+        auto expr = m_expr_parser->Parse();
+        Accept(TokenType::Semicolon);
+        return std::make_shared<ExprStmt>(expr);
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "expr-stmt :: expr \";\"");
+    }
 }
 
 } // namespace mylang

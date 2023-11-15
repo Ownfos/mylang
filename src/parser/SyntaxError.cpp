@@ -73,7 +73,7 @@ std::string UnexpectedTokenError::ExpectedTypeDescriptor() const
 
 std::string UnexpectedTokenError::TokenDescriptor() const
 {
-    return std::format("{{type: {}, lexeme: {}}}",
+    return std::format("{{type: {}, lexeme: \"{}\"}}",
         TokenTypeName(m_token.type),
         m_token.lexeme
     );
@@ -90,11 +90,11 @@ std::string_view UnexpectedTokenError::Description() const
 }
 
 PatternMismatchError::PatternMismatchError(
-    const UnexpectedTokenError& error,
+    const ParseRoutineError& error,
     std::string_view pattern
 )
     : m_location(error.Location())
-    , m_message(std::format("failed to match pattern \"{}\": {}",
+    , m_message(std::format("failed to match pattern: {}\n-> {}",
         pattern,
         error.Description()
     ))

@@ -38,18 +38,25 @@ bool TypeParser::CanStartParsing()
 
 Type TypeParser::Parse()
 {
-    auto base_type = ParseBaseType();
-
-    // ("[" int-literal "]")*
-    auto array_sizes = std::vector<int>{};
-    while (OptionalAccept(TokenType::LeftBracket))
+    try
     {
-        auto size = Accept(TokenType::IntLiteral);
-        array_sizes.push_back(std::stoi(size.lexeme));
-        Accept(TokenType::RightBracket);
-    }
+        auto base_type = ParseBaseType();
 
-    return Type(base_type, array_sizes);
+        // ("[" int-literal "]")*
+        auto array_sizes = std::vector<int>{};
+        while (OptionalAccept(TokenType::LeftBracket))
+        {
+            auto size = Accept(TokenType::IntLiteral);
+            array_sizes.push_back(std::stoi(size.lexeme));
+            Accept(TokenType::RightBracket);
+        }
+
+        return Type(base_type, array_sizes);
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "type ::= base-type (\"[\" int-literal \"]\")*");
+    }
 }
 
 // base-type       ::= data-type | func-type
@@ -73,45 +80,59 @@ std::shared_ptr<IBaseType> TypeParser::ParseBaseType()
     // Case 2) function type: "[(type 1, type 2, ..., type N) -> type]"
     else
     {
-        Accept(TokenType::LeftBracket);
-
-        // Paramter types: "(type 1, type 2, ..., type N)"
-        Accept(TokenType::LeftParen);
-        auto param_types = std::vector<ParamType>{};
-        if (CanStartParsing())
+        try
         {
-            // First param type comes immediately.
-            param_types.push_back(ParseParamType());
+            Accept(TokenType::LeftBracket);
 
-            // Second to last param types come after comma.
-            while (OptionalAccept(TokenType::Comma))
+            // Paramter types: "(type 1, type 2, ..., type N)"
+            Accept(TokenType::LeftParen);
+            auto param_types = std::vector<ParamType>{};
+            if (CanStartParsing())
             {
+                // First param type comes immediately.
                 param_types.push_back(ParseParamType());
+
+                // Second to last param types come after comma.
+                while (OptionalAccept(TokenType::Comma))
+                {
+                    param_types.push_back(ParseParamType());
+                }
             }
-        }
-        Accept(TokenType::RightParen);
+            Accept(TokenType::RightParen);
 
-        // Return type: "-> type"
-        auto return_type = std::optional<Type>{};
-        if (OptionalAccept(TokenType::Arrow))
+            // Return type: "-> type"
+            auto return_type = std::optional<Type>{};
+            if (OptionalAccept(TokenType::Arrow))
+            {
+                return_type = Parse();
+            }
+
+            Accept(TokenType::RightBracket);
+
+            return std::make_shared<FuncType>(param_types, return_type);
+        }
+        catch(const ParseRoutineError& e)
         {
-            return_type = Parse();
+            throw PatternMismatchError(e, "func-type ::= \"[\" \"(\" param-type-list? \")\" (\"->\" type)? \"]\"");
         }
-
-        Accept(TokenType::RightBracket);
-
-        return std::make_shared<FuncType>(param_types, return_type);
     }
 }
 
 // param-type ::= param-usage? type
 ParamType TypeParser::ParseParamType()
 {
-    // Default value for param-usage is "in".
-    auto usage = TryParseParamUsage().value_or(ParamUsage::In);
-    auto type = Parse();
+    try
+    {
+        // Default value for param-usage is "in".
+        auto usage = TryParseParamUsage().value_or(ParamUsage::In);
+        auto type = Parse();
 
-    return ParamType{type, usage};
+        return ParamType{type, usage};
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "param-type ::= param-usage? type");
+    }
 }
 
 // param-usage ::= "in" | "out" | "inout"

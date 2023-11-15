@@ -52,7 +52,7 @@ class PatternMismatchError : public ParseRoutineError
 {
 public:
     PatternMismatchError(
-        const UnexpectedTokenError& error,
+        const ParseRoutineError& error,
         std::string_view pattern
     );
 

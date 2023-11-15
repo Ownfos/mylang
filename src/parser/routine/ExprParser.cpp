@@ -75,15 +75,22 @@ bool IsAssignmentOperator(TokenType type)
 // expr ::= assign-expr | or-expr
 std::shared_ptr<Expr> ExprParser::Parse()
 {
-    // Since primary-expr also starts with identifier,
-    // we should have two lookaheads to confirm an assignment.
-    if (Peek(0) == TokenType::Identifier && IsAssignmentOperator(Peek(1)))
+    try
     {
-        return ParseAssignExpr();
+        // Since primary-expr also starts with identifier,
+        // we should have two lookaheads to confirm an assignment.
+        if (Peek(0) == TokenType::Identifier && IsAssignmentOperator(Peek(1)))
+        {
+            return ParseAssignExpr();
+        }
+        else
+        {
+            return ParseOrExpr();
+        }
     }
-    else
+    catch(const ParseRoutineError& e)
     {
-        return ParseOrExpr();
+        throw PatternMismatchError(e, "expr");
     }
 }
 
