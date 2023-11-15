@@ -17,6 +17,7 @@ int main(int argc, char** argv)
             "import export b;\n"
             "foo: func = (a:i32[2][3], b:out i32)->str\n"
             "{\n"
+            "    local_var: i32[2][2] = {{1, 2}, {3, 4}};\n"
             "    if (b + a[1][2] > 0)\n"
             "    {\n"
             "        return \"haha\";\n"
@@ -26,7 +27,12 @@ int main(int argc, char** argv)
             "        return \"hoho\";\n"
             "    }\n"
             "}\n"
-            "goo: func = (callback: [(i32, inout str)->bool]){}\n";
+            "goo: func = (callback: [(i32, inout str)->bool]){}\n"
+            "person: struct =\n"
+            "{\n"
+            "    name: str;\n"
+            "    age: i32;\n"
+            "}\n";
         if (argc > 1)
         {
             source_code = argv[1];

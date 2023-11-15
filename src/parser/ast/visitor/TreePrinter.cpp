@@ -11,6 +11,9 @@
 #include "parser/ast/stmt/VarDeclStmt.h"
 #include "parser/ast/stmt/ExprStmt.h"
 
+#include "parser/ast/varinit/VarInitExpr.h"
+#include "parser/ast/varinit/VarInitList.h"
+
 #include "parser/ast/expr/ArrayAccessExpr.h"
 #include "parser/ast/expr/BinaryExpr.h"
 #include "parser/ast/expr/FuncCallExpr.h"
@@ -183,6 +186,18 @@ void TreePrinter::Visit(ExprStmt* node)
 {
     Indent();
     m_output_stream << "[ExprStmt]\n";
+}
+
+void TreePrinter::Visit(VarInitExpr* node)
+{
+    Indent();
+    m_output_stream << "[VarInitExpr]\n";
+}
+
+void TreePrinter::Visit(VarInitList* node)
+{
+    Indent();
+    m_output_stream << "[VarInitList]\n";
 }
 
 void TreePrinter::Visit(ArrayAccessExpr* node)

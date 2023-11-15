@@ -4,10 +4,10 @@
 namespace mylang
 {
 
-VarDeclStmt::VarDeclStmt(const Token& name, const Type& type, std::shared_ptr<Expr> expr)
+VarDeclStmt::VarDeclStmt(const Token& name, const Type& type, std::shared_ptr<VarInit> initializer)
     : m_name(name)
     , m_type(type)
-    , m_expr(expr)
+    , m_initializer(initializer)
 {}
 
 void VarDeclStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
@@ -15,7 +15,7 @@ void VarDeclStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->Visit(this);
     
     visitor->IncreaseDepth();
-    m_expr->Accept(visitor);
+    m_initializer->Accept(visitor);
     visitor->DecreaseDepth();
 }
 

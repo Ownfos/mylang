@@ -31,6 +31,9 @@ add_library(mylanglib
     parser/ast/stmt/VarDeclStmt.cpp
     parser/ast/stmt/ExprStmt.cpp
 
+    parser/ast/varinit/VarInitExpr.cpp
+    parser/ast/varinit/VarInitList.cpp
+
     parser/ast/visitor/TreePrinter.cpp
 
     parser/type/Type.cpp

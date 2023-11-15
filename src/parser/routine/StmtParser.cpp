@@ -6,6 +6,8 @@
 #include "parser/ast/stmt/JumpStmt.h"
 #include "parser/ast/stmt/VarDeclStmt.h"
 #include "parser/ast/stmt/ExprStmt.h"
+#include "parser/ast/varinit/VarInitExpr.h"
+#include "parser/ast/varinit/VarInitList.h"
 
 namespace mylang
 {
@@ -254,7 +256,6 @@ std::shared_ptr<Stmt> StmtParser::ParseJumpStmt()
 
 // var-decl-stmt ::= var-decl ";"
 // var-decl      ::= identifier ":" type "=" var-init
-// var-init      ::= expr | "{" var-init ("," var-init)* "}"
 std::shared_ptr<Stmt> StmtParser::ParseVarDeclStmt()
 {
     try
@@ -263,14 +264,43 @@ std::shared_ptr<Stmt> StmtParser::ParseVarDeclStmt()
         Accept(TokenType::Colon);
         auto type = m_type_parser->Parse();
         Accept(TokenType::Assign);
-        auto expr = m_expr_parser->Parse();
+        auto initializer = ParseVarInit();
         Accept(TokenType::Semicolon);
-        return std::make_shared<VarDeclStmt>(id, type, expr);
-        // TODO: implement initializer list parsing
+        return std::make_shared<VarDeclStmt>(id, type, initializer);
     }
     catch(const ParseRoutineError& e)
     {
-        throw PatternMismatchError(e, "var-decl-stmt ::= identifier  \":\" type \"=\" expr");
+        throw PatternMismatchError(e, "var-decl-stmt ::= identifier  \":\" type \"=\" var-init");
+    }
+}
+
+// var-init ::= expr | "{" var-init ("," var-init)* "}"
+std::shared_ptr<VarInit> StmtParser::ParseVarInit()
+{
+    try
+    {
+        // "{" var-init ("," var-init)* "}"
+        if (OptionalAccept(TokenType::LeftBrace))
+        {
+            auto initializer_list = std::vector<std::shared_ptr<VarInit>>{};
+            initializer_list.push_back(ParseVarInit());
+            while (OptionalAccept(TokenType::Comma))
+            {
+                initializer_list.push_back(ParseVarInit());
+            }
+            Accept(TokenType::RightBrace);
+
+            return std::make_shared<VarInitList>(initializer_list);
+        }
+        // expr
+        else
+        {
+            return std::make_shared<VarInitExpr>(m_expr_parser->Parse());
+        }
+    }
+    catch(const ParseRoutineError& e)
+    {
+        throw PatternMismatchError(e, "var-init ::= expr | \"{\" var-init (\",\" var-init)* \"}\"");
     }
 }
 

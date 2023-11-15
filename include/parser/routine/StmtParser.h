@@ -2,6 +2,7 @@
 #define MYLANG_STMT_PARSER_H
 
 #include "parser/routine/IParseRoutine.h"
+#include "parser/ast/varinit/VarInit.h"
 #include "parser/ast/stmt/Stmt.h"
 #include "parser/ast/expr/Expr.h"
 #include "parser/type/Type.h"
@@ -30,6 +31,7 @@ private:
     std::shared_ptr<Stmt> ParseWhileStmt();
     std::shared_ptr<Stmt> ParseJumpStmt();
     std::shared_ptr<Stmt> ParseVarDeclStmt();
+    std::shared_ptr<VarInit> ParseVarInit();
     std::shared_ptr<Stmt> ParseExprStmt();
 
     std::shared_ptr<IParseRoutine<std::shared_ptr<Expr>>> m_expr_parser;

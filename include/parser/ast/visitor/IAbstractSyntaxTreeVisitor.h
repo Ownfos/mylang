@@ -4,7 +4,6 @@
 namespace mylang
 {
 
-// TODO: add concrete class of tree nodes like below
 class Program;
 class FuncDecl;
 class StructDecl;
@@ -16,6 +15,9 @@ class WhileStmt;
 class JumpStmt;
 class VarDeclStmt;
 class ExprStmt;
+
+class VarInitExpr;
+class VarInitList;
 
 class ArrayAccessExpr;
 class BinaryExpr;
@@ -34,7 +36,6 @@ public:
     virtual void IncreaseDepth() {};
     virtual void DecreaseDepth() {};
 
-    // TODO: add concrete class of tree nodes like below
     virtual void Visit(Program* node) = 0;
     virtual void Visit(FuncDecl* node) = 0;
     virtual void Visit(StructDecl* node) = 0;
@@ -46,6 +47,9 @@ public:
     virtual void Visit(JumpStmt* node) = 0;
     virtual void Visit(VarDeclStmt* node) = 0;
     virtual void Visit(ExprStmt* node) = 0;
+
+    virtual void Visit(VarInitExpr* node) = 0;
+    virtual void Visit(VarInitList* node) = 0;
 
     virtual void Visit(ArrayAccessExpr* node) = 0;
     virtual void Visit(BinaryExpr* node) = 0;
