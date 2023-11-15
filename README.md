@@ -18,13 +18,19 @@ cmake --build build
 cd build; ctest; cd ..
 ```
 
+## How to run (temporary) intermediate parser
+```
+.\build\src\Debug\mylang.exe "your source code"
+```
+#### Note: the main executable currently prints the AST after syntax analysis
+
 # Pending Tasks...
-- syntax for temporary struct instance
+- decide symbol table representation
+- should function allow single statement or compound statement?
 - type representation and type checking
 - allowed operations between types
 - implicit conversion?
 - automatic index bound check?
-- lvalue, rvalue
 - ref type variable?
 - maybe monad?
 
@@ -97,7 +103,9 @@ Student: struct = {
 ```
 ### Statements
 ```
-stmt          ::= expr ";" | var-decl ";" | compound-stmt | if-stmt | for-stmt | while-stmt | jump-stmt
+stmt          ::= expr-stmt | var-decl-stmt | compound-stmt | if-stmt | for-stmt | while-stmt | jump-stmt
+expr-stmt     ::= expr ";"
+var-decl-stmt ::= var-decl ";"
 compound-stmt ::= "{" stmt* "}"
 if-stmt       ::= "if" "(" expr ")" compound-stmt ("else" (if-stmt | compound-stmt))?
 for-stmt      ::= "for" "(" (var-decl | expr)? ";" expr? ";" expr? ")" compound-stmt
@@ -179,11 +187,16 @@ primary-expr  ::= literal | identifier | "(" expr ")"
   -ForStmt
   -WhileStmt
   -JumpStmt
+ +VarInit
+  -VarInitExpr
+  -VarInitList
  +Expr
   -Identifier
   -Literal
-  -BinaryOp
-  -UnaryOp
-  -MemberAccess
-  -FunctionCall
+  -BinaryExpr
+  -PrefixExpr
+  -PostfixExpr
+  -MemberAccessExpr
+  -FunctionCallExpr
+  -ArrayAccessExpr
 ```

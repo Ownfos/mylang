@@ -56,8 +56,8 @@ bool StmtParser::CanStartParsingVarDecl()
     return Peek(0) == TokenType::Identifier && Peek(1) == TokenType::Colon;
 }
 
-// stmt ::= expr ";"
-//       | var-decl ";"
+// stmt ::= expr-stmt
+//       | var-decl-stmt
 //       | compound-stmt
 //       | if-stmt
 //       | for-stmt
