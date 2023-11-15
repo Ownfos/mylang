@@ -68,6 +68,8 @@ enum class TokenType
     Error,
 };
 
+std::string TokenTypeName(TokenType type);
+
 struct Token
 {
     TokenType type;

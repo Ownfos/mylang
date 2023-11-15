@@ -20,12 +20,19 @@ SyntaxAnalyzer::SyntaxAnalyzer(std::unique_ptr<IStream<Token>>&& lexer)
 
 std::shared_ptr<IAbstractSyntaxTree> SyntaxAnalyzer::GenerateAST()
 {
-    auto ast = m_parser->Parse();
-    if (m_lexer->Peek().type != TokenType::EndOfFile)
+    try
     {
-        // TODO: throw exception for leftover tokens
+        auto ast = m_parser->Parse();
+        if (m_lexer->Peek().type != TokenType::EndOfFile)
+        {
+            throw LeftoverTokenError(m_lexer->GetNext());
+        }
+        return ast;
     }
-    return ast;
+    catch(const ParseRoutineError& e)
+    {
+        throw SyntaxError(e.Location(), e.Description());
+    }
 }
 
 } // namespace mylang

@@ -3,7 +3,7 @@
 
 namespace mylang
 {
-    
+
 LexicalError::LexicalError(const SourcePos& location, const std::string& message)
     : m_location(location)
     , m_message(std::format("[Lexical Error][Ln {}, Col {}] {}",

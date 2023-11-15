@@ -1,6 +1,7 @@
 #ifndef MYLANG_I_PARSE_ROUTINE_H
 #define MYLANG_I_PARSE_ROUTINE_H
 
+#include "parser/SyntaxError.h"
 #include "common/BufferedStream.h"
 #include "lexer/Token.h"
 #include <memory>

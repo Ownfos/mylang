@@ -6,6 +6,7 @@ add_library(mylanglib
     lexer/DummyLexicalAnalyzer.cpp
     lexer/LexicalAnalyzer.cpp
     lexer/LexicalError.cpp
+    lexer/Token.cpp
 
     parser/ast/Program.cpp
 
@@ -43,6 +44,7 @@ add_library(mylanglib
     parser/routine/ProgramParser.cpp
 
     parser/SyntaxAnalyzer.cpp
+    parser/SyntaxError.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)

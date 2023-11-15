@@ -9,7 +9,7 @@ Token IParseRoutine<T>::Accept(TokenType type)
     auto token = m_token_stream->GetNext();
     if (token.type != type)
     {
-        // TODO: throw unexpected token exception
+        throw UnexpectedTokenError(token, {type});
     }
     return token;
 }
@@ -20,7 +20,7 @@ Token IParseRoutine<T>::AcceptOneOf(const std::set<TokenType>& types)
     auto token = m_token_stream->GetNext();
     if (types.count(token.type) == 0)
     {
-        // TODO: throw unexpected token exception
+        throw UnexpectedTokenError(token, types);
     }
     return token;
 }
