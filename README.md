@@ -34,6 +34,21 @@ cd build; ctest; cd ..
 - ref type variable?
 - maybe monad?
 
+# TODO
+```
+1. Scan for global declarations to construct a symbol table for each module
+2. Iterate over each AST
+2-1. Add symbol to the symbol table whenever we see a VarDeclStmt
+2-2. On symbol reference, check if the symbol exists locally.
+     If so, proceed to type checking.
+     Otherwise, look at the module dependency information to search
+     in imported modules' symbol table.
+2-3. On binary operators, check if two types match or either one is implicitly convertible to another.
+2-4. On array access, check if index expr has integer type and make sure the operand is indeed an array.
+2-5. On member access, look for struct declaration and search for the corresponding member variable.
+2-6. On function invocation, look for function declaration and check if argument types match.
+```
+
 # Syntax
 ### Notation rules used to write theses:
 - Characters ```() | * ?``` are used for regular expression
