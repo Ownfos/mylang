@@ -14,7 +14,7 @@ namespace mylang
 class Type
 {
 public:
-    Type(std::shared_ptr<IBaseType> base_type, const std::vector<int>& array_sizes);
+    Type(std::shared_ptr<IBaseType> base_type, const std::vector<int>& array_sizes = {});
 
     const IBaseType* BaseType() const;
     const std::vector<int>& ArraySize() const;
