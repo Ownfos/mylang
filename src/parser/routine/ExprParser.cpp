@@ -42,6 +42,34 @@ bool IsLiteral(TokenType type)
     return LiteralTypes().count(type) > 0;
 }
 
+std::set<TokenType> AssignmentOps()
+{
+    return {
+        TokenType::Assign,
+        TokenType::PlusAssign,
+        TokenType::MinusAssign,
+        TokenType::MultiplyAssign,
+        TokenType::DivideAssign
+    };
+}
+
+bool IsAssignmentOperator(TokenType type)
+{
+    return AssignmentOps().count(type) > 0;
+}
+
+std::set<TokenType> ComparisonOps()
+{
+    return {
+        TokenType::Equal,
+        TokenType::NotEqual,
+        TokenType::Less,
+        TokenType::LessEqual,
+        TokenType::Greater,
+        TokenType::GreaterEqual
+    };
+}
+
 ExprParser::ExprParser(std::shared_ptr<BufferedStream<Token>> token_stream)
     : IParseRoutine(token_stream)
 {}
@@ -56,23 +84,8 @@ bool ExprParser::CanStartParsing()
         IsFirstOfPrefixExpr(type);
 }
 
-bool IsAssignmentOperator(TokenType type)
-{
-    switch(type)
-    {
-    case TokenType::Assign:
-    case TokenType::PlusAssign:
-    case TokenType::MinusAssign:
-    case TokenType::MultiplyAssign:
-    case TokenType::DivideAssign:
-        return true;
-    
-    default:
-        return false;
-    }
-}
-
-// expr ::= assign-expr | or-expr
+// expr      ::= identifier assign-op expr | or-expr
+// assign-op ::= "=" | "+=" | "-=" | "*=" | "/="
 std::shared_ptr<Expr> ExprParser::Parse()
 {
     try
@@ -94,13 +107,13 @@ std::shared_ptr<Expr> ExprParser::Parse()
     }
 }
 
-// assign-expr ::= identifier "=" expr
+// assign-expr ::= identifier assign-op expr
 std::shared_ptr<Expr> ExprParser::ParseAssignExpr()
 {
     auto lhs = std::make_shared<Identifier>(
         Accept(TokenType::Identifier)
     );
-    auto op = Accept(TokenType::Assign);
+    auto op = AcceptOneOf(AssignmentOps());
     auto rhs = Parse();
 
     return std::make_shared<BinaryExpr>(op, lhs, rhs);
@@ -128,18 +141,6 @@ std::shared_ptr<Expr> ExprParser::ParseAndExpr()
         expr = std::make_shared<BinaryExpr>(op.value(), expr, rhs);
     }
     return expr;
-}
-
-std::set<TokenType> ComparisonOps()
-{
-    return {
-        TokenType::Equal,
-        TokenType::NotEqual,
-        TokenType::Less,
-        TokenType::LessEqual,
-        TokenType::Greater,
-        TokenType::GreaterEqual
-    };
 }
 
 // compare-expr ::= add-expr (compare-op add-expr)*

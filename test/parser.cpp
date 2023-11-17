@@ -369,8 +369,9 @@ TEST(StmtParser, VariableDeclaration)
         "[VarDeclStmt]\n"
         "- name: count\n"
         "- type: i32\n"
-        "    [Literal]\n"
-        "    - 0\n";
+        "    [VarInitExpr]\n"
+        "        [Literal]\n"
+        "        - 0\n";
     
     TestStmtParser(tokens, expected);
 }
@@ -554,8 +555,9 @@ TEST(StmtParser, ForStatementWithInit)
         "    [VarDeclStmt]\n"
         "    - name: i\n"
         "    - type: i32\n"
-        "        [Literal]\n"
-        "        - 0\n"
+        "        [VarInitExpr]\n"
+        "            [Literal]\n"
+        "            - 0\n"
         "    [CompoundStmt]\n";
     
     TestStmtParser(tokens, expected);
@@ -594,6 +596,7 @@ TEST(GlobalDeclParser, SimpleFunction)
     auto expected =
         "[FuncDecl]\n"
         "- name: foo\n"
+        "- export: false\n"
         "- return type: void\n"
         "    [CompoundStmt]\n";
         
@@ -624,6 +627,7 @@ TEST(GlobalDeclParser, TwoArgsFunction)
     auto expected =
         "[FuncDecl]\n"
         "- name: foo\n"
+        "- export: false\n"
         "- return type: void\n"
         "- parameter name: a, type: in i32\n"
         "- parameter name: b, type: out i32\n"
@@ -650,6 +654,7 @@ TEST(GlobalDeclParser, FunctionWithReturnType)
     auto expected =
         "[FuncDecl]\n"
         "- name: foo\n"
+        "- export: false\n"
         "- return type: bool\n"
         "    [CompoundStmt]\n";
         
@@ -682,6 +687,7 @@ TEST(GlobalDeclParser, StructDecl)
     auto expected =
         "[StructDecl]\n"
         "- name: vec3\n"
+        "- export: false\n"
         "- member name: x, type: f32\n"
         "- member name: y, type: f32\n"
         "- member name: z, type: f32\n";
