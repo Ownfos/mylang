@@ -2,7 +2,7 @@
 #define MYLANG_SYNTAX_ANALYZER_H
 
 #include "common/BufferedStream.h"
-#include "parser/routine/ProgramParser.h"
+#include "parser/routine/ModuleParser.h"
 #include <memory>
 
 namespace mylang
@@ -18,7 +18,7 @@ public:
 
 private:
     std::shared_ptr<BufferedStream<Token>> m_lexer;
-    std::unique_ptr<ProgramParser> m_parser;
+    std::unique_ptr<ModuleParser> m_parser;
 };
 
 } // namespace mylang

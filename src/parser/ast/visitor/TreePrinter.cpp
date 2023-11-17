@@ -1,5 +1,5 @@
 #include "parser/ast/visitor/TreePrinter.h"
-#include "parser/ast/Program.h"
+#include "parser/ast/Module.h"
 #include "parser/ast/globdecl/FuncDecl.h"
 #include "parser/ast/globdecl/StructDecl.h"
 
@@ -43,11 +43,11 @@ void TreePrinter::DecreaseDepth()
     --m_indent_level;
 }
 
-void TreePrinter::Visit(Program* node)
+void TreePrinter::Visit(Module* node)
 {
     // Node type
     Indent();
-    m_output_stream << "[Program]\n";
+    m_output_stream << "[Module]\n";
 
     if (m_verbose)
     {

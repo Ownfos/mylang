@@ -15,7 +15,7 @@ public:
     virtual void IncreaseDepth() override;
     virtual void DecreaseDepth() override;
 
-    virtual void Visit(Program* node) override;
+    virtual void Visit(Module* node) override;
     virtual void Visit(FuncDecl* node) override;
     virtual void Visit(StructDecl* node) override;
 

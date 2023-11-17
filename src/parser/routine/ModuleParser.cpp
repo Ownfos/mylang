@@ -1,9 +1,9 @@
-#include "parser/routine/ProgramParser.h"
+#include "parser/routine/ModuleParser.h"
 
 namespace mylang
 {
 
-ProgramParser::ProgramParser(
+ModuleParser::ModuleParser(
     std::shared_ptr<BufferedStream<Token>> token_stream,
     std::shared_ptr<IParseRoutine<std::shared_ptr<GlobalDecl>>> global_decl_parser
 )
@@ -11,13 +11,13 @@ ProgramParser::ProgramParser(
     , m_global_decl_parser(global_decl_parser)
 {}
 
-bool ProgramParser::CanStartParsing()
+bool ModuleParser::CanStartParsing()
 {
     return Peek() == TokenType::Module;
 }
 
 // program ::= module-decl module-import* global-decl*
-std::shared_ptr<Program> ProgramParser::Parse()
+std::shared_ptr<Module> ModuleParser::Parse()
 {
     try
     {
@@ -35,7 +35,7 @@ std::shared_ptr<Program> ProgramParser::Parse()
             global_declarations.push_back(m_global_decl_parser->Parse());
         }
 
-        return std::make_shared<Program>(
+        return std::make_shared<Module>(
             module_name, import_list, global_declarations
         );
     }
@@ -45,7 +45,7 @@ std::shared_ptr<Program> ProgramParser::Parse()
     }
 }
 
-Token ProgramParser::ParseModuleDecl()
+Token ModuleParser::ParseModuleDecl()
 {
     try
     {
@@ -61,7 +61,7 @@ Token ProgramParser::ParseModuleDecl()
     }
 }
 
-ModuleImportInfo ProgramParser::ParseModuleImport()
+ModuleImportInfo ModuleParser::ParseModuleImport()
 {
     try
     {

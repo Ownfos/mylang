@@ -190,7 +190,7 @@ primary-expr  ::= literal | identifier | "(" expr ")"
 - '-': concrete class
 ```
 +AST
- -Program
+ -Module
  +GlobalDecl
   -FuncDecl
   -StructDecl

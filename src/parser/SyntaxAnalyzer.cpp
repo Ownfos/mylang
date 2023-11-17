@@ -15,7 +15,7 @@ SyntaxAnalyzer::SyntaxAnalyzer(std::unique_ptr<IStream<Token>>&& lexer)
     auto type_parser = std::make_shared<TypeParser>(m_lexer);
     auto stmt_parser = std::make_shared<StmtParser>(m_lexer, expr_parser, type_parser);
     auto global_decl_parser = std::make_shared<GlobalDeclParser>(m_lexer, stmt_parser, type_parser);
-    m_parser = std::make_unique<ProgramParser>(m_lexer, global_decl_parser);
+    m_parser = std::make_unique<ModuleParser>(m_lexer, global_decl_parser);
 }
 
 std::shared_ptr<IAbstractSyntaxTree> SyntaxAnalyzer::GenerateAST()

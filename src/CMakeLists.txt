@@ -8,7 +8,7 @@ add_library(mylanglib
     lexer/LexicalError.cpp
     lexer/Token.cpp
 
-    parser/ast/Program.cpp
+    parser/ast/Module.cpp
 
     parser/ast/expr/ArrayAccessExpr.cpp
     parser/ast/expr/BinaryExpr.cpp
@@ -43,7 +43,7 @@ add_library(mylanglib
     parser/routine/ExprParser.cpp
     parser/routine/StmtParser.cpp
     parser/routine/GlobalDeclParser.cpp
-    parser/routine/ProgramParser.cpp
+    parser/routine/ModuleParser.cpp
 
     parser/SyntaxAnalyzer.cpp
     parser/SyntaxError.cpp

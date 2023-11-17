@@ -4,7 +4,7 @@
 namespace mylang
 {
 
-class Program;
+class Module;
 class FuncDecl;
 class StructDecl;
 
@@ -36,7 +36,7 @@ public:
     virtual void IncreaseDepth() {};
     virtual void DecreaseDepth() {};
 
-    virtual void Visit(Program* node) = 0;
+    virtual void Visit(Module* node) = 0;
     virtual void Visit(FuncDecl* node) = 0;
     virtual void Visit(StructDecl* node) = 0;
 

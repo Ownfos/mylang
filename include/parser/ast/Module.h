@@ -1,5 +1,5 @@
-#ifndef MYLANG_PROGRAM_H
-#define MYLANG_PROGRAM_H
+#ifndef MYLANG_MODULE_H
+#define MYLANG_MODULE_H
 
 #include "parser/ast/IAbstractSyntaxTree.h"
 #include "lexer/Token.h"
@@ -17,10 +17,10 @@ struct ModuleImportInfo
     Token name;
 };
 
-class Program : public IAbstractSyntaxTree
+class Module : public IAbstractSyntaxTree
 {
 public:
-    Program(const Token& module_name, const std::vector<ModuleImportInfo>& import_list, const std::vector<std::shared_ptr<GlobalDecl>>& global_declarations);
+    Module(const Token& module_name, const std::vector<ModuleImportInfo>& import_list, const std::vector<std::shared_ptr<GlobalDecl>>& global_declarations);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
 
@@ -35,4 +35,4 @@ private:
 
 } // namespace mylang
 
-#endif // MYLANG_PROGRAM_H
+#endif // MYLANG_MODULE_H
