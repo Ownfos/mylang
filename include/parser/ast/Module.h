@@ -17,6 +17,9 @@ struct ModuleImportInfo
     Token name;
 };
 
+// Module represents an implementation file for a module.
+// A single logical module can be implemented with multiple source files,
+// so a Module node can be thought of as a paritial implementation or a module fragment.
 class Module : public IAbstractSyntaxTree
 {
 public:
