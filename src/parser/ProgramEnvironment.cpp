@@ -90,10 +90,7 @@ std::optional<Symbol> ProgramEnvironment::FindImportedSymbol(
 
     auto& module_info = GetModuleInfo(context_module_name);
 
-    // Look for local symbol.
-    // Assumptions:
-    // 1. public symbols are already scanned and inserted into each module's local symbol table.
-    // 2. only the module currently begin analyzed can contain private symbols.
+    // Look for local public symbol.
     auto symbol = module_info.local_symbol_table.FindSymbol(symbol_name);
     if (symbol.has_value() && symbol->is_public)
     {
@@ -109,8 +106,7 @@ std::optional<Symbol> ProgramEnvironment::FindImportedSymbol(
             // Do NOT propagate module dependency for private import directives!
             if (!import_info.should_export) continue;
 
-            auto symbol = FindImportedSymbol(import_info.name.lexeme, symbol_name, visited_modules);
-            if (symbol.has_value() && symbol->is_public)
+            if (auto symbol = FindImportedSymbol(import_info.name.lexeme, symbol_name, visited_modules))
             {
                 return symbol.value();
             }

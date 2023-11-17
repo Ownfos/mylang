@@ -51,6 +51,9 @@ public:
     // 1. module's local symbol table (private or public)
     // 2. imported symbols from other modules (public)
     //
+    // In order for public symbol propagation to work,
+    // all global declarations should be handled beforehand.
+    //
     // If we fail to find a symbol, an exception will be thrown.
     Symbol FindSymbol(
         std::string_view context_module_name,
