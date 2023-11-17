@@ -4,21 +4,21 @@
 #include "parser/ast/varinit/VarInit.h"
 #include "parser/ast/stmt/Stmt.h"
 #include "parser/ast/expr/Expr.h"
-#include "parser/type/Type.h"
+#include "parser/ast/Decl.h"
 #include <memory>
 
 namespace mylang
 {
 
-class VarDeclStmt : public Stmt
+class VarDeclStmt : public Stmt, public Decl
 {
 public:
     VarDeclStmt(const Token& name, const Type& type, std::shared_ptr<VarInit> initializer);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
 
-    const Token& Name() const;
-    const Type& TypeSpecifier() const;
+    virtual const Token& Name() const;
+    virtual const Type& DeclType() const override;
 
 private:
     Token m_name;

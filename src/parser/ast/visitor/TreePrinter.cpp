@@ -120,7 +120,7 @@ void TreePrinter::Visit(StructDecl* node)
         m_output_stream << std::format("- name: {}\n",
             node->Name().lexeme
         );
-        
+
         // Is this symbol visible in other modules?
         Indent();
         m_output_stream << std::format("- export: {}\n",
@@ -189,7 +189,7 @@ void TreePrinter::Visit(VarDeclStmt* node)
 
         Indent();
         m_output_stream << std::format("- type: {}\n",
-            node->TypeSpecifier().ToString()
+            node->DeclType().ToString()
         );
     }
 }

@@ -24,7 +24,7 @@ const Token& VarDeclStmt::Name() const
     return m_name;
 }
 
-const Type& VarDeclStmt::TypeSpecifier() const
+const Type& VarDeclStmt::DeclType() const
 {
     return m_type;
 }
