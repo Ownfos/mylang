@@ -21,7 +21,7 @@ namespace mylang
 // file4: "module c; ..."
 struct ModuleInfo
 {
-    std::vector<ModuleImportInfo> import_list;
+    std::set<ModuleImportInfo> import_list;
     SymbolTable local_symbol_table;
 };
 
@@ -34,14 +34,18 @@ public:
     // In case of multiple files implementing a single logical module,
     // the first AddModuleDeclaration() will create a new symbol table
     // and the follosing invocations will simply append import directives.
-    void AddModuleDeclaration(const Module*);
+    void AddModuleDeclaration(const Module* module);
 
     // Wrapper functions for SymbolTable::OpenScope() and CloseScope().
     void OpenScope(std::string_view context_module_name);
     void CloseScope(std::string_view context_module_name);
 
     // Wrapper function for SymbolTable::AddSymbol().
-    void AddSymbol(std::string_view context_module_name, const Symbol& symbol);
+    void AddSymbol(
+        std::string_view context_module_name,
+        Decl* declaration,
+        bool is_public
+    );
 
     // Try to find a symbol from a given module context by following order:
     // 1. module's local symbol table (private or public)
@@ -76,7 +80,7 @@ private:
     std::optional<Symbol> FindImportedSymbol(
         std::string_view context_module_name,
         std::string_view symbol_name,
-        std::set<std::string>& visited_modules
+        std::set<std::string_view>& visited_modules
     ) const;
 
     // Returns a ModuleInfo instance for a module with specified name.
@@ -85,7 +89,7 @@ private:
     const ModuleInfo& GetModuleInfo(std::string_view name) const;
 
     // Maps a module name to its corresponding ModuleInfo instance.
-    std::map<std::string, ModuleInfo> m_modules;
+    std::map<std::string_view, ModuleInfo> m_modules;
 };
 
 } // namespace mylang

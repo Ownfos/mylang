@@ -1,10 +1,14 @@
+#include "file/DummySourceFile.h"
+#include "lexer/LexicalAnalyzer.h"
 #include "lexer/DummyLexicalAnalyzer.h"
 #include "parser/routine/ExprParser.h"
 #include "parser/routine/StmtParser.h"
 #include "parser/routine/TypeParser.h"
 #include "parser/routine/GlobalDeclParser.h"
 #include "parser/routine/ModuleParser.h"
+#include "parser/SyntaxAnalyzer.h"
 #include "parser/ast/visitor/TreePrinter.h"
+#include "parser/ast/visitor/GlobalSymbolScanner.h"
 #include <gtest/gtest.h>
 #include <sstream>
 
@@ -750,4 +754,65 @@ TEST(ModuleParser, ModuleWithImports)
         "- imported module: random, export: true\n";
         
     TestModuleParser(tokens, expected);
+}
+
+std::shared_ptr<IAbstractSyntaxTree> GenerateAST(std::string&& source_code)
+{
+    auto source_file = std::make_unique<DummySourceFile>(std::move(source_code));
+    auto lexer = std::make_unique<LexicalAnalyzer>(std::move(source_file));
+    auto syntax_analyzer = SyntaxAnalyzer(std::move(lexer));
+
+    return syntax_analyzer.GenerateAST();
+}
+
+TEST(GlobalSymbolScanner, SingleFile)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+
+    auto ast = GenerateAST("module a; foo: func = (){}");
+    ast->Accept(&scanner);
+
+    auto symbol = environment.FindSymbol("a", "foo");
+    ASSERT_FALSE(symbol.is_public);
+    ASSERT_EQ(symbol.scope_level, 0);
+    ASSERT_EQ(symbol.declaration->DeclType().ToString(), "[()]");
+}
+
+TEST(GlobalSymbolScanner, TwoFiles)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+
+    auto ast1 = GenerateAST("module a; import b; foo: func = (){}");
+    auto ast2 = GenerateAST("module b; export goo: func = (a:i32){}");
+    ast1->Accept(&scanner);
+    ast2->Accept(&scanner);
+
+    auto foo = environment.FindSymbol("a", "foo");
+    ASSERT_FALSE(foo.is_public);
+    ASSERT_EQ(foo.scope_level, 0);
+    ASSERT_EQ(foo.declaration->DeclType().ToString(), "[()]");
+
+    auto goo = environment.FindSymbol("a", "goo");
+    ASSERT_TRUE(goo.is_public);
+    ASSERT_EQ(goo.scope_level, 0);
+    ASSERT_EQ(goo.declaration->DeclType().ToString(), "[(in i32)]");
+}
+
+TEST(GlobalSymbolScanner, ThreeFilesPrivateImport)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+
+    auto ast1 = GenerateAST("module a; import b;");
+    auto ast2 = GenerateAST("module b; import c;");
+    auto ast3 = GenerateAST("module c; foo: func = (){}");
+    ast1->Accept(&scanner);
+    ast2->Accept(&scanner);
+    ast3->Accept(&scanner);
+
+    // "foo" should not be visible outside module "c".
+    EXPECT_THROW(environment.FindSymbol("a", "foo"), std::exception);
+    EXPECT_THROW(environment.FindSymbol("b", "foo"), std::exception);
 }

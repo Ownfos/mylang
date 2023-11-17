@@ -5,6 +5,11 @@
 namespace mylang
 {
 
+bool ModuleImportInfo::operator<(const ModuleImportInfo& other) const
+{
+    return name.lexeme < other.name.lexeme;
+}
+
 Module::Module(const Token& module_name, const std::vector<ModuleImportInfo>& import_list, const std::vector<std::shared_ptr<GlobalDecl>>& global_declarations)
     : m_module_name(module_name)
     , m_import_list(import_list)

@@ -34,6 +34,7 @@ add_library(mylanglib
     parser/ast/varinit/VarInitList.cpp
 
     parser/ast/visitor/TreePrinter.cpp
+    parser/ast/visitor/GlobalSymbolScanner.cpp
 
     parser/type/Type.cpp
     parser/type/base/DataType.cpp
@@ -44,6 +45,9 @@ add_library(mylanglib
     parser/routine/StmtParser.cpp
     parser/routine/GlobalDeclParser.cpp
     parser/routine/ModuleParser.cpp
+
+    parser/SymbolTable.cpp
+    parser/ProgramEnvironment.cpp
 
     parser/SyntaxAnalyzer.cpp
     parser/SyntaxError.cpp

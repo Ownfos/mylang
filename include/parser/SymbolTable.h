@@ -11,8 +11,9 @@ namespace mylang
 
 struct Symbol
 {
-    std::shared_ptr<Decl> declaration;
+    Decl* declaration;
     bool is_public;
+    int scope_level;
 };
 
 class SymbolTable
@@ -26,7 +27,7 @@ public:
 
     // Inserts a new entry to the table.
     // Throws an exception when redefinition of a symbol on same scope happens.
-    void AddSymbol(const Symbol& symbol);
+    void AddSymbol(Decl* declaration, bool is_public);
 
     // Returns a symbol entry with the specified name.
     // When there are several entries with identical name,

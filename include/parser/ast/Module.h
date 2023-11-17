@@ -15,6 +15,10 @@ struct ModuleImportInfo
 {
     bool should_export;
     Token name;
+
+    // Comparator that enables use of std::set<ModuleImportInfo>.
+    // This simply compares the name token's lexeme in lexicographical order.
+    bool operator<(const ModuleImportInfo& other) const;
 };
 
 // Module represents an implementation file for a module.
