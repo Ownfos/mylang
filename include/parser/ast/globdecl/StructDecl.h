@@ -22,10 +22,19 @@ public:
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
 
+    virtual const Token& Name() const override;
+    virtual const Type& DeclType() const override;
+    virtual bool ShouldExport() const override;
+
     const std::vector<MemberVariable>& Members() const;
 
 private:
+    bool m_should_export;
+    Token m_name;
     std::vector<MemberVariable> m_members;
+
+    // The type of struct itself.
+    Type m_type;
 };
 
 } // namespace mylang

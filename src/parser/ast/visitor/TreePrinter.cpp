@@ -83,6 +83,12 @@ void TreePrinter::Visit(FuncDecl* node)
             node->Name().lexeme
         );
 
+        // Is this symbol visible in other modules?
+        Indent();
+        m_output_stream << std::format("- export: {}\n",
+            node->ShouldExport()
+        );
+
         // Return type
         Indent();
         auto ret_type = node->ReturnType();
@@ -113,6 +119,12 @@ void TreePrinter::Visit(StructDecl* node)
         Indent();
         m_output_stream << std::format("- name: {}\n",
             node->Name().lexeme
+        );
+        
+        // Is this symbol visible in other modules?
+        Indent();
+        m_output_stream << std::format("- export: {}\n",
+            node->ShouldExport()
         );
 
         // Member variables

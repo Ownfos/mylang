@@ -19,7 +19,6 @@ add_library(mylanglib
     parser/ast/expr/PostfixExpr.cpp
     parser/ast/expr/PrefixExpr.cpp
 
-    parser/ast/globdecl/GlobalDecl.cpp
     parser/ast/globdecl/FuncDecl.cpp
     parser/ast/globdecl/StructDecl.cpp
 

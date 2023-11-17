@@ -25,13 +25,22 @@ public:
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
 
+    virtual const Token& Name() const override;
+    virtual const Type& DeclType() const override;
+    virtual bool ShouldExport() const override;
+
     const std::optional<Type>& ReturnType() const;
     const std::vector<Parameter>& Parameters() const;
 
 private:
+    bool m_should_export;
+    Token m_name;
     std::optional<Type> m_return_type;
     std::vector<Parameter> m_parameters;
     std::shared_ptr<Stmt> m_body;
+
+    // The type of functions itself.
+    Type m_type;
 };
 
 } // namespace mylang
