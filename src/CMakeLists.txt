@@ -51,6 +51,8 @@ add_library(mylanglib
 
     parser/SyntaxAnalyzer.cpp
     parser/SyntaxError.cpp
+    
+    parser/SemanticError.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)

@@ -36,6 +36,10 @@ public:
     // and the follosing invocations will simply append import directives.
     void AddModuleDeclaration(const Module* module);
 
+    // Throws an exception when a module tries to import a non-existing module.
+    // If nothing happens, all of the import direcitves are valid.
+    void ValidateModuleDependency();
+
     // Wrapper functions for SymbolTable::OpenScope() and CloseScope().
     void OpenScope(std::string_view context_module_name);
     void CloseScope(std::string_view context_module_name);
@@ -88,6 +92,8 @@ private:
 
     // Returns a ModuleInfo instance for a module with specified name.
     // The const version is used in FindSymbol().
+    //
+    // If a module doesn't exist, an exception will be thrown.
     ModuleInfo& GetModuleInfo(std::string_view name);
     const ModuleInfo& GetModuleInfo(std::string_view name) const;
 

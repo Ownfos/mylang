@@ -1,4 +1,6 @@
 #include "parser/ProgramEnvironment.h"
+#include "parser/SemanticError.h"
+#include <format>
 
 namespace mylang
 {
@@ -20,6 +22,26 @@ void ProgramEnvironment::AddModuleDeclaration(const Module* module)
     for (const auto& import_info : module->ImportList())
     {
         module_info.import_list.insert(import_info);
+    }
+}
+
+void ProgramEnvironment::ValidateModuleDependency()
+{
+    for (const auto& [name, info] : m_modules)
+    {
+        // Make sure that every imported modules do exist.
+        for (const auto& imported : info.import_list)
+        {
+            try
+            {
+                GetModuleInfo(imported.name.lexeme);
+            }
+            catch(const std::exception&)
+            {
+                auto message = std::format("trying to import a non-existing module: \"{}\"", imported.name.lexeme);
+                throw SemanticError(imported.name.start_pos, message);
+            }
+        }
     }
 }
 
@@ -119,11 +141,19 @@ std::optional<Symbol> ProgramEnvironment::FindImportedSymbol(
 
 ModuleInfo& ProgramEnvironment::GetModuleInfo(std::string_view name)
 {
+    if (m_modules.find(name) == m_modules.end())
+    {
+        throw std::exception("trying to access non-existing module");
+    }
     return m_modules.at(name);
 }
 
 const ModuleInfo& ProgramEnvironment::GetModuleInfo(std::string_view name) const
 {
+    if (m_modules.find(name) == m_modules.end())
+    {
+        throw std::exception("trying to access non-existing module");
+    }
     return m_modules.at(name);
 }
 

@@ -9,6 +9,7 @@
 #include "parser/SyntaxAnalyzer.h"
 #include "parser/ast/visitor/TreePrinter.h"
 #include "parser/ast/visitor/GlobalSymbolScanner.h"
+#include "parser/SemanticError.h"
 #include <gtest/gtest.h>
 #include <sstream>
 
@@ -815,4 +816,40 @@ TEST(GlobalSymbolScanner, ThreeFilesPrivateImport)
     // "foo" should not be visible outside module "c".
     EXPECT_THROW(environment.FindSymbol("a", "foo"), std::exception);
     EXPECT_THROW(environment.FindSymbol("b", "foo"), std::exception);
+}
+
+TEST(GlobalSymbolScanner, TwoFilesOneModule)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+
+    auto ast1 = GenerateAST("module a; foo: func = (){}");
+    auto ast2 = GenerateAST("module a; goo: func = (a: i32){}");
+    ast1->Accept(&scanner);
+    ast2->Accept(&scanner);
+
+    // "foo" should not be visible outside module "c".
+    EXPECT_EQ(environment.FindSymbol("a", "foo").declaration->DeclType().ToString(), "[()]");
+    EXPECT_EQ(environment.FindSymbol("a", "goo").declaration->DeclType().ToString(), "[(in i32)]");
+}
+
+TEST(GlobalSymbolScanner, InvalidImport)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+
+    auto ast = GenerateAST("module a; import b;");
+    ast->Accept(&scanner);
+
+    EXPECT_THROW(environment.ValidateModuleDependency(), SemanticError);
+}
+
+TEST(GlobalSymbolScanner, ODRViolation)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+
+    auto ast = GenerateAST("module a; foo: func = (){} foo: struct = { x: str; }");
+
+    EXPECT_THROW(ast->Accept(&scanner), SemanticError);
 }

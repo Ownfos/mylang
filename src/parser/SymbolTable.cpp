@@ -1,4 +1,6 @@
 #include "parser/SymbolTable.h"
+#include "parser/SemanticError.h"
+#include <format>
 
 namespace mylang
 {
@@ -28,7 +30,8 @@ void SymbolTable::AddSymbol(Decl* declaration, bool is_public)
     auto same_name = FindSymbol(declaration->Name().lexeme);
     if (same_name.has_value() && same_name->scope_level == m_current_scope_level)
     {
-        // TODO: throw ODR violation error.
+        auto message = std::format("ODR violation: symbol \"{}\" already exists on the same scope level", declaration->Name().lexeme);
+        throw SemanticError(declaration->Name().start_pos, message);
     }
 
     m_symbols.emplace_back(declaration, is_public, m_current_scope_level);
