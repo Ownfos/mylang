@@ -25,14 +25,29 @@ cd build; ctest; cd ..
 #### Note: the main executable currently prints the AST after syntax analysis
 
 # Pending Tasks...
-- decide symbol table representation
-- should function allow single statement or compound statement?
-- type representation and type checking
 - allowed operations between types
 - implicit conversion?
-- automatic index bound check?
-- ref type variable?
-- maybe monad?
+- type analysis idea
+```
+type(expr(...)) => function's return type
+type(expr.id) => member variable type
+type(expr[int literal]) => remove leftmost array dimension
+type(str + str) => str
+type(i32 + i32) => i32
+type(f32 + i32) => f32
+type(a comp b) => bool
+
+++, -- only allowed on i32 type
+
+parameter requirement:
+- in : rvalue or lvalue
+- out / inout : lvalue only
+
+lvalue expressions:
+- identifier
+- member access (if applied on an lvalue)
+- array access (if applied on an lvalue)
+```
 
 # TODO
 ```
