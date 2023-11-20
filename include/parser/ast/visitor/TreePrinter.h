@@ -43,7 +43,6 @@ public:
     // Postorder traversal
     virtual void PostorderVisit(Module* node) override;
     virtual void PostorderVisit(FuncDecl* node) override;
-    virtual void PostorderVisit(StructDecl* node) override;
 
     virtual void PostorderVisit(CompoundStmt* node) override;
     virtual void PostorderVisit(IfStmt* node) override;

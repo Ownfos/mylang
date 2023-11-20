@@ -342,11 +342,6 @@ void TreePrinter::PostorderVisit(FuncDecl* node)
     DecreaseDepth();
 }
 
-void TreePrinter::PostorderVisit(StructDecl* node)
-{
-    DecreaseDepth();
-}
-
 void TreePrinter::PostorderVisit(CompoundStmt* node)
 {
     DecreaseDepth();
