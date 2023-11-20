@@ -12,4 +12,9 @@ std::string DataType::ToString() const
     return m_type.lexeme;
 }
 
+bool DataType::IsStructType() const
+{
+    return m_type.type == TokenType::Identifier;
+}
+
 } // namespace mylang

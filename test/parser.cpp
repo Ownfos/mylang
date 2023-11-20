@@ -9,6 +9,7 @@
 #include "parser/SyntaxAnalyzer.h"
 #include "parser/ast/visitor/TreePrinter.h"
 #include "parser/ast/visitor/GlobalSymbolScanner.h"
+#include "parser/ast/visitor/TypeChecker.h"
 #include "parser/SemanticError.h"
 #include <gtest/gtest.h>
 #include <sstream>
@@ -780,6 +781,25 @@ TEST(GlobalSymbolScanner, SingleFile)
     ASSERT_EQ(symbol.declaration->DeclType().ToString(), "[()]");
 }
 
+TEST(GlobalSymbolScanner, SingleFileMultipleDecl)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+
+    auto ast = GenerateAST("module a; A: struct = {} export B: struct = {}");
+    ast->Accept(&scanner);
+
+    auto symbol_a = environment.FindSymbol("a", "A");
+    ASSERT_FALSE(symbol_a.is_public);
+    ASSERT_EQ(symbol_a.scope_level, 0);
+    ASSERT_EQ(symbol_a.declaration->DeclType().ToString(), "A");
+
+    auto symbol_b = environment.FindSymbol("a", "B");
+    ASSERT_TRUE(symbol_b.is_public);
+    ASSERT_EQ(symbol_b.scope_level, 0);
+    ASSERT_EQ(symbol_b.declaration->DeclType().ToString(), "B");
+}
+
 TEST(GlobalSymbolScanner, TwoFiles)
 {
     auto environment = ProgramEnvironment();
@@ -852,4 +872,67 @@ TEST(GlobalSymbolScanner, ODRViolation)
     auto ast = GenerateAST("module a; foo: func = (){} foo: struct = { x: str; }");
 
     EXPECT_THROW(ast->Accept(&scanner), SemanticError);
+}
+
+void ExpectTypeCheckSuccess(std::string&& source_file)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+    auto type_checker = TypeChecker(environment);
+
+    auto ast = GenerateAST(std::move(source_file));
+    ast->Accept(&scanner);
+
+    EXPECT_NO_THROW(ast->Accept(&type_checker));
+}
+
+void ExpectTypeCheckFailure(std::string&& source_file, std::string_view expected_error_message)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+    auto type_checker = TypeChecker(environment);
+
+    auto ast = GenerateAST(std::move(source_file));
+    ast->Accept(&scanner);
+
+    EXPECT_THROW(
+        try
+        {
+            ast->Accept(&type_checker);
+        }
+        catch (const SemanticError& e)
+        {
+            ASSERT_EQ(e.what(), expected_error_message);
+            throw;
+        },
+        SemanticError
+    );
+}
+
+TEST(TypeChecker, ValidMemberTypes)
+{
+    auto source = 
+        "module a;\n"
+        "A: struct = {\n"
+        "    m1: i32;\n"
+        "    m2: B[2][3];\n"
+        "}\n"
+        "B: struct = {\n"
+        "    m1: str;\n"
+        "    m2: bool;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidMemberType)
+{
+    auto source =
+        "module a;\n"
+        "A: struct = {\n"
+        "    m1: i32;\n"
+        "    m2: B;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 4, Col 5] member variable \"m2\" of struct \"A\" tried to use non-struct base type \"B\"";
+    ExpectTypeCheckFailure(source, expected_error);
 }

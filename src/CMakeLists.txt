@@ -35,6 +35,7 @@ add_library(mylanglib
 
     parser/ast/visitor/TreePrinter.cpp
     parser/ast/visitor/GlobalSymbolScanner.cpp
+    parser/ast/visitor/TypeChecker.cpp
 
     parser/type/Type.cpp
     parser/type/base/DataType.cpp

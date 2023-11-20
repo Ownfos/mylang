@@ -26,6 +26,7 @@ std::string ParamType::ToString() const
     return std::format("{} {}", UsageString(usage), type.ToString());
 }
 
+
 FuncType::FuncType(const std::vector<ParamType>& param_types, std::optional<Type> return_type)
     : m_param_types(param_types), m_return_type(return_type)
 {}
@@ -56,6 +57,11 @@ std::string FuncType::ToString() const
     
     str_builder << "]";
     return str_builder.str();
+}
+
+bool FuncType::IsStructType() const
+{
+    return false;
 }
 
 } // namespace mylang

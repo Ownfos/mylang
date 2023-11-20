@@ -14,6 +14,7 @@ public:
     DataType(const Token& type);
 
     virtual std::string ToString() const override;
+    virtual bool IsStructType() const override;
 
 private:
     Token m_type;

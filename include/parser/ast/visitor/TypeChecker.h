@@ -27,12 +27,11 @@ class TypeChecker : public IAbstractSyntaxTreeVisitor
 public:
     TypeChecker(ProgramEnvironment& environment);
 
-    // TODO: record module name
-    virtual void PostorderVisit(Module* node) override;
+    bool IsValidStructType(const IBaseType* base_type);
 
-    // TODO: record current function signature
-    virtual void PostorderVisit(FuncDecl* node) override;
-    virtual void PostorderVisit(StructDecl* node) override;
+    virtual void PreorderVisit(Module* node) override;
+    virtual void PreorderVisit(FuncDecl* node) override;
+    virtual void PreorderVisit(StructDecl* node) override;
 
     virtual void PostorderVisit(CompoundStmt* node) override;
 
@@ -70,7 +69,7 @@ public:
 
     // TODO: verify that lhs operand is a struct type variable and rhs is a valid member name.
     virtual void PostorderVisit(MemberAccessExpr* node) override;
-    
+
     virtual void PostorderVisit(PostfixExpr* node) override;
     virtual void PostorderVisit(PrefixExpr* node) override;
 
@@ -82,6 +81,10 @@ private:
 
     // Stores temporary expression node's type
     std::map<IAbstractSyntaxTree*, Type> m_type_dict;
+
+    // Used to store a currently analyzed function's signature.
+    // Return type matching is the key purpose for saving this info.
+    FuncDecl* m_current_function;
 };
 
 } // namespace mylang
