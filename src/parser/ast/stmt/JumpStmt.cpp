@@ -11,15 +11,13 @@ JumpStmt::JumpStmt(const Token& instruction, std::shared_ptr<Expr> expr)
 
 void JumpStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
     // Note: m_expr is not null only if this is a value-returning statement.
     if (m_expr)
     {
         m_expr->Accept(visitor);
     }
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 const Token& JumpStmt::JumpType() const

@@ -18,8 +18,7 @@ ForStmt::ForStmt(
 
 void ForStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
 
     // Note: m_initializer, m_condition, and m_increment_expr
     // are all optional, thus can be nullptr.
@@ -40,7 +39,7 @@ void ForStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 
     m_body->Accept(visitor);
     
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 } // namespace mylang

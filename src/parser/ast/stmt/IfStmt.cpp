@@ -16,8 +16,8 @@ IfStmt::IfStmt(
 
 void IfStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
+    
     m_condition->Accept(visitor);
     m_then_branch->Accept(visitor);
 
@@ -26,7 +26,8 @@ void IfStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
     {
         m_else_branch->Accept(visitor);
     }
-    visitor->DecreaseDepth();
+    
+    visitor->PostorderVisit(this);
 }
 
 } // namespace mylang

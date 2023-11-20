@@ -11,12 +11,10 @@ WhileStmt::WhileStmt(std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> body
 
 void WhileStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
     m_condition->Accept(visitor);
     m_body->Accept(visitor);
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 } // namespace mylang

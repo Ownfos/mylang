@@ -11,10 +11,9 @@ PostfixExpr::PostfixExpr(const Token& op, std::shared_ptr<Expr> expr)
 
 void PostfixExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
     m_expr->Accept(visitor);
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 std::string PostfixExpr::ToString() const

@@ -10,7 +10,8 @@ Identifier::Identifier(const Token& id)
 
 void Identifier::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
+    visitor->PreorderVisit(this);
+    visitor->PostorderVisit(this);
 }
 
 std::string Identifier::ToString() const

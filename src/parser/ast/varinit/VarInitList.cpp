@@ -10,14 +10,12 @@ VarInitList::VarInitList(const std::vector<std::shared_ptr<VarInit>>& initialize
 
 void VarInitList::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
     for (auto& initializer : m_initializer_list)
     {
         initializer->Accept(visitor);
     }
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 } // namespace mylang

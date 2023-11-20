@@ -10,7 +10,8 @@ Literal::Literal(const Token& literal)
 
 void Literal::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
+    visitor->PreorderVisit(this);
+    visitor->PostorderVisit(this);
 }
 
 std::string Literal::ToString() const

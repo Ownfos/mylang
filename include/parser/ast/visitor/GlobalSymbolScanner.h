@@ -14,29 +14,29 @@ class GlobalSymbolScanner : public IAbstractSyntaxTreeVisitor
 public:
     GlobalSymbolScanner(ProgramEnvironment& environment);
 
-    virtual void Visit(Module* node) override;
-    virtual void Visit(FuncDecl* node) override;
-    virtual void Visit(StructDecl* node) override;
+    virtual void PreorderVisit(Module* node) override;
+    virtual void PreorderVisit(FuncDecl* node) override;
+    virtual void PreorderVisit(StructDecl* node) override;
 
-    virtual void Visit(CompoundStmt* node) override {};
-    virtual void Visit(IfStmt* node) override {};
-    virtual void Visit(ForStmt* node) override {};
-    virtual void Visit(WhileStmt* node) override {};
-    virtual void Visit(JumpStmt* node) override {};
-    virtual void Visit(VarDeclStmt* node) override {};
-    virtual void Visit(ExprStmt* node) override {};
+    virtual void PreorderVisit(CompoundStmt* node) override {};
+    virtual void PreorderVisit(IfStmt* node) override {};
+    virtual void PreorderVisit(ForStmt* node) override {};
+    virtual void PreorderVisit(WhileStmt* node) override {};
+    virtual void PreorderVisit(JumpStmt* node) override {};
+    virtual void PreorderVisit(VarDeclStmt* node) override {};
+    virtual void PreorderVisit(ExprStmt* node) override {};
 
-    virtual void Visit(VarInitExpr* node) override {};
-    virtual void Visit(VarInitList* node) override {};
+    virtual void PreorderVisit(VarInitExpr* node) override {};
+    virtual void PreorderVisit(VarInitList* node) override {};
 
-    virtual void Visit(ArrayAccessExpr* node) override {};
-    virtual void Visit(BinaryExpr* node) override {};
-    virtual void Visit(FuncCallExpr* node) override {};
-    virtual void Visit(Identifier* node) override {};
-    virtual void Visit(Literal* node) override {};
-    virtual void Visit(MemberAccessExpr* node) override {};
-    virtual void Visit(PostfixExpr* node) override {};
-    virtual void Visit(PrefixExpr* node) override {};
+    virtual void PreorderVisit(ArrayAccessExpr* node) override {};
+    virtual void PreorderVisit(BinaryExpr* node) override {};
+    virtual void PreorderVisit(FuncCallExpr* node) override {};
+    virtual void PreorderVisit(Identifier* node) override {};
+    virtual void PreorderVisit(Literal* node) override {};
+    virtual void PreorderVisit(MemberAccessExpr* node) override {};
+    virtual void PreorderVisit(PostfixExpr* node) override {};
+    virtual void PreorderVisit(PrefixExpr* node) override {};
 
 private:
     ProgramEnvironment& m_environment;

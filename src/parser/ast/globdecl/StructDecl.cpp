@@ -14,7 +14,8 @@ StructDecl::StructDecl(bool should_export, const Token& name, const std::vector<
 
 void StructDecl::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
+    visitor->PreorderVisit(this);
+    visitor->PostorderVisit(this);
 }
 
 const Token& StructDecl::Name() const

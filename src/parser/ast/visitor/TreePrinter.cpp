@@ -43,7 +43,7 @@ void TreePrinter::DecreaseDepth()
     --m_indent_level;
 }
 
-void TreePrinter::Visit(Module* node)
+void TreePrinter::PreorderVisit(Module* node)
 {
     // Node type
     Indent();
@@ -67,9 +67,11 @@ void TreePrinter::Visit(Module* node)
             );
         }
     }
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(FuncDecl* node)
+void TreePrinter::PreorderVisit(FuncDecl* node)
 {
     // Node type
     Indent();
@@ -106,9 +108,11 @@ void TreePrinter::Visit(FuncDecl* node)
             );
         }
     }
+    
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(StructDecl* node)
+void TreePrinter::PreorderVisit(StructDecl* node)
 {
     Indent();
     m_output_stream << "[StructDecl]\n";
@@ -139,31 +143,39 @@ void TreePrinter::Visit(StructDecl* node)
     }
 }
 
-void TreePrinter::Visit(CompoundStmt* node)
+void TreePrinter::PreorderVisit(CompoundStmt* node)
 {
     Indent();
     m_output_stream << "[CompoundStmt]\n";
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(IfStmt* node)
+void TreePrinter::PreorderVisit(IfStmt* node)
 {
     Indent();
     m_output_stream << "[IfStmt]\n";
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(ForStmt* node)
+void TreePrinter::PreorderVisit(ForStmt* node)
 {
     Indent();
     m_output_stream << "[ForStmt]\n";
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(WhileStmt* node)
+void TreePrinter::PreorderVisit(WhileStmt* node)
 {
     Indent();
     m_output_stream << "[WhileStmt]\n";
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(JumpStmt* node)
+void TreePrinter::PreorderVisit(JumpStmt* node)
 {
     Indent();
     m_output_stream << "[JumpStmt]\n";
@@ -174,9 +186,11 @@ void TreePrinter::Visit(JumpStmt* node)
             node->JumpType().lexeme
         );
     }
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(VarDeclStmt* node)
+void TreePrinter::PreorderVisit(VarDeclStmt* node)
 {
     Indent();
     m_output_stream << "[VarDeclStmt]\n";
@@ -192,27 +206,35 @@ void TreePrinter::Visit(VarDeclStmt* node)
             node->DeclType().ToString()
         );
     }
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(ExprStmt* node)
+void TreePrinter::PreorderVisit(ExprStmt* node)
 {
     Indent();
     m_output_stream << "[ExprStmt]\n";
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(VarInitExpr* node)
+void TreePrinter::PreorderVisit(VarInitExpr* node)
 {
     Indent();
     m_output_stream << "[VarInitExpr]\n";
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(VarInitList* node)
+void TreePrinter::PreorderVisit(VarInitList* node)
 {
     Indent();
     m_output_stream << "[VarInitList]\n";
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(ArrayAccessExpr* node)
+void TreePrinter::PreorderVisit(ArrayAccessExpr* node)
 {
     Indent();
     m_output_stream << "[ArrayAccessExpr]\n";
@@ -223,7 +245,7 @@ void TreePrinter::Visit(ArrayAccessExpr* node)
     }
 }
 
-void TreePrinter::Visit(BinaryExpr* node)
+void TreePrinter::PreorderVisit(BinaryExpr* node)
 {
     Indent();
     m_output_stream << "[BinaryExpr]\n";
@@ -232,9 +254,11 @@ void TreePrinter::Visit(BinaryExpr* node)
         Indent();
         m_output_stream << "- " << node->ToString() << "\n";
     }
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(FuncCallExpr* node)
+void TreePrinter::PreorderVisit(FuncCallExpr* node)
 {
     Indent();
     m_output_stream << "[FuncCallExpr]\n";
@@ -243,9 +267,11 @@ void TreePrinter::Visit(FuncCallExpr* node)
         Indent();
         m_output_stream << "- " << node->ToString() << "\n";
     }
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(Identifier* node)
+void TreePrinter::PreorderVisit(Identifier* node)
 {
     Indent();
     m_output_stream << "[Identifier]\n";
@@ -256,7 +282,7 @@ void TreePrinter::Visit(Identifier* node)
     }
 }
 
-void TreePrinter::Visit(Literal* node)
+void TreePrinter::PreorderVisit(Literal* node)
 {
     Indent();
     m_output_stream << "[Literal]\n";
@@ -267,7 +293,7 @@ void TreePrinter::Visit(Literal* node)
     }
 }
 
-void TreePrinter::Visit(MemberAccessExpr* node)
+void TreePrinter::PreorderVisit(MemberAccessExpr* node)
 {
     Indent();
     m_output_stream << "[MemberAccessExpr]\n";
@@ -276,9 +302,11 @@ void TreePrinter::Visit(MemberAccessExpr* node)
         Indent();
         m_output_stream << "- " << node->ToString() << "\n";
     }
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(PostfixExpr* node)
+void TreePrinter::PreorderVisit(PostfixExpr* node)
 {
     Indent();
     m_output_stream << "[PostfixExpr]\n";
@@ -287,9 +315,11 @@ void TreePrinter::Visit(PostfixExpr* node)
         Indent();
         m_output_stream << "- " << node->ToString() << "\n";
     }
+
+    IncreaseDepth();
 }
 
-void TreePrinter::Visit(PrefixExpr* node)
+void TreePrinter::PreorderVisit(PrefixExpr* node)
 {
     Indent();
     m_output_stream << "[PrefixExpr]\n";
@@ -298,6 +328,98 @@ void TreePrinter::Visit(PrefixExpr* node)
         Indent();
         m_output_stream << "- " << node->ToString() << "\n";
     }
+
+    IncreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(Module* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(FuncDecl* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(StructDecl* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(CompoundStmt* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(IfStmt* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(ForStmt* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(WhileStmt* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(JumpStmt* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(VarDeclStmt* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(ExprStmt* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(VarInitExpr* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(VarInitList* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(ArrayAccessExpr* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(BinaryExpr* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(FuncCallExpr* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(MemberAccessExpr* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(PostfixExpr* node)
+{
+    DecreaseDepth();
+}
+
+void TreePrinter::PostorderVisit(PrefixExpr* node)
+{
+    DecreaseDepth();
 }
 
 void TreePrinter::Indent()

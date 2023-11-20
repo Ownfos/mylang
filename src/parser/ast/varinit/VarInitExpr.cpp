@@ -10,11 +10,9 @@ VarInitExpr::VarInitExpr(std::shared_ptr<Expr> expr)
 
 void VarInitExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
     m_expr->Accept(visitor);
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 } // namespace mylang

@@ -10,13 +10,12 @@ CompoundStmt::CompoundStmt(const std::vector<std::shared_ptr<Stmt>>& statements)
 
 void CompoundStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
     for (const auto& stmt : m_statements)
     {
         stmt->Accept(visitor);
     }
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 } // namespace mylang

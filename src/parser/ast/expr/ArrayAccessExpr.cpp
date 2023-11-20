@@ -11,11 +11,11 @@ ArrayAccessExpr::ArrayAccessExpr(std::shared_ptr<Expr> expr, std::shared_ptr<Exp
 
 void ArrayAccessExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
+    
     m_expr->Accept(visitor);
     m_index->Accept(visitor);
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 std::string ArrayAccessExpr::ToString() const

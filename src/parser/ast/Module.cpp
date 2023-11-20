@@ -18,14 +18,12 @@ Module::Module(const Token& module_name, const std::vector<ModuleImportInfo>& im
 
 void Module::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
     for (auto& decl : m_global_declarations)
     {
         decl->Accept(visitor);
     }
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 const Token& Module::ModuleName() const

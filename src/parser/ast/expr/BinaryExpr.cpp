@@ -11,11 +11,10 @@ BinaryExpr::BinaryExpr(const Token& op, std::shared_ptr<Expr> lhs, std::shared_p
 
 void BinaryExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
     m_lhs->Accept(visitor);
     m_rhs->Accept(visitor);
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 std::string BinaryExpr::ToString() const

@@ -30,10 +30,9 @@ FuncDecl::FuncDecl(bool should_export, const Token& name, std::optional<Type> re
 
 void FuncDecl::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->Visit(this);
-    visitor->IncreaseDepth();
+    visitor->PreorderVisit(this);
     m_body->Accept(visitor);
-    visitor->DecreaseDepth();
+    visitor->PostorderVisit(this);
 }
 
 const Token& FuncDecl::Name() const
