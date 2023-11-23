@@ -59,6 +59,30 @@ std::string FuncType::ToString() const
     return str_builder.str();
 }
 
+bool FuncType::IsValid(
+    ProgramEnvironment& environment,
+    std::string_view context_module_name
+) const
+{
+    // If return type is invalid, FuncType is also invalid.
+    if (m_return_type && !m_return_type->IsValid(environment, context_module_name))
+    {
+        return false;
+    }
+
+    // If any paramter type is invalid, FuncType is also invalid.
+    for (const auto& [type, usage] : m_param_types)
+    {
+        if (!type.IsValid(environment, context_module_name))
+        {
+            return false;
+        }
+    }
+
+    // Everything is valid!
+    return true;
+}
+
 const std::vector<ParamType>& FuncType::ParamTypes() const
 {
     return m_param_types;

@@ -74,10 +74,6 @@ public:
     virtual void PostorderVisit(PrefixExpr* node) override;
 
 private:
-    void ValidateType(const Type& type);
-    void ValidateStructType(const StructType* type);
-    void ValidateFuncType(const FuncType* type);
-
     ProgramEnvironment& m_environment;
 
     // The name of module we are parsing

@@ -1,4 +1,5 @@
 #include "parser/type/Type.h"
+#include "parser/ProgramEnvironment.h"
 #include <format>
 
 namespace mylang
@@ -30,6 +31,30 @@ std::string Type::ToString() const
     }
     
     return type_str;
+}
+
+bool Type::IsValid(
+    ProgramEnvironment& environment,
+    std::string_view context_module_name
+) const
+{
+    // Make sure base type is good.
+    if (m_base_type->IsValid(environment, context_module_name))
+    {
+        return false;
+    }
+
+    // Now check the array sizes, which should be greater than 0.
+    for (auto size : m_array_sizes)
+    {
+        if (size <= 0)
+        {
+            return false;
+        }
+    }
+
+    // Everything is valid!
+    return true;
 }
 
 Type Type::RemoveLeftmostArrayDim(const Type& array_type)

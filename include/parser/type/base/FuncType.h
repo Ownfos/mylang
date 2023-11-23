@@ -35,6 +35,10 @@ public:
     FuncType(const std::vector<ParamType>& param_types, std::optional<Type> return_type);
 
     virtual std::string ToString() const override;
+    virtual bool IsValid(
+        ProgramEnvironment& environment,
+        std::string_view context_module_name
+    ) const override;
 
     const std::vector<ParamType>& ParamTypes() const;
     const std::optional<Type>& ReturnType() const;

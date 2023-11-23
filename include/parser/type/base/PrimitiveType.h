@@ -14,6 +14,10 @@ public:
     PrimitiveType(const Token& type);
 
     virtual std::string ToString() const override;
+    virtual bool IsValid(
+        ProgramEnvironment& environment,
+        std::string_view context_module_name
+    ) const override;
 
 private:
     Token m_type;

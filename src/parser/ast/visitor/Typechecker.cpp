@@ -37,46 +37,6 @@ TypeChecker::TypeChecker(ProgramEnvironment& environment)
     : m_environment(environment)
 {}
 
-void TypeChecker::ValidateType(const Type& type)
-{
-    auto base_type = type.BaseType();
-    if (auto type = dynamic_cast<const StructType*>(base_type))
-    {
-        ValidateStructType(type);
-    }
-    else if (auto type = dynamic_cast<const FuncType*>(base_type))
-    {
-        ValidateFuncType(type);
-    }
-}
-
-void TypeChecker::ValidateStructType(const StructType* type)
-{
-    // Check if the base type's name exists in a symbol table.
-    // If not, an exception will be thrown.
-    auto symbol = m_environment.FindSymbol(m_context_module_name, type->ToString()); 
-
-    // If the symbol exists, make sure it was declared as a struct type.
-    if (!dynamic_cast<StructDecl*>(symbol.declaration))
-    {
-        throw std::exception("a non-struct type identifier was used as a type specifier");
-    }
-}
-
-// Recursive validation on return type and parameters.
-void TypeChecker::ValidateFuncType(const FuncType* type)
-{
-    if (auto ret_type = type->ReturnType())
-    {
-        ValidateType(ret_type.value());
-    }
-
-    for (const ParamType& param_type : type->ParamTypes())
-    {
-        ValidateType(param_type.type);
-    }
-}
-
 void TypeChecker::PreorderVisit(Module* node)
 {
     m_context_module_name = node->ModuleName().lexeme;
@@ -96,11 +56,7 @@ void TypeChecker::PreorderVisit(StructDecl* node)
     // Make sure that all member variables with struct type are valid.
     for (const auto& member : node->Members())
     {
-        try
-        {
-            ValidateType(member.type);
-        }
-        catch(const std::exception&)
+        if (member.type.IsValid(m_environment, m_context_module_name))
         {
             auto message = std::format("member variable \"{}\" of struct \"{}\" tried to use invalid type \"{}\"",
                 member.name.lexeme,

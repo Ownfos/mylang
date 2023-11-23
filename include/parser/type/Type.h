@@ -19,7 +19,12 @@ public:
     const IBaseType* BaseType() const;
     const std::vector<int>& ArraySize() const;
 
+    // Wrapper functions for underlying base type.
     std::string ToString() const;
+    bool IsValid(
+        ProgramEnvironment& environment,
+        std::string_view context_module_name
+    ) const;
 
     // Create a resulting type of an array access operator "[]".
     // ex) i32[10][20] -> i32[20]
