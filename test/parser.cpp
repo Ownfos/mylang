@@ -936,3 +936,15 @@ TEST(TypeChecker, InvalidMemberType)
         "[Semantic Error][Ln 4, Col 5] member variable \"m2\" of struct \"A\" tried to use invalid type \"B\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, InvalidMemberTypeZeroArraySize)
+{
+    auto source =
+        "module a;\n"
+        "A: struct = {\n"
+        "    m: i32[0];\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] member variable \"m\" of struct \"A\" tried to use invalid type \"i32[0]\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
