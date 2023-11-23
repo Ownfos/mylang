@@ -1,6 +1,6 @@
 #include "parser/ast/globdecl/StructDecl.h"
 #include "parser/ast/visitor/IAbstractSyntaxTreeVisitor.h"
-#include "parser/type/base/DataType.h"
+#include "parser/type/base/StructType.h"
 
 namespace mylang
 {
@@ -9,7 +9,7 @@ StructDecl::StructDecl(bool should_export, const Token& name, const std::vector<
     : m_should_export(should_export)
     , m_name(name)
     , m_members(members)
-    , m_type(std::make_shared<DataType>(name))
+    , m_type(std::make_shared<StructType>(name))
 {}
 
 void StructDecl::Accept(IAbstractSyntaxTreeVisitor* visitor)

@@ -12,7 +12,6 @@ public:
     virtual ~IBaseType() = default;
 
     virtual std::string ToString() const = 0;
-    virtual bool IsStructType() const = 0;
 };
 
 } // namespace mylang

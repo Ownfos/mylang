@@ -9,6 +9,8 @@
 namespace mylang
 {
 
+class StructType;
+class FuncType;
 class IAbstractSyntaxTree;
 
 // Checks the following type contraints:
@@ -26,8 +28,6 @@ class TypeChecker : public IAbstractSyntaxTreeVisitor
 {
 public:
     TypeChecker(ProgramEnvironment& environment);
-
-    bool IsValidStructType(const IBaseType* base_type);
 
     virtual void PreorderVisit(Module* node) override;
     virtual void PreorderVisit(FuncDecl* node) override;
@@ -74,6 +74,10 @@ public:
     virtual void PostorderVisit(PrefixExpr* node) override;
 
 private:
+    void ValidateType(const Type& type);
+    void ValidateStructType(const StructType* type);
+    void ValidateFuncType(const FuncType* type);
+
     ProgramEnvironment& m_environment;
 
     // The name of module we are parsing

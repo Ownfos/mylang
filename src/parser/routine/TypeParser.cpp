@@ -1,5 +1,6 @@
 #include "parser/routine/TypeParser.h"
-#include "parser/type/base/DataType.h"
+#include "parser/type/base/PrimitiveType.h"
+#include "parser/type/base/StructType.h"
 #include "parser/type/base/FuncType.h"
 
 namespace mylang
@@ -70,12 +71,16 @@ std::shared_ptr<IBaseType> TypeParser::ParseBaseType()
         TokenType::IntType,
         TokenType::FloatType,
         TokenType::BoolType,
-        TokenType::StringType,
-        TokenType::Identifier
+        TokenType::StringType
     });
     if (type)
     {
-        return std::make_shared<DataType>(type.value());
+        return std::make_shared<PrimitiveType>(type.value());
+    }
+    // Case 2) struct type
+    else if (auto type = OptionalAccept(TokenType::Identifier))
+    {
+        return std::make_shared<StructType>(type.value());
     }
     // Case 2) function type: "[(type 1, type 2, ..., type N) -> type]"
     else

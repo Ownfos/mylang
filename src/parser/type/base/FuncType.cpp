@@ -59,9 +59,14 @@ std::string FuncType::ToString() const
     return str_builder.str();
 }
 
-bool FuncType::IsStructType() const
+const std::vector<ParamType>& FuncType::ParamTypes() const
 {
-    return false;
+    return m_param_types;
+}
+
+const std::optional<Type>& FuncType::ReturnType() const
+{
+    return m_return_type;
 }
 
 } // namespace mylang

@@ -933,6 +933,6 @@ TEST(TypeChecker, InvalidMemberType)
         "    m2: B;\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 4, Col 5] member variable \"m2\" of struct \"A\" tried to use non-struct base type \"B\"";
+        "[Semantic Error][Ln 4, Col 5] member variable \"m2\" of struct \"A\" tried to use invalid type \"B\"";
     ExpectTypeCheckFailure(source, expected_error);
 }

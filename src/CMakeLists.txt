@@ -38,7 +38,8 @@ add_library(mylanglib
     parser/ast/visitor/TypeChecker.cpp
 
     parser/type/Type.cpp
-    parser/type/base/DataType.cpp
+    parser/type/base/PrimitiveType.cpp
+    parser/type/base/StructType.cpp
     parser/type/base/FuncType.cpp
 
     parser/routine/TypeParser.cpp
