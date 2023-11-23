@@ -39,7 +39,7 @@ bool Type::IsValid(
 ) const
 {
     // Make sure base type is good.
-    if (m_base_type->IsValid(environment, context_module_name))
+    if (!m_base_type->IsValid(environment, context_module_name))
     {
         return false;
     }

@@ -56,7 +56,7 @@ void TypeChecker::PreorderVisit(StructDecl* node)
     // Make sure that all member variables with struct type are valid.
     for (const auto& member : node->Members())
     {
-        if (member.type.IsValid(m_environment, m_context_module_name))
+        if (!member.type.IsValid(m_environment, m_context_module_name))
         {
             auto message = std::format("member variable \"{}\" of struct \"{}\" tried to use invalid type \"{}\"",
                 member.name.lexeme,
