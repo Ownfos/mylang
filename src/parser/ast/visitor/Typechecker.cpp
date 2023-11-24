@@ -142,7 +142,7 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
     {
         if (var_array_sizes[i] < init_array_sizes[i])
         {
-            auto message = std::format("array size of initializer \"\" exceeds variable's type \"{}\"",
+            auto message = std::format("array size of initializer's type \"{}\" exceeds variable's type \"{}\"",
                 init_type.ToString(),
                 var_type.ToString()
             );

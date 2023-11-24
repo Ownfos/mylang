@@ -1072,6 +1072,19 @@ TEST(TypeChecker, ValidArrayVarDeclInsufficientInitializer)
     ExpectTypeCheckSuccess(source);
 }
 
+// Initializer list should not exceed variable's array size.
+TEST(TypeChecker, ValidArrayVarDeclTooLargeInitializer)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32[2] = {1, 2, 3};\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] array size of initializer's type \"i32[3]\" exceeds variable's type \"i32[2]\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
 TEST(TypeChecker, InvalidIntVarDeclWithInitializerList)
 {
     auto source =
