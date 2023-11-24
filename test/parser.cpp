@@ -971,3 +971,51 @@ TEST(TypeChecker, InvalidPrimitiveTypeVarDecl)
         "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"str\" to \"i32\" type variable";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidArrayVarDecl)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: bool[2] = {true, false};\n"
+        "    j: i32[2][2] = {{1, 2}, {3, 4}};\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+// We should not reject initializer list with partial information,
+// because we sometimes want to make big arrays which we cannot specify values one by one.
+TEST(TypeChecker, ValidArrayVarDeclInsufficientInitializer)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32[100] = {1, 2};\n"
+        "    j: i32[100][100] = {{1, 2}, {3}};\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidIntVarDeclWithInitializerList)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32 = {1, 2, 3};\n"
+        "}\n";
+    auto expected =
+        "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"i32[3]\" to \"i32\" type variable";
+    ExpectTypeCheckFailure(source, expected);
+}
+
+TEST(TypeChecker, InvalidIntArrayWithDimensionMismatch)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32 = {1, 2, 3};\n"
+        "}\n";
+    auto expected =
+        "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"i32[3]\" to \"i32\" type variable";
+    ExpectTypeCheckFailure(source, expected);
+}

@@ -97,6 +97,14 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
 {
     auto var_type = node->DeclType();
     auto initializer_type = GetNodeType(node->Initializer());
+
+    // TODO: allow type coersion or initializer list of smaller dimensions
+    //
+    // example)
+    // f32 <- i32 (valid)
+    // i32[100] <- i32[2] (valid)
+    //
+    // Note: array size should match on assignment, but initializers do not require strict size match!
     if (var_type != initializer_type)
     {
         auto message = std::format("trying to assign expression of type \"{}\" to \"{}\" type variable",
@@ -120,7 +128,10 @@ void TypeChecker::PostorderVisit(VarInitExpr* node)
 
 void TypeChecker::PostorderVisit(VarInitList* node)
 {
-    // TODO: implement
+    // TODO: construct array type from elements in the list.
+    // case 1) base type and array size match => good!
+    // case 2) base type matches but array size differs => use the maximum size to afford all of them
+    // case 3) base type doesn't match => throw an exception
 }
 
 void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
