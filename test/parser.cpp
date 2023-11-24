@@ -11,10 +11,62 @@
 #include "parser/ast/visitor/GlobalSymbolScanner.h"
 #include "parser/ast/visitor/TypeChecker.h"
 #include "parser/SemanticError.h"
+#include "parser/type/Type.h"
+#include "parser/type/base/PrimitiveType.h"
 #include <gtest/gtest.h>
 #include <sstream>
 
 using namespace mylang;
+
+Type CreateDummyIntArrayType(const std::vector<int>& array_sizes)
+{
+    auto base_type = std::make_shared<PrimitiveType>(Token{.type = TokenType::IntType, .lexeme="i32"});
+    return Type(base_type, array_sizes);
+}
+
+TEST(Type, RemoveArrayDimension)
+{
+    auto type = CreateDummyIntArrayType({2, 1});
+
+    ASSERT_EQ(type.ToString(), "i32[2][1]");
+
+    type.RemoveLeftmostArrayDim();
+    ASSERT_EQ(type.ToString(), "i32[1]");
+
+    type.RemoveLeftmostArrayDim();
+    ASSERT_EQ(type.ToString(), "i32");
+}
+
+TEST(Type, AddArrayDimension)
+{
+    auto type = CreateDummyIntArrayType({});
+
+    ASSERT_EQ(type.ToString(), "i32");
+
+    type.AddLeftmostArrayDim(1);
+    ASSERT_EQ(type.ToString(), "i32[1]");
+
+    type.AddLeftmostArrayDim(2);
+    ASSERT_EQ(type.ToString(), "i32[2][1]");
+}
+
+TEST(Type, MergeArraySizeSameDimension)
+{
+    auto type1 = CreateDummyIntArrayType({2, 3});
+    auto type2 = CreateDummyIntArrayType({4, 1});
+    type1.MergeArrayDim(type2);
+
+    ASSERT_EQ(type1.ToString(), "i32[4][3]");
+}
+
+TEST(Type, MergeArraySizeLowerDimension)
+{
+    auto type1 = CreateDummyIntArrayType({1, 2, 3});
+    auto type2 = CreateDummyIntArrayType({5});
+    type1.MergeArrayDim(type2);
+
+    ASSERT_EQ(type1.ToString(), "i32[1][2][5]");
+}
 
 void TestTypeParser(const std::vector<Token>& tokens, std::string_view expected)
 {

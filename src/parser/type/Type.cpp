@@ -57,15 +57,46 @@ bool Type::IsValid(
     return true;
 }
 
-Type Type::RemoveLeftmostArrayDim(const Type& array_type)
+void Type::RemoveLeftmostArrayDim()
 {
-    // Copy type instance.
-    auto result = array_type;
+    m_array_sizes.erase(m_array_sizes.begin());
+}
 
-    // Remove the first dimension size.
-    result.m_array_sizes.erase(result.m_array_sizes.begin());
+void Type::AddLeftmostArrayDim(int dimension_size)
+{
+    m_array_sizes.insert(m_array_sizes.begin(), dimension_size);
+}
 
-    return result;
+void Type::MergeArrayDim(const Type& other)
+{
+    // If 'other' has higher dimension, copy the upper dimension sizes
+    // ex)
+    // 'this': [1], 'other': [3][2][1]
+    // => i starts at (3 - 2 - 1) = 1, which points to 2
+    // => AddLeftmostArrayDim(2)
+    // => AddLeftmostArrayDim(3)
+    auto my_dim = static_cast<int>(m_array_sizes.size());
+    auto other_dim = static_cast<int>(other.m_array_sizes.size());
+    for (int i = other_dim - my_dim - 1; i >= 0; --i)
+    {
+        my_dim++;
+        AddLeftmostArrayDim(other.m_array_sizes[i]);
+    }
+
+    // Since 'other' can have lower dimension than 'this', loop runs w.r.t. 'other'.
+    // Compare the rightmost dimension of each array, then move to the left one by one.
+    // Any higher dimension that does not exist in 'other' does not require modification.
+    // ex)
+    // 'this': [3][2][1], 'other': [5][2]
+    // => dim_offset = 1
+    // => [1] vs [2] => [2]
+    // => [2] vs [5] => [5]
+    // => final result: [3][5][2]
+    auto dim_offset = my_dim - other_dim;
+    for (int i = 0; i < other.m_array_sizes.size(); ++i)
+    {
+        m_array_sizes[dim_offset + i] = std::max(m_array_sizes[dim_offset + i], other.m_array_sizes[i]);
+    }
 }
 
 bool Type::operator==(const Type& other) const

@@ -26,10 +26,19 @@ public:
         std::string_view context_module_name
     ) const;
 
-    // Create a resulting type of an array access operator "[]".
     // ex) i32[10][20] -> i32[20]
     // ex) bool[5] -> bool
-    static Type RemoveLeftmostArrayDim(const Type& array_type);
+    void RemoveLeftmostArrayDim();
+
+    // ex) i32[20] -> i32[10][20]
+    void AddLeftmostArrayDim(int dimension_size);
+
+    // Increase array size if needed so that operand array can fit in this array.
+    // ex) i32[1][3].MergeArrayDim(i32[5][1]) => i32[5][3]
+    //
+    // If number of dimensions differ, the one with higher dimension will be used.
+    // ex) i32[2].MergeArrayDim(i32[10][1]]) => i32[10][2]
+    void MergeArrayDim(const Type& other);
 
     bool operator==(const Type& other) const;
     bool operator!=(const Type& other) const;
