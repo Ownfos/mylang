@@ -1020,7 +1020,7 @@ TEST(TypeChecker, InvalidPrimitiveTypeVarDecl)
         "    i: i32 = \"hello\";"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"str\" to \"i32\" type variable";
+        "[Semantic Error][Ln 3, Col 5] implicit conversion from base type \"str\" to \"i32\" is not allowed";
     ExpectTypeCheckFailure(source, expected_error);
 }
 

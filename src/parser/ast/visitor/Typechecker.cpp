@@ -100,6 +100,43 @@ void TypeChecker::PreorderVisit(VarDeclStmt* node)
     m_latest_source_pos = node->Name().start_pos;
 }
 
+// Returns true if assigning source type value to dest type variable is possible.
+bool IsBasetypeCompatible(const IBaseType* dest, const IBaseType* source)
+{
+    // Identical types are obviously valid.
+    if (dest->ToString() == source->ToString()) return true;
+
+    // TODO: Check if type coercion is possible.
+    // if (...) return true
+
+    // Otherwise, source and dest are incompatible types.
+    return false;
+}
+
+bool IsNumDimensionSame(const Type& arr1, const Type& arr2)
+{
+    // ArraySize() returns array size for each dimension,
+    // so ArraySize().size() is the number of dimensions.
+    return arr1.ArraySize().size() == arr2.ArraySize().size();
+}
+
+// Returns true if value_arr has smaller or equal array size than container_arr.
+// The two array types should have equal number of dimensions.
+// ex) {10, 10} <- {2, 2} => true
+//     {2, 2} <- {5, 1} => false (2 > 5 on the first dimension!)
+bool IsArraySizeContainable(const std::vector<int>& container_arr_size, const std::vector<int>& value_arr_size)
+{
+    for (int i=0;i<container_arr_size.size();++i)
+    {
+        if (container_arr_size[i] < value_arr_size[i])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void TypeChecker::PostorderVisit(VarDeclStmt* node)
 {
     // We will check if the initializer type is appropriate for this variable.
@@ -107,27 +144,18 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
     auto init_type = GetNodeType(node->Initializer());
 
     // Check if base type is compatible.
-    if (var_type.BaseType()->ToString() != init_type.BaseType()->ToString())
+    if (!IsBasetypeCompatible(var_type.BaseType(), init_type.BaseType()))
     {
-        // TODO: change the condition so that we throw exception
-        //       only when type coercion is impossible.
-        //       ex) f32 <- i32 (valid)
-        //           i32 <- f32 (invalid)
-        if (true)
-        {
-            auto message = std::format("trying to assign expression of type \"{}\" to \"{}\" type variable",
-                init_type.ToString(),
-                var_type.ToString()
-            );
-            throw SemanticError(node->Name().start_pos, message);
-        }
+        auto message = std::format("implicit conversion from base type \"{}\" to \"{}\" is not allowed",
+            init_type.ToString(),
+            var_type.ToString()
+        );
+        throw SemanticError(node->Name().start_pos, message);
     }
 
     // Check if initializer list has same number of dimensions.
     // ex) arr: i32[100] = {{1}, {2}} (invalid: dimension mismatch)
-    auto var_array_sizes = var_type.ArraySize();
-    auto init_array_sizes = init_type.ArraySize();
-    if (var_array_sizes.size() != init_array_sizes.size())
+    if (!IsNumDimensionSame(var_type, init_type))
     {
         auto message = std::format("trying to assign expression of type \"{}\" to \"{}\" type variable",
             init_type.ToString(),
@@ -138,16 +166,13 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
 
     // Check if initializer list has less-or-equal size compared to the variable type.
     // ex) arr: i32[100] = {0}; (valid: partial initialization)
-    for (int i=0;i<var_array_sizes.size();++i)
+    if (!IsArraySizeContainable(var_type.ArraySize(), init_type.ArraySize()))
     {
-        if (var_array_sizes[i] < init_array_sizes[i])
-        {
-            auto message = std::format("array size of initializer's type \"{}\" exceeds variable's type \"{}\"",
-                init_type.ToString(),
-                var_type.ToString()
-            );
-            throw SemanticError(node->Name().start_pos, message);
-        }
+        auto message = std::format("array size of initializer's type \"{}\" exceeds variable's type \"{}\"",
+            init_type.ToString(),
+            var_type.ToString()
+        );
+        throw SemanticError(node->Name().start_pos, message);
     }
 }
 
