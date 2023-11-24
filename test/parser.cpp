@@ -902,7 +902,7 @@ void ExpectTypeCheckFailure(std::string&& source_file, std::string_view expected
         }
         catch (const SemanticError& e)
         {
-            ASSERT_EQ(e.what(), expected_error_message);
+            ASSERT_EQ(std::string_view(e.what()), expected_error_message);
             throw;
         },
         SemanticError
@@ -955,7 +955,7 @@ TEST(TypeChecker, ValidPrimitiveTypeVarDecl)
         "module a;\n"
         "main: func =() {\n"
         "    i: i32 = 0;"
-        "    j: str = \"hello\"\n"
+        "    j: str = \"hello\";\n"
         "}\n";
     ExpectTypeCheckSuccess(source);
 }

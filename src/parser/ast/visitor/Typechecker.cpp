@@ -95,7 +95,16 @@ void TypeChecker::PostorderVisit(JumpStmt* node)
 
 void TypeChecker::PostorderVisit(VarDeclStmt* node)
 {
-    // TODO: implement
+    auto var_type = node->DeclType();
+    auto initializer_type = GetNodeType(node->Initializer());
+    if (var_type != initializer_type)
+    {
+        auto message = std::format("trying to assign expression of type \"{}\" to \"{}\" type variable",
+            initializer_type.ToString(),
+            var_type.ToString()
+        );
+        throw SemanticError(node->Name().start_pos, message);
+    }
 }
 
 void TypeChecker::PostorderVisit(ExprStmt* node)
@@ -105,7 +114,8 @@ void TypeChecker::PostorderVisit(ExprStmt* node)
 
 void TypeChecker::PostorderVisit(VarInitExpr* node)
 {
-    // TODO: implement
+    // VarInitExpr has same type as its internal Expr node.
+    SetNodeType(node, GetNodeType(node->Expression()));
 }
 
 void TypeChecker::PostorderVisit(VarInitList* node)
@@ -135,7 +145,7 @@ void TypeChecker::PostorderVisit(Identifier* node)
 
 void TypeChecker::PostorderVisit(Literal* node)
 {
-    // TODO: implement
+    SetNodeType(node, node->DeclType());
 }
 
 void TypeChecker::PostorderVisit(MemberAccessExpr* node)
@@ -151,6 +161,16 @@ void TypeChecker::PostorderVisit(PostfixExpr* node)
 void TypeChecker::PostorderVisit(PrefixExpr* node)
 {
     // TODO: implement
+}
+
+void TypeChecker::SetNodeType(const IAbstractSyntaxTree* node, const Type& type)
+{
+    m_type_dict.insert({node, type});
+}
+
+const Type& TypeChecker::GetNodeType(const IAbstractSyntaxTree* node) const
+{
+    return m_type_dict.at(node);
 }
 
 } // namespace mylang

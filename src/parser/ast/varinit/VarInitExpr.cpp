@@ -15,4 +15,9 @@ void VarInitExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const Expr* VarInitExpr::Expression() const
+{
+    return m_expr.get();
+}
+
 } // namespace mylang

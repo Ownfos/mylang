@@ -74,13 +74,17 @@ public:
     virtual void PostorderVisit(PrefixExpr* node) override;
 
 private:
+    // Getter and setter that wraps std::map implementation details
+    void SetNodeType(const IAbstractSyntaxTree* node, const Type& type);
+    const Type& GetNodeType(const IAbstractSyntaxTree* node) const;
+
     ProgramEnvironment& m_environment;
 
     // The name of module we are parsing
     std::string_view m_context_module_name;
 
     // Stores temporary expression node's type
-    std::map<IAbstractSyntaxTree*, Type> m_type_dict;
+    std::map<const IAbstractSyntaxTree*, Type> m_type_dict;
 
     // Used to store a currently analyzed function's signature.
     // Return type matching is the key purpose for saving this info.

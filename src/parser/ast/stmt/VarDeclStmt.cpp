@@ -27,4 +27,9 @@ const Type& VarDeclStmt::DeclType() const
     return m_type;
 }
 
+const VarInit* VarDeclStmt::Initializer() const
+{
+    return m_initializer.get();
+}
+
 } // namespace mylang

@@ -15,6 +15,8 @@ public:
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
 
+    const Expr* Expression() const;
+
 private:
     std::shared_ptr<Expr> m_expr;
 };
