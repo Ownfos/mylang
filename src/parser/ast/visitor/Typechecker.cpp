@@ -102,23 +102,52 @@ void TypeChecker::PreorderVisit(VarDeclStmt* node)
 
 void TypeChecker::PostorderVisit(VarDeclStmt* node)
 {
+    // We will check if the initializer type is appropriate for this variable.
     auto var_type = node->DeclType();
-    auto initializer_type = GetNodeType(node->Initializer());
+    auto init_type = GetNodeType(node->Initializer());
 
-    // TODO: allow type coersion or initializer list of smaller dimensions
-    //
-    // example)
-    // f32 <- i32 (valid)
-    // i32[100] <- i32[2] (valid)
-    //
-    // Note: array size should match on assignment, but initializers do not require strict size match!
-    if (var_type != initializer_type)
+    // Check if base type is compatible.
+    if (var_type.BaseType()->ToString() != init_type.BaseType()->ToString())
+    {
+        // TODO: change the condition so that we throw exception
+        //       only when type coercion is impossible.
+        //       ex) f32 <- i32 (valid)
+        //           i32 <- f32 (invalid)
+        if (true)
+        {
+            auto message = std::format("trying to assign expression of type \"{}\" to \"{}\" type variable",
+                init_type.ToString(),
+                var_type.ToString()
+            );
+            throw SemanticError(node->Name().start_pos, message);
+        }
+    }
+
+    // Check if initializer list has same number of dimensions.
+    // ex) arr: i32[100] = {{1}, {2}} (invalid: dimension mismatch)
+    auto var_array_sizes = var_type.ArraySize();
+    auto init_array_sizes = init_type.ArraySize();
+    if (var_array_sizes.size() != init_array_sizes.size())
     {
         auto message = std::format("trying to assign expression of type \"{}\" to \"{}\" type variable",
-            initializer_type.ToString(),
+            init_type.ToString(),
             var_type.ToString()
         );
         throw SemanticError(node->Name().start_pos, message);
+    }
+
+    // Check if initializer list has less-or-equal size compared to the variable type.
+    // ex) arr: i32[100] = {0}; (valid: partial initialization)
+    for (int i=0;i<var_array_sizes.size();++i)
+    {
+        if (var_array_sizes[i] < init_array_sizes[i])
+        {
+            auto message = std::format("array size of initializer \"\" exceeds variable's type \"{}\"",
+                init_type.ToString(),
+                var_type.ToString()
+            );
+            throw SemanticError(node->Name().start_pos, message);
+        }
     }
 }
 
