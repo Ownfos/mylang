@@ -69,33 +69,15 @@ void Type::AddLeftmostArrayDim(int dimension_size)
 
 void Type::MergeArrayDim(const Type& other)
 {
-    // If 'other' has higher dimension, copy the upper dimension sizes
-    // ex)
-    // 'this': [1], 'other': [3][2][1]
-    // => i starts at (3 - 2 - 1) = 1, which points to 2
-    // => AddLeftmostArrayDim(2)
-    // => AddLeftmostArrayDim(3)
-    auto my_dim = static_cast<int>(m_array_sizes.size());
-    auto other_dim = static_cast<int>(other.m_array_sizes.size());
-    for (int i = other_dim - my_dim - 1; i >= 0; --i)
+    // Do not allow mixing arrays with different number of dimensions.
+    if (m_array_sizes.size() != other.m_array_sizes.size())
     {
-        my_dim++;
-        AddLeftmostArrayDim(other.m_array_sizes[i]);
+        throw std::exception("MergeArrayDim() is only allowed on two arrays with same number of dimensions");
     }
 
-    // Since 'other' can have lower dimension than 'this', loop runs w.r.t. 'other'.
-    // Compare the rightmost dimension of each array, then move to the left one by one.
-    // Any higher dimension that does not exist in 'other' does not require modification.
-    // ex)
-    // 'this': [3][2][1], 'other': [5][2]
-    // => dim_offset = 1
-    // => [1] vs [2] => [2]
-    // => [2] vs [5] => [5]
-    // => final result: [3][5][2]
-    auto dim_offset = my_dim - other_dim;
-    for (int i = 0; i < other.m_array_sizes.size(); ++i)
+    for (int i = 0; i < m_array_sizes.size(); ++i)
     {
-        m_array_sizes[dim_offset + i] = std::max(m_array_sizes[dim_offset + i], other.m_array_sizes[i]);
+        m_array_sizes[i] = std::max(m_array_sizes[i], other.m_array_sizes[i]);
     }
 }
 

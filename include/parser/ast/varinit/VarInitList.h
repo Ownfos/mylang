@@ -15,6 +15,8 @@ public:
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
 
+    const std::vector<std::shared_ptr<VarInit>>& InitializerList() const;
+
 private:
     std::vector<std::shared_ptr<VarInit>> m_initializer_list;
 };

@@ -18,4 +18,9 @@ void VarInitList::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const std::vector<std::shared_ptr<VarInit>>& VarInitList::InitializerList() const
+{
+    return m_initializer_list;
+}
+
 } // namespace mylang

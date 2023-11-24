@@ -36,8 +36,7 @@ public:
     // Increase array size if needed so that operand array can fit in this array.
     // ex) i32[1][3].MergeArrayDim(i32[5][1]) => i32[5][3]
     //
-    // If number of dimensions differ, the one with higher dimension will be used.
-    // ex) i32[2].MergeArrayDim(i32[10][1]]) => i32[10][2]
+    // If the number of dimensions differ between the two, an exception will be thrown.
     void MergeArrayDim(const Type& other);
 
     bool operator==(const Type& other) const;

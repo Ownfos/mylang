@@ -93,6 +93,13 @@ void TypeChecker::PostorderVisit(JumpStmt* node)
     // TODO: implement
 }
 
+void TypeChecker::PreorderVisit(VarDeclStmt* node)
+{
+    // This information will be used to report source location
+    // when initializer list generates a semantic error.
+    m_latest_source_pos = node->Name().start_pos;
+}
+
 void TypeChecker::PostorderVisit(VarDeclStmt* node)
 {
     auto var_type = node->DeclType();
@@ -126,12 +133,59 @@ void TypeChecker::PostorderVisit(VarInitExpr* node)
     SetNodeType(node, GetNodeType(node->Expression()));
 }
 
+
+// We will find the minimum array size which can
+// accommodate all elements in this initializer list.
+//
+// Starting from the type of the first element,
+// the array size on each dimension will grow whenever
+// a sibling element has larger array size on that dimension.
+//
+// example)
+// Given list is {{1}, {2, 3}, {4}}.
+//
+// Start with i32[1]
+// => to accommodate {2, 3}, increase size to i32[2]
+// => to accommodate {4}, we don't need any extra work.
+//
+// After iteration is done, append extra dimension on the left
+// to note that this is an array of elements
+// => i32[3][2]
 void TypeChecker::PostorderVisit(VarInitList* node)
 {
-    // TODO: construct array type from elements in the list.
-    // case 1) base type and array size match => good!
-    // case 2) base type matches but array size differs => use the maximum size to afford all of them
-    // case 3) base type doesn't match => throw an exception
+    auto list_type = GetNodeType(node->InitializerList().begin()->get());
+
+    for (const std::shared_ptr<VarInit>& elem : node->InitializerList())
+    {
+        auto elem_type = GetNodeType(elem.get());
+
+        // Do not allow mixing types inside a single initializer list.
+        auto expected_base_type_name = list_type.BaseType()->ToString();
+        auto elem_base_type_name = elem_type.BaseType()->ToString();
+        if (expected_base_type_name != elem_base_type_name)
+        {
+            auto message = std::format("trying to mix types \"{}\" and \"{}\" inside an initializer list",
+                expected_base_type_name,
+                elem_base_type_name
+            );
+            throw SemanticError(m_latest_source_pos, message);
+        }
+
+        // Update list type to a bigger array which can store all elements in this list.
+        // When number of dimensions differ between elements, an exception will be thrown.
+        try
+        {
+            list_type.MergeArrayDim(elem_type);
+        }
+        catch(const std::exception&)
+        {
+            throw SemanticError(m_latest_source_pos, "every element in an initializer list should have same dimension");
+        }
+    }
+
+    list_type.AddLeftmostArrayDim(static_cast<int>(node->InitializerList().size()));
+
+    SetNodeType(node, list_type);
 }
 
 void TypeChecker::PostorderVisit(ArrayAccessExpr* node)

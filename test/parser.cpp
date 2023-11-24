@@ -59,13 +59,13 @@ TEST(Type, MergeArraySizeSameDimension)
     ASSERT_EQ(type1.ToString(), "i32[4][3]");
 }
 
-TEST(Type, MergeArraySizeLowerDimension)
+TEST(Type, MergeArraySizeDifferentDimension)
 {
-    auto type1 = CreateDummyIntArrayType({1, 2, 3});
-    auto type2 = CreateDummyIntArrayType({5});
-    type1.MergeArrayDim(type2);
+    auto type1 = CreateDummyIntArrayType({2, 3});
+    auto type2 = CreateDummyIntArrayType({1});
 
-    ASSERT_EQ(type1.ToString(), "i32[1][2][5]");
+    // Mixing arrays of different dimension is not allowed!
+    EXPECT_THROW(type1.MergeArrayDim(type2), std::exception);
 }
 
 void TestTypeParser(const std::vector<Token>& tokens, std::string_view expected)
@@ -1033,6 +1033,18 @@ TEST(TypeChecker, ValidArrayVarDecl)
         "    j: i32[2][2] = {{1, 2}, {3, 4}};\n"
         "}\n";
     ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidArrayVarDeclMixedType)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: bool[2] = {true, 1};\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] trying to mix types \"bool\" and \"i32\" inside an initializer list";
+    ExpectTypeCheckFailure(source, expected_error);
 }
 
 // We should not reject initializer list with partial information,
