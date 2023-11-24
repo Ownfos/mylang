@@ -18,8 +18,14 @@ std::string TokenTypeName(TokenType type)
         return "StringLiteral";
     case TokenType::BoolLiteral:
         return "BoolLiteral";
+    case TokenType::IntType:
+        return "i32";
+    case TokenType::FloatType:
+        return "f32";
     case TokenType::StringType:
-        return "StringType";
+        return "str";
+    case TokenType::BoolType:
+        return "bool";
     case TokenType::For:
         return "For";
     case TokenType::While:
