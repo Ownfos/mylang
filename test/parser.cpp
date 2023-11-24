@@ -1152,9 +1152,9 @@ TEST(TypeChecker, InvalidIntVarDeclWithInitializerList)
         "main: func =() {\n"
         "    i: i32 = {1, 2, 3};\n"
         "}\n";
-    auto expected =
+    auto expected_error =
         "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"i32[3]\" to \"i32\" type variable";
-    ExpectTypeCheckFailure(source, expected);
+    ExpectTypeCheckFailure(source, expected_error);
 }
 
 TEST(TypeChecker, InvalidIntArrayWithDimensionMismatch)
@@ -1164,9 +1164,9 @@ TEST(TypeChecker, InvalidIntArrayWithDimensionMismatch)
         "main: func =() {\n"
         "    i: i32 = {1, 2, 3};\n"
         "}\n";
-    auto expected =
+    auto expected_error =
         "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"i32[3]\" to \"i32\" type variable";
-    ExpectTypeCheckFailure(source, expected);
+    ExpectTypeCheckFailure(source, expected_error);
 }
 
 TEST(TypeChecker, ValidVarDeclTypeCoercion)
@@ -1186,9 +1186,9 @@ TEST(TypeChecker, InvalidVarDeclTypeCoercion)
         "main: func =() {\n"
         "    i: i32 = 1.0;\n"
         "}\n";
-    auto expected =
+    auto expected_error =
         "[Semantic Error][Ln 3, Col 5] implicit conversion from base type \"f32\" to \"i32\" is not allowed";
-    ExpectTypeCheckFailure(source, expected);
+    ExpectTypeCheckFailure(source, expected_error);
 }
 
 TEST(TypeChecker, ValidVarDeclInitWithVar)
@@ -1200,4 +1200,26 @@ TEST(TypeChecker, ValidVarDeclInitWithVar)
         "    j: f32 = i;\n"
         "}\n";
     ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, ValidIfCondition)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    if (true) {}"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidIfCondition)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    if (1) {}"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] condition expression should have bool type, instead of \"i32\"";
+    ExpectTypeCheckFailure(source, expected_error);
 }
