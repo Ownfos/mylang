@@ -255,7 +255,7 @@ std::shared_ptr<Stmt> StmtParser::ParseJumpStmt()
 }
 
 // var-decl-stmt ::= var-decl ";"
-// var-decl      ::= identifier ":" type "=" var-init
+// var-decl      ::= identifier ":" type ("=" var-init)?
 std::shared_ptr<Stmt> StmtParser::ParseVarDeclStmt()
 {
     try
@@ -263,14 +263,20 @@ std::shared_ptr<Stmt> StmtParser::ParseVarDeclStmt()
         auto id = Accept(TokenType::Identifier);
         Accept(TokenType::Colon);
         auto type = m_type_parser->Parse();
-        Accept(TokenType::Assign);
-        auto initializer = ParseVarInit();
+
+        // Optional initializer
+        auto initializer = std::shared_ptr<VarInit>{};
+        if (OptionalAccept(TokenType::Assign))
+        {
+            initializer = ParseVarInit();
+        }
         Accept(TokenType::Semicolon);
+        
         return std::make_shared<VarDeclStmt>(id, type, initializer);
     }
     catch(const ParseRoutineError& e)
     {
-        throw PatternMismatchError(e, "var-decl-stmt ::= identifier  \":\" type \"=\" var-init");
+        throw PatternMismatchError(e, "var-decl-stmt ::= identifier  \":\" type (\"=\" var-init)?");
     }
 }
 

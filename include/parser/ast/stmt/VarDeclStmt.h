@@ -13,6 +13,7 @@ namespace mylang
 class VarDeclStmt : public Stmt, public Decl
 {
 public:
+    // 'initializer' is an optional part, so nullptr is allowed.
     VarDeclStmt(const Token& name, const Type& type, std::shared_ptr<VarInit> initializer);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;

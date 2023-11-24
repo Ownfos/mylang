@@ -142,7 +142,7 @@ for-stmt      ::= "for" "(" (var-decl | expr)? ";" expr? ";" expr? ")" compound-
 while-stmt    ::= "while" "(" expr ")" compound-stmt
 jump-stmt     ::= ("return" expr? | "break" | "continue") ";"
 
-var-decl      ::= identifier ":" type "=" var-init
+var-decl      ::= identifier ":" type ("=" var-init)?
 var-init      ::= expr | "{" var-init ("," var-init)* "}"
 ```
 ### Types

@@ -107,7 +107,7 @@ bool IsBasetypeCompatible(const IBaseType* dest, const IBaseType* source)
     if (dest->ToString() == source->ToString()) return true;
 
     // TODO: Check if type coercion is possible.
-    // if (...) return true
+    if (dest->ToString() == "f32" && source->ToString() == "i32") return true;
 
     // Otherwise, source and dest are incompatible types.
     return false;
@@ -139,6 +139,9 @@ bool IsArraySizeContainable(const std::vector<int>& container_arr_size, const st
 
 void TypeChecker::PostorderVisit(VarDeclStmt* node)
 {
+    // Nothing to check if we don't have the optional initializer part.
+    if (!node->Initializer()) return;
+
     // We will check if the initializer type is appropriate for this variable.
     auto var_type = node->DeclType();
     auto init_type = GetNodeType(node->Initializer());

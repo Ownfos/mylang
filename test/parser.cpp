@@ -434,6 +434,23 @@ TEST(StmtParser, VariableDeclaration)
     TestStmtParser(tokens, expected);
 }
 
+TEST(StmtParser, VariableDeclarationWithoutInit)
+{
+    auto tokens = std::vector<Token>{
+        {TokenType::Identifier, "count"},
+        {TokenType::Colon, ":"},
+        {TokenType::IntType, "i32"},
+        {TokenType::Semicolon, ";"}
+    };
+
+    auto expected =
+        "[VarDeclStmt]\n"
+        "- name: count\n"
+        "- type: i32\n";
+    
+    TestStmtParser(tokens, expected);
+}
+
 TEST(StmtParser, CompoundStatement)
 {
     auto tokens = std::vector<Token>{
@@ -1031,6 +1048,7 @@ TEST(TypeChecker, ValidArrayVarDecl)
         "main: func =() {\n"
         "    i: bool[2] = {true, false};\n"
         "    j: i32[2][2] = {{1, 2}, {3, 4}};\n"
+        "    k: [(i32)];\n"
         "}\n";
     ExpectTypeCheckSuccess(source);
 }

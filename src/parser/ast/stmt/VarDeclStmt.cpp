@@ -13,7 +13,11 @@ VarDeclStmt::VarDeclStmt(const Token& name, const Type& type, std::shared_ptr<Va
 void VarDeclStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
     visitor->PreorderVisit(this);
-    m_initializer->Accept(visitor);
+    // Note: initializer is optional
+    if (m_initializer)
+    {
+        m_initializer->Accept(visitor);
+    }
     visitor->PostorderVisit(this);
 }
 
