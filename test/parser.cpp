@@ -948,3 +948,26 @@ TEST(TypeChecker, InvalidMemberTypeZeroArraySize)
         "[Semantic Error][Ln 3, Col 5] member variable \"m\" of struct \"A\" tried to use invalid type \"i32[0]\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidPrimitiveTypeVarDecl)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32 = 0;"
+        "    j: str = \"hello\"\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidPrimitiveTypeVarDecl)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32 = \"hello\";"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"str\" to \"i32\" type variable";
+    ExpectTypeCheckFailure(source, expected_error);
+}
