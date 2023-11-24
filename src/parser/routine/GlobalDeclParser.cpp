@@ -52,7 +52,7 @@ std::shared_ptr<GlobalDecl> GlobalDeclParser::ParseFuncDecl(bool should_export, 
         Accept(TokenType::Func);
         Accept(TokenType::Assign);
         Accept(TokenType::LeftParen);
-        auto parameters = std::vector<Parameter>{};
+        auto parameters = std::vector<std::shared_ptr<Parameter>>{};
         if (Peek() == TokenType::Identifier)
         {
             parameters = ParseParamList();
@@ -82,11 +82,11 @@ std::shared_ptr<GlobalDecl> GlobalDeclParser::ParseFuncDecl(bool should_export, 
 }
 
 // param-list ::= param ("," param)*
-std::vector<Parameter> GlobalDeclParser::ParseParamList()
+std::vector<std::shared_ptr<Parameter>> GlobalDeclParser::ParseParamList()
 {
     try
     {
-        auto parameters = std::vector<Parameter>{};
+        auto parameters = std::vector<std::shared_ptr<Parameter>>{};
 
         // First parameter comes immediately.
         parameters.push_back(ParseParam());
@@ -106,7 +106,7 @@ std::vector<Parameter> GlobalDeclParser::ParseParamList()
 }
 
 // param ::= identifier ":" param-type
-Parameter GlobalDeclParser::ParseParam()
+std::shared_ptr<Parameter> GlobalDeclParser::ParseParam()
 {
     try
     {
@@ -116,7 +116,7 @@ Parameter GlobalDeclParser::ParseParam()
         auto usage = ParseParamUsage();
         auto type = m_type_parser->Parse();
 
-        return Parameter{name, ParamType{type, usage}};
+        return std::make_shared<Parameter>(name, ParamType{type, usage});
     }
     catch(const ParseRoutineError& e)
     {

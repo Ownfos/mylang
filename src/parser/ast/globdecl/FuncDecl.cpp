@@ -5,11 +5,11 @@
 namespace mylang
 {
 
-std::shared_ptr<FuncType> ConstructFuncType(std::optional<Type> return_type, const std::vector<Parameter>& parameters)
+std::shared_ptr<FuncType> ConstructFuncType(std::optional<Type> return_type, const std::vector<std::shared_ptr<Parameter>>& parameters)
 {
     // Callback function that extracts Parameter::type
-    auto extract_type = [](const Parameter& param){
-        return param.type;
+    auto extract_type = [](const std::shared_ptr<Parameter>& param){
+        return param->DeclParamType();
     };
 
     // Create a vector of ParamType
@@ -19,7 +19,7 @@ std::shared_ptr<FuncType> ConstructFuncType(std::optional<Type> return_type, con
     return std::make_shared<FuncType>(param_types, return_type);
 }
 
-FuncDecl::FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<Parameter>& parameters, std::shared_ptr<Stmt> body)
+FuncDecl::FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<std::shared_ptr<Parameter>>& parameters, std::shared_ptr<Stmt> body)
     : m_should_export(should_export)
     , m_name(name)
     , m_return_type(return_type)
@@ -31,6 +31,10 @@ FuncDecl::FuncDecl(bool should_export, const Token& name, std::optional<Type> re
 void FuncDecl::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
     visitor->PreorderVisit(this);
+    for (auto& param : m_parameters)
+    {
+        param->Accept(visitor);
+    }
     m_body->Accept(visitor);
     visitor->PostorderVisit(this);
 }
@@ -55,7 +59,7 @@ const std::optional<Type>& FuncDecl::ReturnType() const
     return m_return_type;
 }
 
-const std::vector<Parameter>& FuncDecl::Parameters() const
+const std::vector<std::shared_ptr<Parameter>>& FuncDecl::Parameters() const
 {
     return m_parameters;
 }

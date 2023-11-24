@@ -704,8 +704,12 @@ TEST(GlobalDeclParser, TwoArgsFunction)
         "- name: foo\n"
         "- export: false\n"
         "- return type: void\n"
-        "- parameter name: a, type: in i32\n"
-        "- parameter name: b, type: out i32\n"
+        "    [Parameter]\n"
+        "    - name: a\n"
+        "    - type: in i32\n"
+        "    [Parameter]\n"
+        "    - name: b\n"
+        "    - type: out i32\n"
         "    [CompoundStmt]\n";
         
     TestGlobalDeclParser(tokens, expected);

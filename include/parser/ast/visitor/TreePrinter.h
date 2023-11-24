@@ -17,6 +17,8 @@ public:
 
     // Preorder traversal
     virtual void PreorderVisit(Module* node) override;
+
+    virtual void PreorderVisit(Parameter* node) override;
     virtual void PreorderVisit(FuncDecl* node) override;
     virtual void PreorderVisit(StructDecl* node) override;
 

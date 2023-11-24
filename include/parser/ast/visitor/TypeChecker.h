@@ -30,7 +30,10 @@ public:
     TypeChecker(ProgramEnvironment& environment);
 
     virtual void PreorderVisit(Module* node) override;
+
     virtual void PreorderVisit(FuncDecl* node) override;
+    virtual void PostorderVisit(FuncDecl* node) override;
+
     virtual void PreorderVisit(StructDecl* node) override;
 
     virtual void PostorderVisit(CompoundStmt* node) override;

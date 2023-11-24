@@ -5,6 +5,8 @@ namespace mylang
 {
 
 class Module;
+
+class Parameter;
 class FuncDecl;
 class StructDecl;
 
@@ -35,6 +37,8 @@ public:
     
     // Preorder traversal
     virtual void PreorderVisit(Module* node) {};
+
+    virtual void PreorderVisit(Parameter* node) {};
     virtual void PreorderVisit(FuncDecl* node) {};
     virtual void PreorderVisit(StructDecl* node) {};
 
@@ -60,6 +64,8 @@ public:
 
     // Postorder traversal
     virtual void PostorderVisit(Module* node) {};
+
+    virtual void PostorderVisit(Parameter* node) {};
     virtual void PostorderVisit(FuncDecl* node) {};
     virtual void PostorderVisit(StructDecl* node) {};
 

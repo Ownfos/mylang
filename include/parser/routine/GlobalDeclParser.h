@@ -10,7 +10,7 @@ namespace mylang
 {
 
 struct MemberVariable;
-struct Parameter;
+class Parameter;
 enum class ParamUsage;
 
 class GlobalDeclParser : public IParseRoutine<std::shared_ptr<GlobalDecl>>
@@ -29,8 +29,8 @@ private:
     std::shared_ptr<GlobalDecl> ParseFuncDecl(bool should_export, const Token& name);
     std::shared_ptr<GlobalDecl> ParseStructDecl(bool should_export, const Token& name);
 
-    std::vector<Parameter> ParseParamList();
-    Parameter ParseParam();
+    std::vector<std::shared_ptr<Parameter>> ParseParamList();
+    std::shared_ptr<Parameter> ParseParam();
     ParamUsage ParseParamUsage();
 
     MemberVariable ParseMemberDecl();

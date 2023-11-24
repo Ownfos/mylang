@@ -71,6 +71,25 @@ void TreePrinter::PreorderVisit(Module* node)
     IncreaseDepth();
 }
 
+void TreePrinter::PreorderVisit(Parameter* node)
+{
+    Indent();
+    m_output_stream << "[Parameter]\n";
+
+    if (m_verbose)
+    {
+        Indent();
+        m_output_stream << std::format("- name: {}\n",
+            node->Name().lexeme
+        );
+
+        Indent();
+        m_output_stream << std::format("- type: {}\n",
+            node->DeclParamType().ToString()
+        );
+    }
+}
+
 void TreePrinter::PreorderVisit(FuncDecl* node)
 {
     // Node type
@@ -97,16 +116,6 @@ void TreePrinter::PreorderVisit(FuncDecl* node)
         m_output_stream << std::format("- return type: {}\n",
             ret_type ? ret_type->ToString() : "void"
         );
-
-        // Parameters
-        for (const auto& [name, type] : node->Parameters())
-        {
-            Indent();
-            m_output_stream << std::format("- parameter name: {}, type: {}\n",
-                name.lexeme,
-                type.ToString()
-            );
-        }
     }
     
     IncreaseDepth();

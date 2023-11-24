@@ -49,6 +49,19 @@ void TypeChecker::PreorderVisit(FuncDecl* node)
     //
     // This function signature will be used to validate return statement.
     m_current_function = node;
+    m_latest_source_pos = node->Name().start_pos;
+
+    // Open scope and add parameters to local symbol table.
+    m_environment.OpenScope(m_context_module_name);
+    for (const auto& param : node->Parameters())
+    {
+        m_environment.AddSymbol(m_context_module_name, param.get(), false);
+    }
+}
+
+void TypeChecker::PostorderVisit(FuncDecl* node)
+{
+    m_environment.CloseScope(m_context_module_name);
 }
 
 void TypeChecker::PreorderVisit(StructDecl* node)
@@ -262,7 +275,25 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
 
 void TypeChecker::PostorderVisit(Identifier* node)
 {
-    // TODO: implement
+    auto symbol_name = node->ToString();
+
+    // We are doing symbol reference!
+    // Make sure it exists, and find the declaration to check the type.
+    try
+    {
+        // This will throw exception if we try to access undefined/invisible symbol.
+        auto symbol = m_environment.FindSymbol(m_context_module_name, symbol_name);
+        auto type = symbol.declaration->DeclType();
+
+        SetNodeType(node, type);
+    }
+    catch(const std::exception&)
+    {
+        auto message = std::format("trying to use undefined symbol \"{}\" in an expression",
+            symbol_name
+        );
+        throw SemanticError(m_latest_source_pos, message);
+    }
 }
 
 void TypeChecker::PostorderVisit(Literal* node)
