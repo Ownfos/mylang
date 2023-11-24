@@ -150,15 +150,8 @@ bool IsArraySizeContainable(const std::vector<int>& container_arr_size, const st
     return true;
 }
 
-void TypeChecker::PostorderVisit(VarDeclStmt* node)
+void TypeChecker::ValidateVarDeclType(const Type& var_type, const Type& init_type, const SourcePos& decl_source_location)
 {
-    // Nothing to check if we don't have the optional initializer part.
-    if (!node->Initializer()) return;
-
-    // We will check if the initializer type is appropriate for this variable.
-    auto var_type = node->DeclType();
-    auto init_type = GetNodeType(node->Initializer());
-
     // Check if base type is compatible.
     if (!IsBasetypeCompatible(var_type.BaseType(), init_type.BaseType()))
     {
@@ -166,7 +159,7 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
             init_type.ToString(),
             var_type.ToString()
         );
-        throw SemanticError(node->Name().start_pos, message);
+        throw SemanticError(decl_source_location, message);
     }
 
     // Check if initializer list has same number of dimensions.
@@ -177,7 +170,7 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
             init_type.ToString(),
             var_type.ToString()
         );
-        throw SemanticError(node->Name().start_pos, message);
+        throw SemanticError(decl_source_location, message);
     }
 
     // Check if initializer list has less-or-equal size compared to the variable type.
@@ -188,8 +181,26 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
             init_type.ToString(),
             var_type.ToString()
         );
-        throw SemanticError(node->Name().start_pos, message);
+        throw SemanticError(decl_source_location, message);
     }
+}
+
+void TypeChecker::PostorderVisit(VarDeclStmt* node)
+{
+    // If we have the optional initializer, make sure the type is compatible.
+    if (node->Initializer())
+    {
+        auto var_type = node->DeclType();
+        auto init_type = GetNodeType(node->Initializer());
+        auto source_location = node->Name().start_pos;
+
+        ValidateVarDeclType(var_type, init_type, source_location);
+    }
+
+    // If we reached here without any exception,
+    // the variable declaration and initializer is semantically valid.
+    // Add it to the module's local symbol table.
+    m_environment.AddSymbol(m_context_module_name, node, false);
 }
 
 void TypeChecker::PostorderVisit(ExprStmt* node)

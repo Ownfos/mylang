@@ -1190,3 +1190,14 @@ TEST(TypeChecker, InvalidVarDeclTypeCoercion)
         "[Semantic Error][Ln 3, Col 5] implicit conversion from base type \"f32\" to \"i32\" is not allowed";
     ExpectTypeCheckFailure(source, expected);
 }
+
+TEST(TypeChecker, ValidVarDeclInitWithVar)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: f32;\n"
+        "    j: f32 = i;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}

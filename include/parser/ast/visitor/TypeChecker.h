@@ -82,6 +82,12 @@ private:
     void SetNodeType(const IAbstractSyntaxTree* node, const Type& type);
     const Type& GetNodeType(const IAbstractSyntaxTree* node) const;
 
+    // Check if we can initialize variable of var_type with value of init_type.
+    // If not, semantic error will be thrown.
+    // 'decl_source_location' is used on the exception message,
+    // to show where the error happened.
+    void ValidateVarDeclType(const Type& var_type, const Type& init_type, const SourcePos& decl_source_location);
+
     ProgramEnvironment& m_environment;
 
     // The name of module we are parsing
