@@ -1108,3 +1108,25 @@ TEST(TypeChecker, InvalidIntArrayWithDimensionMismatch)
         "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"i32[3]\" to \"i32\" type variable";
     ExpectTypeCheckFailure(source, expected);
 }
+
+TEST(TypeChecker, ValidVarDeclTypeCoercion)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: f32 = 1;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidVarDeclTypeCoercion)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32 = 1.0;\n"
+        "}\n";
+    auto expected =
+        "[Semantic Error][Ln 3, Col 5] implicit conversion from base type \"f32\" to \"i32\" is not allowed";
+    ExpectTypeCheckFailure(source, expected);
+}
