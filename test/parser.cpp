@@ -1053,6 +1053,20 @@ TEST(TypeChecker, ValidArrayVarDecl)
     ExpectTypeCheckSuccess(source);
 }
 
+TEST(TypeChecker, ValidFuncTypeVar)
+{
+    auto source =
+        "module a;\n"
+        "add: func = (a: i32, b: i32) -> i32 {\n"
+        "    return a + b;\n"
+        "}\n"
+        "main: func =() {\n"
+        "    a: [()] = main;\n"
+        "    b: [(i32, i32)->i32] = add;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
 TEST(TypeChecker, InvalidArrayVarDeclMixedType)
 {
     auto source =
