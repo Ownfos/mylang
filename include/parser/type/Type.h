@@ -31,6 +31,9 @@ public:
     // ex) bool[5] -> bool
     static Type RemoveLeftmostArrayDim(const Type& array_type);
 
+    bool operator==(const Type& other) const;
+    bool operator!=(const Type& other) const;
+
 protected:
     std::shared_ptr<IBaseType> m_base_type;
     std::vector<int> m_array_sizes;

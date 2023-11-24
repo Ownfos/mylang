@@ -68,4 +68,14 @@ Type Type::RemoveLeftmostArrayDim(const Type& array_type)
     return result;
 }
 
+bool Type::operator==(const Type& other) const
+{
+    return ToString() == other.ToString();
+}
+
+bool Type::operator!=(const Type& other) const
+{
+    return !(*this == other);
+}
+
 } // namespace mylang
