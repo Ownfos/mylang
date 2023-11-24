@@ -1047,6 +1047,18 @@ TEST(TypeChecker, InvalidArrayVarDeclMixedType)
     ExpectTypeCheckFailure(source, expected_error);
 }
 
+TEST(TypeChecker, InvalidArrayVarDeclMixedDimension)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32[2][2] = {{1, 2}, 1};\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] every element in an initializer list should have same dimension";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
 // We should not reject initializer list with partial information,
 // because we sometimes want to make big arrays which we cannot specify values one by one.
 TEST(TypeChecker, ValidArrayVarDeclInsufficientInitializer)
