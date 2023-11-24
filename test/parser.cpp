@@ -1071,6 +1071,30 @@ TEST(TypeChecker, ValidFuncTypeVar)
     ExpectTypeCheckSuccess(source);
 }
 
+TEST(TypeChecker, InvalidFuncTypeVarUndefined)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    a: [(out str)] = foo;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] trying to use undefined symbol \"foo\" in an expression";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidFuncTypeVarTypeMismatch)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    a: [(out str)] = main;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] implicit conversion from base type \"[()]\" to \"[(out str)]\" is not allowed";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
 TEST(TypeChecker, InvalidArrayVarDeclMixedType)
 {
     auto source =
