@@ -1315,7 +1315,7 @@ TEST(TypeChecker, InvalidArgFuncCallMoreArgsGiven)
         "    foo(1);\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 9] the function only requires 0 arguments, but 1 was given";
+        "[Semantic Error][Ln 4, Col 5] the function only requires 0 arguments, but 1 was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1328,7 +1328,7 @@ TEST(TypeChecker, InvalidArgFuncCallTypeMismatch)
         "    foo(1, 2);\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 12] expected argument type \"bool\", but \"i32\" was given";
+        "[Semantic Error][Ln 4, Col 12] expected argument type \"bool\", but \"i32\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 

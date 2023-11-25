@@ -381,7 +381,62 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
 
 void TypeChecker::PostorderVisit(FuncCallExpr* node)
 {
-    // TODO: implement
+    const auto& func_type = GetNodeType(node->Function());
+
+    // Throw an error if basetype is non-callable, or the operand is an array.
+    // Note: The only thing we allow is a callble, non-array instance!
+    auto base_type = dynamic_cast<const FuncType*>(func_type.BaseType());
+    if (base_type == nullptr || !func_type.ArraySize().empty())
+    {
+        const auto message = std::format("\"{}\" is not a callable type",
+            func_type.ToString()
+        );
+        throw SemanticError(node->StartPos(), message);
+    }
+
+    // Check if the number of arguments is valid.
+    // TODO: if possible, find other way that doesn't use dynamic_cast...
+    const auto& param_types = base_type->ParamTypes();
+    const auto& args = node->ArgumentList();
+    if (param_types.size() != args.size())
+    {
+        const auto message = std::format("the function only requires {} arguments, but {} was given",
+            param_types.size(),
+            args.size()
+        );
+        throw SemanticError(node->StartPos(), message);
+    }
+
+    // Check if each argument has a valid type.
+    for (int i = 0; i < args.size(); ++i)
+    {
+        const auto& arg_type = GetNodeType(args[i].get());
+        const auto& expected_type = param_types[i].type;
+        if (arg_type != expected_type)
+        {
+            const auto message = std::format("expected argument type \"{}\", but \"{}\" was given",
+                expected_type.ToString(),
+                arg_type.ToString()
+            );
+            throw SemanticError(args[i]->StartPos(), message);
+        }
+
+        // TODO: perform lvalue qualification on 'inout' and 'out' parameters.
+        if (param_types[i].usage != ParamUsage::In && false /* args[i].IsRValue() */)
+        {
+            const auto message = std::format("an rvalue cannot be passed as parameter type \"{}\"",
+                param_types[i].ToString()
+            );
+            throw SemanticError(args[i]->StartPos(), message);
+        }
+    }
+
+    // Since everything is good to go, register the type as the function's return type.
+    // TODO: handle void type
+    if (auto ret_type = base_type->ReturnType())
+    {
+        SetNodeType(node, ret_type.value());
+    }
 }
 
 void TypeChecker::PostorderVisit(Identifier* node)

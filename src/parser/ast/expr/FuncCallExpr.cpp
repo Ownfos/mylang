@@ -48,4 +48,14 @@ std::string FuncCallExpr::ToString() const
     return str_builder.str();
 }
 
+const Expr* FuncCallExpr::Function() const
+{
+    return m_expr.get();
+}
+
+const std::vector<std::shared_ptr<Expr>>& FuncCallExpr::ArgumentList() const
+{
+    return m_arg_list;
+}
+
 } // namespace mylang
