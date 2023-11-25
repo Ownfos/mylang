@@ -51,17 +51,43 @@ void TypeChecker::PreorderVisit(FuncDecl* node)
     // This function signature will be used to validate return statement.
     m_current_function = node;
 
-    // Open scope and add parameters to local symbol table.
-    m_environment.OpenScope(m_context_module_name);
-    for (const auto& param : node->Parameters())
+    // Check if the return type is valid.
+    // Note: parameter types will be validated on child nodes.
+    auto ret_type = node->ReturnType();
+    if (ret_type.has_value() && !ret_type->IsValid(m_environment, m_context_module_name))
     {
-        m_environment.AddSymbol(m_context_module_name, param.get(), false);
+        auto message = std::format("function \"{}\" tried to use invalid return type \"{}\"",
+            node->Name().lexeme,
+            ret_type->ToString()
+        );
+        throw SemanticError(node->StartPos(), message);
     }
+
+    m_environment.OpenScope(m_context_module_name);
 }
 
 void TypeChecker::PostorderVisit(FuncDecl* node)
 {
     m_environment.CloseScope(m_context_module_name);
+}
+
+void TypeChecker::PreorderVisit(Parameter* node)
+{
+    // Throw an error if the type is invalid in this module's context.
+    const auto param_type = node->DeclType();
+    if (!param_type.IsValid(m_environment, m_context_module_name))
+    {
+        auto message = std::format("parameter \"{}\" tried to use invalid type \"{}\"",
+            node->Name().lexeme,
+            param_type.ToString()
+        );
+        throw SemanticError(node->StartPos(), message);
+    }
+
+    // If the type was valid, add it to the local symbol table.
+    // Note: corresponding FuncDecl opens a new scope,
+    //       so the parameters are added to the nested scope (not the global one!).
+    m_environment.AddSymbol(m_context_module_name, node, false);
 }
 
 void TypeChecker::PreorderVisit(StructDecl* node)

@@ -34,6 +34,7 @@ public:
 
     virtual void PreorderVisit(FuncDecl* node) override;
     virtual void PostorderVisit(FuncDecl* node) override;
+    virtual void PreorderVisit(Parameter* node) override;
 
     virtual void PreorderVisit(StructDecl* node) override;
 

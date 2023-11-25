@@ -1331,3 +1331,23 @@ TEST(TypeChecker, InvalidArgFuncCallTypeMismatch)
         "[Semantic Error][Ln 3, Col 12] expected argument type \"bool\", but \"i32\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, InvalidReturnType)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = () -> undefined_struct {}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 2, Col 1] function \"foo\" tried to use invalid return type \"undefined_struct\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidParameterType)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = (arg1: i32, arg2: undefined_struct){}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 2, Col 25] parameter \"arg2\" tried to use invalid type \"undefined_struct\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
