@@ -1245,3 +1245,25 @@ TEST(TypeChecker, InvalidWhileCondition)
         "[Semantic Error][Ln 3, Col 12] condition expression should have bool type, instead of \"str\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidForStmt)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    for (i: i32 = 0; i < 10; ++i) {}"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidForStmt)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    for (i: i32 = 0; i / 1; ++i) {}"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 22] condition expression should have bool type, instead of \"i32\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
