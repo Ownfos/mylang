@@ -1364,3 +1364,15 @@ TEST(TypeChecker, InvalidFuncCallRValueOnOutParam)
         "[Semantic Error][Ln 4, Col 9] an rvalue cannot be passed as parameter type \"out i32\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidFuncCallOutParam)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = (a: out i32){}\n"
+        "main: func =() {\n"
+        "    i: i32 = 0;\n"
+        "    foo(i);\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}

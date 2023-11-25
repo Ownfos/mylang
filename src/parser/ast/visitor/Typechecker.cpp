@@ -114,7 +114,7 @@ void TypeChecker::PostorderVisit(CompoundStmt* node)
 
 void TypeChecker::ValidateConditionExprType(const Expr* condition_expr)
 {
-    auto type_name = GetNodeType(condition_expr).ToString();
+    auto type_name = GetExprTrait(condition_expr).type.ToString();
     if (type_name != "bool")
     {
         auto message = std::format("condition expression should have bool type, instead of \"{}\"",
@@ -226,7 +226,7 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
     if (node->Initializer())
     {
         auto var_type = node->DeclType();
-        auto init_type = GetNodeType(node->Initializer());
+        auto init_type = GetExprTrait(node->Initializer()).type;
         auto source_location = node->Name().start_pos;
 
         ValidateVarDeclType(var_type, init_type, source_location);
@@ -246,7 +246,7 @@ void TypeChecker::PostorderVisit(ExprStmt* node)
 void TypeChecker::PostorderVisit(VarInitExpr* node)
 {
     // VarInitExpr has same type as its internal Expr node.
-    SetNodeType(node, GetNodeType(node->Expression()));
+    SetExprTrait(node, GetExprTrait(node->Expression()).type);
 }
 
 
@@ -269,11 +269,12 @@ void TypeChecker::PostorderVisit(VarInitExpr* node)
 // => i32[3][2]
 void TypeChecker::PostorderVisit(VarInitList* node)
 {
-    auto list_type = GetNodeType(node->InitializerList().begin()->get());
+    auto first_elem = node->InitializerList().begin()->get();
+    auto list_type = GetExprTrait(first_elem).type;
 
     for (const std::shared_ptr<VarInit>& elem : node->InitializerList())
     {
-        auto elem_type = GetNodeType(elem.get());
+        auto elem_type = GetExprTrait(elem.get()).type;
 
         // Do not allow mixing types inside a single initializer list.
         auto expected_base_type_name = list_type.BaseType()->ToString();
@@ -301,7 +302,7 @@ void TypeChecker::PostorderVisit(VarInitList* node)
 
     list_type.AddLeftmostArrayDim(static_cast<int>(node->InitializerList().size()));
 
-    SetNodeType(node, list_type);
+    SetExprTrait(node, list_type);
 }
 
 void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
@@ -318,8 +319,8 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
 void TypeChecker::PostorderVisit(BinaryExpr* node)
 {
     const auto op_type = node->Operator().type;
-    const auto lhs_type = GetNodeType(node->LeftHandOperand());
-    const auto rhs_type = GetNodeType(node->RightHandOperand());
+    const auto lhs_type = GetExprTrait(node->LeftHandOperand()).type;
+    const auto rhs_type = GetExprTrait(node->RightHandOperand()).type;
 
     // Bool type appears frequently on binary expression type check, so prepare one.
     const auto bool_type = CreatePrimiveType(TokenType::BoolType);
@@ -338,7 +339,7 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
             throw SemanticError(node->StartPos(), message);
         }
         
-        SetNodeType(node, bool_type);
+        SetExprTrait(node, bool_type);
     }
 
     // Equality check is only allowed between strictly identical types.
@@ -355,7 +356,7 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
             throw SemanticError(node->StartPos(), message);
         }
 
-        SetNodeType(node, bool_type);
+        SetExprTrait(node, bool_type);
     }
 
     // TODO: add other comparison types
@@ -364,7 +365,7 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
     {
         // TODO: check if two types are comparable.
 
-        SetNodeType(node, bool_type);
+        SetExprTrait(node, bool_type);
     }
 
     // TODO: add other arithmetic operator types
@@ -375,13 +376,13 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
         // TODO: make sure that both operands are non-array primitive type.
 
         // TODO: if two types are different, choose more relaxed type as result.
-        SetNodeType(node, lhs_type);
+        SetExprTrait(node, lhs_type);
     }
 }
 
 void TypeChecker::PostorderVisit(FuncCallExpr* node)
 {
-    const auto& func_type = GetNodeType(node->Function());
+    const auto& func_type = GetExprTrait(node->Function()).type;
 
     // Throw an error if basetype is non-callable, or the operand is an array.
     // Note: The only thing we allow is a callble, non-array instance!
@@ -410,8 +411,13 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
     // Check if each argument has a valid type.
     for (int i = 0; i < args.size(); ++i)
     {
-        const auto& arg_type = GetNodeType(args[i].get());
-        const auto& expected_type = param_types[i].type;
+        // This is the one passed as an argument.
+        const auto& [is_arg_lvalue, arg_type] = GetExprTrait(args[i].get());
+
+        // This is the parameter signature.
+        const auto& [expected_type, param_usage] = param_types[i];
+
+        // If two doesn't match, throw a semantic error.
         if (arg_type != expected_type)
         {
             const auto message = std::format("expected argument type \"{}\", but \"{}\" was given",
@@ -421,8 +427,9 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
             throw SemanticError(args[i]->StartPos(), message);
         }
 
-        // TODO: perform lvalue qualification on 'inout' and 'out' parameters.
-        if (param_types[i].usage != ParamUsage::In && false /* args[i].IsRValue() */)
+        // 'inout' or 'out' parameters require corresponding argument to be an lvalue.
+        auto is_lvalue_required = (param_usage == ParamUsage::InOut) || (param_usage == ParamUsage::Out);
+        if (is_lvalue_required && !is_arg_lvalue)
         {
             const auto message = std::format("an rvalue cannot be passed as parameter type \"{}\"",
                 param_types[i].ToString()
@@ -435,7 +442,7 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
     // TODO: handle void type
     if (auto ret_type = base_type->ReturnType())
     {
-        SetNodeType(node, ret_type.value());
+        SetExprTrait(node, ret_type.value());
     }
 }
 
@@ -451,7 +458,8 @@ void TypeChecker::PostorderVisit(Identifier* node)
         auto symbol = m_environment.FindSymbol(m_context_module_name, symbol_name);
         auto type = symbol.declaration->DeclType();
 
-        SetNodeType(node, type);
+        // Note: the third parameter denotes that this is an lvalue.
+        SetExprTrait(node, type, true);
     }
     catch(const std::exception&)
     {
@@ -464,7 +472,7 @@ void TypeChecker::PostorderVisit(Identifier* node)
 
 void TypeChecker::PostorderVisit(Literal* node)
 {
-    SetNodeType(node, node->DeclType());
+    SetExprTrait(node, node->DeclType());
 }
 
 void TypeChecker::PostorderVisit(MemberAccessExpr* node)
@@ -482,14 +490,14 @@ void TypeChecker::PostorderVisit(PrefixExpr* node)
     // TODO: implement
 }
 
-void TypeChecker::SetNodeType(const IAbstractSyntaxTree* node, const Type& type)
+void TypeChecker::SetExprTrait(const IAbstractSyntaxTree* node, const Type& type, bool is_lvalue)
 {
-    m_type_dict.insert({node, type});
+    m_expr_trait_dict.insert({node, ExprTrait{is_lvalue, type}});
 }
 
-const Type& TypeChecker::GetNodeType(const IAbstractSyntaxTree* node) const
+const ExprTrait& TypeChecker::GetExprTrait(const IAbstractSyntaxTree* node) const
 {
-    return m_type_dict.at(node);
+    return m_expr_trait_dict.at(node);
 }
 
 } // namespace mylang

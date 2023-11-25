@@ -14,6 +14,12 @@ class StructType;
 class FuncType;
 class IAbstractSyntaxTree;
 
+struct ExprTrait
+{
+    bool is_lvalue;
+    Type type;
+};
+
 // Checks the following type contraints:
 // 1. array size should be a positive integer (0 is not allowed)
 // 2. referenced variable should be declared before use
@@ -71,8 +77,8 @@ public:
 
 private:
     // Getter and setter that wraps std::map implementation details
-    void SetNodeType(const IAbstractSyntaxTree* node, const Type& type);
-    const Type& GetNodeType(const IAbstractSyntaxTree* node) const;
+    void SetExprTrait(const IAbstractSyntaxTree* node, const Type& type, bool is_lvalue = false);
+    const ExprTrait& GetExprTrait(const IAbstractSyntaxTree* node) const;
 
     // Check if we can initialize variable of var_type with value of init_type.
     // If not, semantic error will be thrown.
@@ -90,7 +96,7 @@ private:
     std::string_view m_context_module_name;
 
     // Stores temporary expression node's type
-    std::map<const IAbstractSyntaxTree*, Type> m_type_dict;
+    std::map<const IAbstractSyntaxTree*, ExprTrait> m_expr_trait_dict;
 
     // Used to store a currently analyzed function's signature.
     // Return type matching is the key purpose for saving this info.
