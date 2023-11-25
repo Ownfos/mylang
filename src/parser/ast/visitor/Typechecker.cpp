@@ -291,9 +291,46 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
 // {&&, ||} between bool types
 void TypeChecker::PostorderVisit(BinaryExpr* node)
 {
-    auto op_type = node->Operator().type;
-    auto lhs_type = GetNodeType(node->LeftHandOperand());
-    auto rhs_type = GetNodeType(node->RightHandOperand());
+    const auto op_type = node->Operator().type;
+    const auto lhs_type = GetNodeType(node->LeftHandOperand());
+    const auto rhs_type = GetNodeType(node->RightHandOperand());
+
+    // Bool type appears frequently on binary expression type check, so prepare one.
+    const auto bool_type = CreatePrimiveType(TokenType::BoolType);
+
+    // Logical and/or is allowed only between bool types
+    if (op_type == TokenType::And ||
+        op_type == TokenType::Or)
+    {
+        if (lhs_type != bool_type || rhs_type != bool_type)
+        {
+            const auto message = std::format("logical operator \"{}\" is only allowed between bool types, but \"{}\" and \"{}\" were given",
+                node->Operator().lexeme,
+                lhs_type.ToString(),
+                rhs_type.ToString()
+            );
+            throw SemanticError(node->StartPos(), message);
+        }
+        
+        SetNodeType(node, bool_type);
+    }
+
+    // Equality check is only allowed between strictly identical types.
+    if (op_type == TokenType::Equal ||
+        op_type == TokenType::NotEqual)
+    {
+        if (lhs_type != rhs_type)
+        {
+            const auto message = std::format("equality operator \"{}\" is only allowed between same types, but \"{}\" and \"{}\" were given",
+                node->Operator().lexeme,
+                lhs_type.ToString(),
+                rhs_type.ToString()
+            );
+            throw SemanticError(node->StartPos(), message);
+        }
+
+        SetNodeType(node, bool_type);
+    }
 
     // TODO: add other comparison types
     if (op_type == TokenType::Greater ||
@@ -301,7 +338,7 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
     {
         // TODO: check if two types are comparable.
 
-        SetNodeType(node, CreatePrimiveType(TokenType::BoolType));
+        SetNodeType(node, bool_type);
     }
 
     // TODO: add other arithmetic operator types

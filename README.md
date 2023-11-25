@@ -25,8 +25,7 @@ cd build; ctest; cd ..
 #### Note: the main executable currently prints the AST after syntax analysis
 
 # TODO
-- [ ] Find a way to handle type coercion (Yes/No, result type)
-- [ ] Make a factory method for primitive types
+- [ ] Find a better way to handle type coercion (Yes/No, result type)
 - [ ] Check argument types on function call
 - [ ] Check return expr type with function signature
 - [ ] Check if member name is valid on MemberAccessExpr
