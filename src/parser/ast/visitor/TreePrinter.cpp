@@ -252,6 +252,8 @@ void TreePrinter::PreorderVisit(ArrayAccessExpr* node)
         Indent();
         m_output_stream << "- " << node->ToString() << "\n";
     }
+
+    IncreaseDepth();
 }
 
 void TreePrinter::PreorderVisit(BinaryExpr* node)

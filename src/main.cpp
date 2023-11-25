@@ -2,6 +2,8 @@
 #include "lexer/LexicalAnalyzer.h"
 #include "parser/SyntaxAnalyzer.h"
 #include "parser/ast/visitor/TreePrinter.h"
+#include "parser/ast/visitor/GlobalSymbolScanner.h"
+#include "parser/ast/visitor/TypeChecker.h"
 #include <iostream>
 #include <format>
 
@@ -13,8 +15,6 @@ int main(int argc, char** argv)
     {
         auto source_code =
             "module math;\n"
-            "import a;\n"
-            "import export b;\n"
             "foo: func = (a:i32[2][3], b:out i32)->str\n"
             "{\n"
             "    local_var: i32[2][2] = {{1, 2}, {3, 4}};\n"
@@ -39,14 +39,24 @@ int main(int argc, char** argv)
         }
         std::cout << "[source code]\n" << source_code << "\n\n";
 
+        // Generate AST from given source code
         auto source_file = std::make_unique<DummySourceFile>(std::move(source_code));
         auto lexer = std::make_unique<LexicalAnalyzer>(std::move(source_file));
         auto syntax_analyzer = SyntaxAnalyzer(std::move(lexer));
 
         auto ast = syntax_analyzer.GenerateAST();
 
+        // Print AST
         auto printer = TreePrinter(std::cout);
         ast->Accept(&printer);
+
+        // Perform semantic analysis
+        auto environment = ProgramEnvironment();
+        auto scanner = GlobalSymbolScanner(environment);
+        auto type_checker = TypeChecker(environment);
+
+        ast->Accept(&scanner);
+        ast->Accept(&type_checker);
     }
     catch(const std::exception& e)
     {

@@ -25,6 +25,7 @@ cd build; ctest; cd ..
 #### Note: the main executable currently prints the AST after syntax analysis
 
 # TODO
+- [ ] Find out why default source of main function emits error "invalid map<K, T> key"
 - [ ] Find a better way to handle type coercion (Yes/No, result type)
 - [ ] Check argument types on function call
 - [ ] Check return expr type with function signature
