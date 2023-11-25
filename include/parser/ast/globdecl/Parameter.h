@@ -13,6 +13,7 @@ public:
     Parameter(const Token& name, const ParamType& param_type);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
     virtual const Token& Name() const override;
     virtual const Type& DeclType() const override;

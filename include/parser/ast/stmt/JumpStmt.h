@@ -17,6 +17,7 @@ public:
     JumpStmt(const Token& jump_type, std::shared_ptr<Expr> expr);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
     const Token& JumpType() const;
 

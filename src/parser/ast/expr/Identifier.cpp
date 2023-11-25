@@ -14,6 +14,11 @@ void Identifier::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& Identifier::StartPos() const
+{
+    return m_id.start_pos;
+}
+
 std::string Identifier::ToString() const
 {
     return m_id.lexeme;

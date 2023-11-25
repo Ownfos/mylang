@@ -13,6 +13,7 @@ public:
     PrefixExpr(const Token& op, std::shared_ptr<Expr> expr);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
 private:

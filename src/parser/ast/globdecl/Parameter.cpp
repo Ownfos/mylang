@@ -14,6 +14,11 @@ void Parameter::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& Parameter::StartPos() const
+{
+    return m_name.start_pos;
+}
+
 const Token& Parameter::Name() const
 {
     return m_name;

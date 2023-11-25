@@ -14,6 +14,7 @@ public:
     CompoundStmt(const std::vector<std::shared_ptr<Stmt>>& statements);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
 private:
     std::vector<std::shared_ptr<Stmt>> m_statements;

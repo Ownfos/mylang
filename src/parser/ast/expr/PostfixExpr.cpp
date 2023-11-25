@@ -16,6 +16,11 @@ void PostfixExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& PostfixExpr::StartPos() const
+{
+    return m_expr->StartPos();
+}
+
 std::string PostfixExpr::ToString() const
 {
     return std::format("({}{})",

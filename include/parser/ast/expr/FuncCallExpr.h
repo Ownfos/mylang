@@ -14,6 +14,7 @@ public:
     FuncCallExpr(std::shared_ptr<Expr> expr, const std::vector<std::shared_ptr<Expr>>& arg_list);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
 private:

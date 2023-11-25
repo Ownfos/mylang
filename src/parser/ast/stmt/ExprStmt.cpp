@@ -15,4 +15,9 @@ void ExprStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& ExprStmt::StartPos() const
+{
+    return m_expr->StartPos();
+}
+
 } // namespace mylang

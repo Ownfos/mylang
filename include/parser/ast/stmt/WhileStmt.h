@@ -15,6 +15,7 @@ public:
     WhileStmt(std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> body);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
 private:
     std::shared_ptr<Expr> m_condition;

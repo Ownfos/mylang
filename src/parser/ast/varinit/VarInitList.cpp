@@ -18,6 +18,11 @@ void VarInitList::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& VarInitList::StartPos() const
+{
+    return m_initializer_list.front()->StartPos();
+}
+
 const std::vector<std::shared_ptr<VarInit>>& VarInitList::InitializerList() const
 {
     return m_initializer_list;

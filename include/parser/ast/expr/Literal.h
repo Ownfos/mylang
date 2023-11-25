@@ -13,6 +13,7 @@ public:
     Literal(const Token& literal);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
     const Type& DeclType() const;

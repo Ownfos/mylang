@@ -96,7 +96,6 @@ Symbol ProgramEnvironment::FindSymbol(
         }
 
         // The symbol we want to find doesn't exist!
-        // TODO: replace std::exception with SemanticError class
         throw std::exception("trying to find a symbol that doesn't exist");
     }
 }

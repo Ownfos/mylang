@@ -21,6 +21,11 @@ void FuncCallExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& FuncCallExpr::StartPos() const
+{
+    return m_expr->StartPos();
+}
+
 std::string FuncCallExpr::ToString() const
 {
     auto str_builder = std::ostringstream();

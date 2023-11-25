@@ -30,6 +30,7 @@ public:
     Module(const Token& module_name, const std::vector<ModuleImportInfo>& import_list, const std::vector<std::shared_ptr<GlobalDecl>>& global_declarations);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
     const Token& ModuleName() const;
     const std::vector<ModuleImportInfo>& ImportList() const;

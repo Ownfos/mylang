@@ -1220,6 +1220,6 @@ TEST(TypeChecker, InvalidIfCondition)
         "    if (1) {}"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 5] condition expression should have bool type, instead of \"i32\"";
+        "[Semantic Error][Ln 3, Col 9] condition expression should have bool type, instead of \"i32\"";
     ExpectTypeCheckFailure(source, expected_error);
 }

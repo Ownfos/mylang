@@ -16,6 +16,11 @@ void MemberAccessExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& MemberAccessExpr::StartPos() const
+{
+    return m_expr->StartPos();
+}
+
 std::string MemberAccessExpr::ToString() const
 {
     return std::format("{}.{}",

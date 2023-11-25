@@ -21,6 +21,11 @@ void VarDeclStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& VarDeclStmt::StartPos() const
+{
+    return m_name.start_pos;
+}
+
 const Token& VarDeclStmt::Name() const
 {
     return m_name;

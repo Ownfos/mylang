@@ -20,6 +20,11 @@ void JumpStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& JumpStmt::StartPos() const
+{
+    return m_jump_type.start_pos;
+}
+
 const Token& JumpStmt::JumpType() const
 {
     return m_jump_type;

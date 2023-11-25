@@ -18,4 +18,10 @@ void CompoundStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& CompoundStmt::StartPos() const
+{
+    // TODO: decide which value to return...
+    return {};
+}
+
 } // namespace mylang

@@ -14,6 +14,7 @@ public:
     VarInitList(const std::vector<std::shared_ptr<VarInit>>& initializer_list);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
     const std::vector<std::shared_ptr<VarInit>>& InitializerList() const;
 

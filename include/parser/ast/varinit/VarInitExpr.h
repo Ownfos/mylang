@@ -14,6 +14,7 @@ public:
     VarInitExpr(std::shared_ptr<Expr> expr);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
     const Expr* Expression() const;
 

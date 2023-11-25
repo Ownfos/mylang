@@ -21,6 +21,7 @@ public:
     StructDecl(bool should_export, const Token& name, const std::vector<MemberVariable>& members);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
     virtual const Token& Name() const override;
     virtual const Type& DeclType() const override;

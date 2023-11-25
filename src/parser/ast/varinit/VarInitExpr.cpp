@@ -15,6 +15,11 @@ void VarInitExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& VarInitExpr::StartPos() const
+{
+    return m_expr->StartPos();
+}
+
 const Expr* VarInitExpr::Expression() const
 {
     return m_expr.get();

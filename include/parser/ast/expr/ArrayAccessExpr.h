@@ -13,6 +13,7 @@ public:
     ArrayAccessExpr(std::shared_ptr<Expr> expr, std::shared_ptr<Expr> index);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
 private:

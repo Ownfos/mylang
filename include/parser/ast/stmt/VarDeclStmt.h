@@ -17,6 +17,7 @@ public:
     VarDeclStmt(const Token& name, const Type& type, std::shared_ptr<VarInit> initializer);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
     virtual const Token& Name() const;
     virtual const Type& DeclType() const override;

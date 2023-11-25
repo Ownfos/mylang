@@ -86,9 +86,21 @@ void TypeChecker::PostorderVisit(CompoundStmt* node)
     // TODO: implement
 }
 
+void TypeChecker::ValidateConditionExprType(const Expr* condition_expr)
+{
+    auto type_name = GetNodeType(condition_expr).ToString();
+    if (type_name != "bool")
+    {
+        auto message = std::format("condition expression should have bool type, instead of \"{}\"",
+            type_name
+        );
+        throw SemanticError(condition_expr->StartPos(), message);
+    }
+}
+
 void TypeChecker::PostorderVisit(IfStmt* node)
 {
-    // TODO: implement
+    ValidateConditionExprType(node->Condition());
 }
 
 void TypeChecker::PostorderVisit(ForStmt* node)

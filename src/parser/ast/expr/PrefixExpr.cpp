@@ -16,6 +16,11 @@ void PrefixExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& PrefixExpr::StartPos() const
+{
+    return m_op.start_pos;
+}
+
 std::string PrefixExpr::ToString() const
 {
     return std::format("({}{})",

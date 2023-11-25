@@ -17,4 +17,9 @@ void WhileStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& WhileStmt::StartPos() const
+{
+    return m_condition->StartPos();
+}
+
 } // namespace mylang

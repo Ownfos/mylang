@@ -18,6 +18,7 @@ public:
     FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<std::shared_ptr<Parameter>>& parameters, std::shared_ptr<Stmt> body);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
 
     virtual const Token& Name() const override;
     virtual const Type& DeclType() const override;

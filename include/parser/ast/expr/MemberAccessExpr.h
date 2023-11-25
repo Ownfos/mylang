@@ -13,6 +13,7 @@ public:
     MemberAccessExpr(std::shared_ptr<Expr> expr, const Token& id);
 
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
+    virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
 private:

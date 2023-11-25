@@ -30,4 +30,14 @@ void IfStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& IfStmt::StartPos() const
+{
+    return m_condition->StartPos();
+}
+
+const Expr* IfStmt::Condition() const
+{
+    return m_condition.get();
+}
+
 } // namespace mylang

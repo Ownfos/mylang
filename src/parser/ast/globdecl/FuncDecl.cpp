@@ -39,6 +39,11 @@ void FuncDecl::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& FuncDecl::StartPos() const
+{
+    return m_name.start_pos;
+}
+
 const Token& FuncDecl::Name() const
 {
     return m_name;

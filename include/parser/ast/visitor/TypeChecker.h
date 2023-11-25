@@ -9,6 +9,7 @@
 namespace mylang
 {
 
+class Expr;
 class StructType;
 class FuncType;
 class IAbstractSyntaxTree;
@@ -38,40 +39,31 @@ public:
 
     virtual void PostorderVisit(CompoundStmt* node) override;
 
-    // TODO: verify that condition expr has bool type
     virtual void PostorderVisit(IfStmt* node) override;
 
-    // TODO: verify that condition expr has bool type
     virtual void PostorderVisit(ForStmt* node) override;
     
-    // TODO: verify that condition expr has bool type
     virtual void PostorderVisit(WhileStmt* node) override;
 
-    // TODO: verify that return expr matches the function signature
     virtual void PostorderVisit(JumpStmt* node) override;
 
-    // TODO: verify that varinit type matches decltype
     virtual void PreorderVisit(VarDeclStmt* node) override;
     virtual void PostorderVisit(VarDeclStmt* node) override;
     virtual void PostorderVisit(ExprStmt* node) override;
 
     virtual void PostorderVisit(VarInitExpr* node) override;
 
-    // TODO: construct a minimal array type that a variable should have
     virtual void PostorderVisit(VarInitList* node) override;
 
-    // TODO: verify that lhs operand is an array type and the index expr is int
     virtual void PostorderVisit(ArrayAccessExpr* node) override;
 
     virtual void PostorderVisit(BinaryExpr* node) override;
 
-    // TODO: verify that arguments match the function signature
     virtual void PostorderVisit(FuncCallExpr* node) override;
 
     virtual void PostorderVisit(Identifier* node) override;
     virtual void PostorderVisit(Literal* node) override;
 
-    // TODO: verify that lhs operand is a struct type variable and rhs is a valid member name.
     virtual void PostorderVisit(MemberAccessExpr* node) override;
 
     virtual void PostorderVisit(PostfixExpr* node) override;
@@ -87,6 +79,10 @@ private:
     // 'decl_source_location' is used on the exception message,
     // to show where the error happened.
     void ValidateVarDeclType(const Type& var_type, const Type& init_type, const SourcePos& decl_source_location);
+
+    // Check if the expression has bool type.
+    // If not, semantic error will be thrown.
+    void ValidateConditionExprType(const Expr* condition_expr);
 
     ProgramEnvironment& m_environment;
 

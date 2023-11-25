@@ -45,6 +45,11 @@ void Literal::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& Literal::StartPos() const
+{
+    return m_literal.start_pos;
+}
+
 std::string Literal::ToString() const
 {
     return m_literal.lexeme;

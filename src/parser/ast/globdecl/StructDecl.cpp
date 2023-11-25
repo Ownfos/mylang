@@ -18,6 +18,11 @@ void StructDecl::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& StructDecl::StartPos() const
+{
+    return m_name.start_pos;
+}
+
 const Token& StructDecl::Name() const
 {
     return m_name;

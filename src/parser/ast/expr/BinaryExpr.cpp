@@ -17,6 +17,11 @@ void BinaryExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& BinaryExpr::StartPos() const
+{
+    return m_lhs->StartPos();
+}
+
 std::string BinaryExpr::ToString() const
 {
     return std::format("({} {} {})",

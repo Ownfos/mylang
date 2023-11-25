@@ -26,6 +26,11 @@ void Module::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& Module::StartPos() const
+{
+    return m_module_name.start_pos;
+}
+
 const Token& Module::ModuleName() const
 {
     return m_module_name;

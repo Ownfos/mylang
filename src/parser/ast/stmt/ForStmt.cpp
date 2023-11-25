@@ -42,4 +42,10 @@ void ForStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& ForStmt::StartPos() const
+{
+    // TODO: decide which value to return
+    return {};
+}
+
 } // namespace mylang

@@ -18,6 +18,11 @@ void ArrayAccessExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
     visitor->PostorderVisit(this);
 }
 
+const SourcePos& ArrayAccessExpr::StartPos() const
+{
+    return m_expr->StartPos();
+}
+
 std::string ArrayAccessExpr::ToString() const
 {
     return std::format("{}[{}]",
