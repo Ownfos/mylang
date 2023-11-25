@@ -1351,3 +1351,16 @@ TEST(TypeChecker, InvalidParameterType)
         "[Semantic Error][Ln 2, Col 25] parameter \"arg2\" tried to use invalid type \"undefined_struct\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, InvalidFuncCallRValueOnOutParam)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = (a: out i32){}\n"
+        "main: func =() {\n"
+        "    foo(1);\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 4, Col 9] an rvalue cannot be passed as parameter type \"out i32\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
