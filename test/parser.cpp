@@ -1267,3 +1267,26 @@ TEST(TypeChecker, InvalidForStmt)
         "[Semantic Error][Ln 3, Col 22] condition expression should have bool type, instead of \"i32\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidLogicalOperator)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    b1: bool = 1 == 2 || 3 == 4;\n"
+        "    b2: bool = true && false;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidLogicalOperator)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    b: bool = 1 && \"hello\";\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 15] logical operator \"&&\" is only allowed between bool types, but \"i32\" and \"str\" were given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
