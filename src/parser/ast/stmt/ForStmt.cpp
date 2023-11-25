@@ -48,4 +48,9 @@ const SourcePos& ForStmt::StartPos() const
     return {};
 }
 
+const Expr* ForStmt::Condition() const
+{
+    return m_condition.get();
+}
+
 } // namespace mylang

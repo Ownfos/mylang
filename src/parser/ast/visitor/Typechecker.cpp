@@ -105,7 +105,11 @@ void TypeChecker::PostorderVisit(IfStmt* node)
 
 void TypeChecker::PostorderVisit(ForStmt* node)
 {
-    // TODO: implement
+    // Check if the type of condition expression (if any) is bool.
+    if (auto condition_expr = node->Condition())
+    {
+        ValidateConditionExprType(condition_expr);
+    }
 }
 
 void TypeChecker::PostorderVisit(WhileStmt* node)
@@ -279,6 +283,12 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
     // TODO: implement
 }
 
+// Allowed operations:
+// {+, -, *, /} between primitive types
+// {+=, -=, *=, -=} between implicitly convertible types
+// {==, !=} between strictly identical types
+// {>, <, >=, <=} between primitive types
+// {&&, ||} between bool types
 void TypeChecker::PostorderVisit(BinaryExpr* node)
 {
     auto op_type = node->Operator().type;
@@ -286,13 +296,25 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
     auto rhs_type = GetNodeType(node->RightHandOperand());
 
     // TODO: add other comparison types
-    if (op_type == TokenType::Greater)
+    if (op_type == TokenType::Greater ||
+        op_type == TokenType::Less)
     {
         // TODO: check if two types are comparable.
 
         // TODO: consider making a factory method for primitive types...
         auto bool_type = Type(std::make_shared<PrimitiveType>(Token{TokenType::BoolType, "bool"}));
         SetNodeType(node, bool_type);
+    }
+
+    // TODO: add other arithmetic operator types
+    if (op_type == TokenType::Divide)
+    {
+        // TODO: check if two types are compatible.
+
+        // TODO: make sure that both operands are non-array primitive type.
+
+        // TODO: if two types are different, choose more relaxed type as result.
+        SetNodeType(node, lhs_type);
     }
 }
 

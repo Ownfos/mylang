@@ -24,6 +24,8 @@ public:
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
     virtual const SourcePos& StartPos() const override;
 
+    const Expr* Condition() const;
+
 private:
     std::shared_ptr<Stmt> m_initializer;
     std::shared_ptr<Expr> m_condition;
