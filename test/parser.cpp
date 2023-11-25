@@ -1290,3 +1290,44 @@ TEST(TypeChecker, InvalidLogicalOperator)
         "[Semantic Error][Ln 3, Col 15] logical operator \"&&\" is only allowed between bool types, but \"i32\" and \"str\" were given";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidArgFuncCall)
+{
+    auto source =
+        "module a;\n"
+        "f0: func = (){}\n"
+        "f1: func = (arg1: i32){}\n"
+        "f2: func = (arg1: i32, arg2: str){}\n"
+        "main: func =() {\n"
+        "    f0();\n"
+        "    f1(1);\n"
+        "    f2(1, \"hello\");\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidArgFuncCallMoreArgsGiven)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = (){}\n"
+        "main: func =() {\n"
+        "    foo(1);\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 9] the function only requires 0 arguments, but 1 was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidArgFuncCallTypeMismatch)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = (arg1: i32, arg2: bool){}\n"
+        "main: func =() {\n"
+        "    foo(1, 2);\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 12] expected argument type \"bool\", but \"i32\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
