@@ -49,7 +49,6 @@ void TypeChecker::PreorderVisit(FuncDecl* node)
     //
     // This function signature will be used to validate return statement.
     m_current_function = node;
-    m_latest_source_pos = node->Name().start_pos;
 
     // Open scope and add parameters to local symbol table.
     m_environment.OpenScope(m_context_module_name);
@@ -116,13 +115,6 @@ void TypeChecker::PostorderVisit(WhileStmt* node)
 void TypeChecker::PostorderVisit(JumpStmt* node)
 {
     // TODO: implement
-}
-
-void TypeChecker::PreorderVisit(VarDeclStmt* node)
-{
-    // This information will be used to report source location
-    // when initializer list generates a semantic error.
-    m_latest_source_pos = node->Name().start_pos;
 }
 
 // Returns true if assigning source type value to dest type variable is possible.
@@ -261,7 +253,7 @@ void TypeChecker::PostorderVisit(VarInitList* node)
                 expected_base_type_name,
                 elem_base_type_name
             );
-            throw SemanticError(m_latest_source_pos, message);
+            throw SemanticError(elem->StartPos(), message);
         }
 
         // Update list type to a bigger array which can store all elements in this list.
@@ -272,7 +264,7 @@ void TypeChecker::PostorderVisit(VarInitList* node)
         }
         catch(const std::exception&)
         {
-            throw SemanticError(m_latest_source_pos, "every element in an initializer list should have same dimension");
+            throw SemanticError(elem->StartPos(), "every element in an initializer list should have same dimension");
         }
     }
 
@@ -315,7 +307,7 @@ void TypeChecker::PostorderVisit(Identifier* node)
         auto message = std::format("trying to use undefined symbol \"{}\" in an expression",
             symbol_name
         );
-        throw SemanticError(m_latest_source_pos, message);
+        throw SemanticError(node->StartPos(), message);
     }
 }
 

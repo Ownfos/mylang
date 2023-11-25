@@ -1079,7 +1079,7 @@ TEST(TypeChecker, InvalidFuncTypeVarUndefined)
         "    a: [(out str)] = foo;\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 5] trying to use undefined symbol \"foo\" in an expression";
+        "[Semantic Error][Ln 3, Col 22] trying to use undefined symbol \"foo\" in an expression";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1103,7 +1103,7 @@ TEST(TypeChecker, InvalidArrayVarDeclMixedType)
         "    i: bool[2] = {true, 1};\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 5] trying to mix types \"bool\" and \"i32\" inside an initializer list";
+        "[Semantic Error][Ln 3, Col 25] trying to mix types \"bool\" and \"i32\" inside an initializer list";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1115,7 +1115,7 @@ TEST(TypeChecker, InvalidArrayVarDeclMixedDimension)
         "    i: i32[2][2] = {{1, 2}, 1};\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 5] every element in an initializer list should have same dimension";
+        "[Semantic Error][Ln 3, Col 29] every element in an initializer list should have same dimension";
     ExpectTypeCheckFailure(source, expected_error);
 }
 

@@ -47,7 +47,6 @@ public:
 
     virtual void PostorderVisit(JumpStmt* node) override;
 
-    virtual void PreorderVisit(VarDeclStmt* node) override;
     virtual void PostorderVisit(VarDeclStmt* node) override;
     virtual void PostorderVisit(ExprStmt* node) override;
 
@@ -95,10 +94,6 @@ private:
     // Used to store a currently analyzed function's signature.
     // Return type matching is the key purpose for saving this info.
     FuncDecl* m_current_function;
-
-    // Used to store possible error location (e.g. variable name on VarDeclStmt and its child nodes).
-    // This is required because not all nodes store source location.
-    SourcePos m_latest_source_pos{};
 };
 
 } // namespace mylang
