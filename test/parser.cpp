@@ -1376,3 +1376,27 @@ TEST(TypeChecker, ValidFuncCallOutParam)
         "}\n";
     ExpectTypeCheckSuccess(source);
 }
+
+TEST(TypeChecker, ValidArrayAccess)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32[3] = {1, 2, 3};\n"
+        "    sum: i32 = i[0] + i[1] + i[2];\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidArrayAccessDimensionMismatch)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32[1];\n"
+        "    i[0][0];\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 4, Col 10] array access operator [] cannot be applied to non-array type \"i32\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
