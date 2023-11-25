@@ -1223,3 +1223,25 @@ TEST(TypeChecker, InvalidIfCondition)
         "[Semantic Error][Ln 3, Col 9] condition expression should have bool type, instead of \"i32\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidWhileCondition)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    while (2 > 3) {}"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidWhileCondition)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    while (\"hello\") {}"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 12] condition expression should have bool type, instead of \"str\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
