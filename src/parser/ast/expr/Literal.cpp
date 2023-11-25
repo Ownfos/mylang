@@ -22,21 +22,9 @@ TokenType LiteralToTokenType(const Token& literal)
     }
 }
 
-Type CreateTypeFromLiteral(const Token& literal)
-{
-    // Create type token from literal token.
-    // example) "1234" => "i32"
-    auto token_type = LiteralToTokenType(literal);
-    auto token = Token{
-        .type = token_type,
-        .lexeme = TokenTypeName(token_type)
-    };
-    return Type(std::make_shared<PrimitiveType>(token));
-}
-
 Literal::Literal(const Token& literal)
     : m_literal(literal)
-    , m_decl_type(CreateTypeFromLiteral(literal))
+    , m_decl_type(CreatePrimiveType(LiteralToTokenType(literal)))
 {}
 
 void Literal::Accept(IAbstractSyntaxTreeVisitor* visitor)

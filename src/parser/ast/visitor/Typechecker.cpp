@@ -301,9 +301,7 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
     {
         // TODO: check if two types are comparable.
 
-        // TODO: consider making a factory method for primitive types...
-        auto bool_type = Type(std::make_shared<PrimitiveType>(Token{TokenType::BoolType, "bool"}));
-        SetNodeType(node, bool_type);
+        SetNodeType(node, CreatePrimiveType(TokenType::BoolType));
     }
 
     // TODO: add other arithmetic operator types

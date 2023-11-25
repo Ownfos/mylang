@@ -2,6 +2,7 @@
 #define MYLANG_TYPE_H
 
 #include "parser/type/base/IBaseType.h"
+#include "lexer/Token.h"
 #include <vector>
 #include <memory>
 
@@ -46,6 +47,9 @@ protected:
     std::shared_ptr<IBaseType> m_base_type;
     std::vector<int> m_array_sizes;
 };
+
+// A factory method for primitive types: i32, f32, bool, and str.
+Type CreatePrimiveType(TokenType type);
 
 } // namespace mylang
 

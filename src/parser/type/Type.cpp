@@ -1,9 +1,27 @@
 #include "parser/type/Type.h"
+#include "parser/type/base/PrimitiveType.h"
 #include "parser/ProgramEnvironment.h"
 #include <format>
 
 namespace mylang
 {
+
+Type CreatePrimiveType(TokenType type)
+{
+    if (type != TokenType::IntType &&
+        type != TokenType::FloatType &&
+        type != TokenType::BoolType &&
+        type != TokenType::StringType)
+    {
+        throw std::exception("valid primitive types are f32, i32, bool, and str");
+    }
+
+    auto token = Token{
+        .type = type,
+        .lexeme = TokenTypeName(type)
+    };
+    return Type(std::make_shared<PrimitiveType>(token));
+}
 
 Type::Type(std::shared_ptr<IBaseType> base_type, const std::vector<int>& array_sizes)
     : m_base_type(base_type), m_array_sizes(array_sizes)
