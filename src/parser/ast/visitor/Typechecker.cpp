@@ -23,6 +23,7 @@
 #include "parser/ast/expr/PostfixExpr.h"
 #include "parser/ast/expr/PrefixExpr.h"
 
+#include "parser/type/base/PrimitiveType.h"
 #include "parser/type/base/StructType.h"
 #include "parser/type/base/FuncType.h"
 
@@ -109,7 +110,7 @@ void TypeChecker::PostorderVisit(ForStmt* node)
 
 void TypeChecker::PostorderVisit(WhileStmt* node)
 {
-    // TODO: implement
+    ValidateConditionExprType(node->Condition());
 }
 
 void TypeChecker::PostorderVisit(JumpStmt* node)
@@ -280,7 +281,19 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
 
 void TypeChecker::PostorderVisit(BinaryExpr* node)
 {
-    // TODO: implement
+    auto op_type = node->Operator().type;
+    auto lhs_type = GetNodeType(node->LeftHandOperand());
+    auto rhs_type = GetNodeType(node->RightHandOperand());
+
+    // TODO: add other comparison types
+    if (op_type == TokenType::Greater)
+    {
+        // TODO: check if two types are comparable.
+
+        // TODO: consider making a factory method for primitive types...
+        auto bool_type = Type(std::make_shared<PrimitiveType>(Token{TokenType::BoolType, "bool"}));
+        SetNodeType(node, bool_type);
+    }
 }
 
 void TypeChecker::PostorderVisit(FuncCallExpr* node)

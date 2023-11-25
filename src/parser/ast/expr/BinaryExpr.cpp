@@ -31,4 +31,19 @@ std::string BinaryExpr::ToString() const
     );
 }
 
+const Token& BinaryExpr::Operator() const
+{
+    return m_op;
+}
+
+const Expr* BinaryExpr::LeftHandOperand() const
+{
+    return m_lhs.get();
+}
+
+const Expr* BinaryExpr::RightHandOperand() const
+{
+    return m_rhs.get();
+}
+
 } // namespace mylang

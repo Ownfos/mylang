@@ -16,6 +16,10 @@ public:
     virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
+    const Token& Operator() const;
+    const Expr* LeftHandOperand() const;
+    const Expr* RightHandOperand() const;
+
 private:
     Token m_op;
     std::shared_ptr<Expr> m_lhs;

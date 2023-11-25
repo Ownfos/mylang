@@ -22,4 +22,9 @@ const SourcePos& WhileStmt::StartPos() const
     return m_condition->StartPos();
 }
 
+const Expr* WhileStmt::Condition() const
+{
+    return m_condition.get();
+}
+
 } // namespace mylang
