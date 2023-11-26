@@ -16,6 +16,9 @@ public:
     virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
+    const Expr* Struct() const;
+    const Token& MemberName() const;
+
 private:
     std::shared_ptr<Expr> m_expr;
     Token m_id;

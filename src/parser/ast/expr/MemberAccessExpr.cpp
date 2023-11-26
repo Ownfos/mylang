@@ -29,4 +29,14 @@ std::string MemberAccessExpr::ToString() const
     );
 }
 
+const Expr* MemberAccessExpr::Struct() const
+{
+    return m_expr.get();
+}
+
+const Token& MemberAccessExpr::MemberName() const
+{
+    return m_id;
+}
+
 } // namespace mylang
