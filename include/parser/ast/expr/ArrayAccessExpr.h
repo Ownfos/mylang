@@ -16,6 +16,9 @@ public:
     virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
+    const Expr* Operand() const;
+    const Expr* Index() const;
+
 private:
     std::shared_ptr<Expr> m_expr;
     std::shared_ptr<Expr> m_index;

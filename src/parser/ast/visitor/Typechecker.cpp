@@ -307,7 +307,32 @@ void TypeChecker::PostorderVisit(VarInitList* node)
 
 void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
 {
-    // TODO: implement
+    // Index should have int type.
+    const auto index_expr = node->Index();
+    const auto& index_type = GetExprTrait(index_expr).type;
+    if (index_type != CreatePrimiveType(TokenType::IntType))
+    {
+        auto message = std::format("array index should have type i32, but \"{}\" was given",
+            index_type.ToString()
+        );
+        throw SemanticError(index_expr->StartPos(), message);
+    }
+
+    // Operand should be an array type.
+    const auto& operand_type = GetExprTrait(node->Operand()).type;
+    if (operand_type.ArraySize().empty())
+    {
+        auto message = std::format("array access operator [] cannot be applied to non-array type \"{}\"",
+            operand_type.ToString()
+        );
+        throw SemanticError(index_expr->StartPos(), message);
+    }
+
+    // Record the result type.
+    auto result_type = operand_type; // copy Type instance
+    result_type.RemoveLeftmostArrayDim();
+
+    SetExprTrait(node, result_type);
 }
 
 // Allowed operations:
@@ -368,8 +393,10 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
         SetExprTrait(node, bool_type);
     }
 
-    // TODO: add other arithmetic operator types
-    if (op_type == TokenType::Divide)
+    if (op_type == TokenType::Divide ||
+        op_type == TokenType::Multiply ||
+        op_type == TokenType::Plus ||
+        op_type == TokenType::Minus)
     {
         // TODO: check if two types are compatible.
 

@@ -12,7 +12,6 @@ ArrayAccessExpr::ArrayAccessExpr(std::shared_ptr<Expr> expr, std::shared_ptr<Exp
 void ArrayAccessExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
     visitor->PreorderVisit(this);
-    
     m_expr->Accept(visitor);
     m_index->Accept(visitor);
     visitor->PostorderVisit(this);
@@ -29,6 +28,16 @@ std::string ArrayAccessExpr::ToString() const
         m_expr->ToString(),
         m_index->ToString()
     );
+}
+
+const Expr* ArrayAccessExpr::Operand() const
+{
+    return m_expr.get();
+}
+
+const Expr* ArrayAccessExpr::Index() const
+{
+    return m_index.get();
 }
 
 } // namespace mylang
