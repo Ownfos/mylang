@@ -20,6 +20,8 @@ public:
     const IBaseType* BaseType() const;
     const std::vector<int>& ArraySize() const;
 
+    bool IsArray() const;
+
     // Wrapper functions for underlying base type.
     std::string ToString() const;
     bool IsValid(

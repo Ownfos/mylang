@@ -37,6 +37,11 @@ const std::vector<int>& Type::ArraySize() const
     return m_array_sizes;
 }
 
+bool Type::IsArray() const
+{
+    return !m_array_sizes.empty();
+}
+
 std::string Type::ToString() const
 {
     // Get the base type description.
