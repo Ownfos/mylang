@@ -182,7 +182,7 @@ bool IsArraySizeContainable(const std::vector<int>& container_arr_size, const st
     return true;
 }
 
-void ValidateBasetypeCompatibility(const IBaseType* dest, const IBaseType* source, const SourcePos& error_report_location)
+void ValidateBasetypeCompatibility(const IBaseType* dest, const IBaseType* source, const SourcePos& where)
 {
     if (!IsBasetypeCompatible(dest, source))
     {
@@ -190,11 +190,11 @@ void ValidateBasetypeCompatibility(const IBaseType* dest, const IBaseType* sourc
             source->ToString(),
             dest->ToString()
         );
-        throw SemanticError(error_report_location, message);
+        throw SemanticError(where, message);
     }
 }
 
-void ValidateNumDimensionEquality(const Type& lhs, const Type& rhs, const SourcePos& error_report_location)
+void ValidateNumDimensionEquality(const Type& lhs, const Type& rhs, const SourcePos& where)
 {
     if (!IsNumDimensionSame(lhs, rhs))
     {
@@ -202,11 +202,11 @@ void ValidateNumDimensionEquality(const Type& lhs, const Type& rhs, const Source
             lhs.ToString(),
             rhs.ToString()
         );
-        throw SemanticError(error_report_location, message);
+        throw SemanticError(where, message);
     }
 }
 
-void ValidateInitializerListSize(const Type& var_type, const Type& init_type, const SourcePos& error_report_location)
+void ValidateInitializerListSize(const Type& var_type, const Type& init_type, const SourcePos& where)
 {
     if (!IsArraySizeContainable(var_type.ArraySize(), init_type.ArraySize()))
     {
@@ -214,23 +214,27 @@ void ValidateInitializerListSize(const Type& var_type, const Type& init_type, co
             init_type.ToString(),
             var_type.ToString()
         );
-        throw SemanticError(error_report_location, message);
+        throw SemanticError(where, message);
     }
 }
 
-void TypeChecker::ValidateVarDeclType(const Type& var_type, const Type& init_type, const SourcePos& decl_source_location)
+// Check if we can initialize variable of var_type with value of init_type.
+// If not, semantic error will be thrown.
+// 'decl_source_location' is used on the exception message,
+// to show where the error happened.
+void ValidateVarDeclType(const Type& var_type, const Type& init_type, const SourcePos& where)
 {
     // Check if we can assign initializer to variable,
     // while only considering the base type.
-    ValidateBasetypeCompatibility(var_type.BaseType(), init_type.BaseType(), decl_source_location);
+    ValidateBasetypeCompatibility(var_type.BaseType(), init_type.BaseType(), where);
 
     // Check if initializer list has same number of dimensions.
     // ex) arr: i32[100] = {{1}, {2}} (invalid: dimension mismatch)
-    ValidateNumDimensionEquality(var_type, init_type, decl_source_location);
+    ValidateNumDimensionEquality(var_type, init_type, where);
 
     // Check if initializer list has less-or-equal size compared to the variable type.
     // ex) arr: i32[100] = {0}; (valid: partial initialization)
-    ValidateInitializerListSize(var_type, init_type, decl_source_location);
+    ValidateInitializerListSize(var_type, init_type, where);
 }
 
 void TypeChecker::PostorderVisit(VarDeclStmt* node)

@@ -82,12 +82,6 @@ private:
 
     void ValidateTypeExistence(const Type& type, std::string_view who, const SourcePos& where);
 
-    // Check if we can initialize variable of var_type with value of init_type.
-    // If not, semantic error will be thrown.
-    // 'decl_source_location' is used on the exception message,
-    // to show where the error happened.
-    void ValidateVarDeclType(const Type& var_type, const Type& init_type, const SourcePos& where);
-
     // Check if the expression has bool type.
     // If not, semantic error will be thrown.
     void ValidateConditionExprType(const Expr* condition_expr);
