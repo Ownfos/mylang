@@ -320,7 +320,7 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
 
     // Operand should be an array type.
     const auto& operand_type = GetExprTrait(node->Operand()).type;
-    if (operand_type.ArraySize().empty())
+    if (!operand_type.IsArray())
     {
         auto message = std::format("array access operator [] cannot be applied to non-array type \"{}\"",
             operand_type.ToString()
@@ -343,9 +343,10 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
 // {&&, ||} between bool types
 void TypeChecker::PostorderVisit(BinaryExpr* node)
 {
-    const auto op_type = node->Operator().type;
-    const auto lhs_type = GetExprTrait(node->LeftHandOperand()).type;
-    const auto rhs_type = GetExprTrait(node->RightHandOperand()).type;
+    const auto& op_token = node->Operator();
+    const auto& op_type = op_token.type;
+    const auto& [is_lhs_lvalue, lhs_type] = GetExprTrait(node->LeftHandOperand());
+    const auto& rhs_type = GetExprTrait(node->RightHandOperand()).type;
 
     // Bool type appears frequently on binary expression type check, so prepare one.
     const auto bool_type = CreatePrimiveType(TokenType::BoolType);
@@ -361,7 +362,7 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
                 lhs_type.ToString(),
                 rhs_type.ToString()
             );
-            throw SemanticError(node->StartPos(), message);
+            throw SemanticError(op_token.start_pos, message);
         }
         
         SetExprTrait(node, bool_type);
@@ -378,7 +379,7 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
                 lhs_type.ToString(),
                 rhs_type.ToString()
             );
-            throw SemanticError(node->StartPos(), message);
+            throw SemanticError(op_token.start_pos, message);
         }
 
         SetExprTrait(node, bool_type);
@@ -405,6 +406,50 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
         // TODO: if two types are different, choose more relaxed type as result.
         SetExprTrait(node, lhs_type);
     }
+
+    if (op_type == TokenType::Assign ||
+        op_type == TokenType::PlusAssign ||
+        op_type == TokenType::MinusAssign ||
+        op_type == TokenType::MultiplyAssign ||
+        op_type == TokenType::DivideAssign)
+    {
+        // Assignment requires lhs to be an lvalue.
+        if (!is_lhs_lvalue)
+        {
+            throw SemanticError(op_token.start_pos, "assignment to an rvalue is not allowed");
+        }
+
+        // Array assignment requires strict type identity.
+        if (lhs_type.IsArray() && (lhs_type != rhs_type))
+        {
+            const auto message = std::format("assignment operator \"{}\" is only allowed between same types, but \"{}\" and \"{}\" were given",
+                node->Operator().lexeme,
+                lhs_type.ToString(),
+                rhs_type.ToString()
+            );
+            throw SemanticError(op_token.start_pos, message);
+        }
+
+        // For non-array types, we need to check if implicit conversion is possible.
+        if (!IsBasetypeCompatible(lhs_type.BaseType(), rhs_type.BaseType()))
+        {
+            auto message = std::format("implicit conversion from base type \"{}\" to \"{}\" is not allowed",
+                rhs_type.ToString(),
+                lhs_type.ToString()
+            );
+            throw SemanticError(op_token.start_pos, message);
+        }
+
+        // For assignment other than plain "=",
+        // check if the corresponding arithmetic operation
+        // between lhs and rhs is possible.
+        if (op_type != TokenType::Assign)
+        {
+            // TODO: throw exception if not possible
+        }
+
+        SetExprTrait(node, lhs_type);
+    }
 }
 
 void TypeChecker::PostorderVisit(FuncCallExpr* node)
@@ -414,7 +459,7 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
     // Throw an error if basetype is non-callable, or the operand is an array.
     // Note: The only thing we allow is a callble, non-array instance!
     auto base_type = dynamic_cast<const FuncType*>(func_type.BaseType());
-    if (base_type == nullptr || !func_type.ArraySize().empty())
+    if (base_type == nullptr || func_type.IsArray())
     {
         const auto message = std::format("\"{}\" is not a callable type",
             func_type.ToString()
@@ -504,7 +549,50 @@ void TypeChecker::PostorderVisit(Literal* node)
 
 void TypeChecker::PostorderVisit(MemberAccessExpr* node)
 {
-    // TODO: implement
+    auto [is_struct_lvalue, struct_type] = GetExprTrait(node->Struct());
+
+    // An array is obviously not a struct.
+    if (struct_type.IsArray())
+    {
+        // TODO: throw semantic error: member access cannot be applied to an array type \"{}\"
+    }
+
+    // Check if the operand is really a struct type.
+    const StructDecl* struct_decl;
+    try
+    {
+        const auto& struct_decl_symbol = m_environment.FindSymbol(m_context_module_name, struct_type.ToString());
+
+        // FindSymbol() will throw an exception for any non-struct type,
+        // so if it didn't crash, this cast is guaranteed to succeed.
+        struct_decl = dynamic_cast<const StructDecl*>(struct_decl_symbol.declaration);
+    }
+    catch(const std::exception&)
+    {
+        auto message = std::format("\"{}\" is not a struct type",
+            struct_type.ToString()
+        );
+        throw SemanticError(node->StartPos(), message);
+    }
+
+    // Check if the struct has a member with matching name.
+    const auto& member_name = node->MemberName();
+    for (const MemberVariable& member : struct_decl->Members())
+    {
+        if (member.name.lexeme == member_name.lexeme)
+        {
+            // Note: if the operand is an lvalue, the member variable is also an lvalue.
+            SetExprTrait(node, member.type, is_struct_lvalue);
+            return;
+        }
+    }
+
+    // Reaching this line implies that we failed to find a matching member name.
+    auto message = std::format("struct type \"person\" does not have member variable named \"height\"",
+        struct_type.ToString(),
+        member_name.lexeme
+    );
+    throw SemanticError(member_name.start_pos, message);
 }
 
 void TypeChecker::PostorderVisit(PostfixExpr* node)

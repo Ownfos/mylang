@@ -143,7 +143,7 @@ my_struct[3]
 ```
 ### Expressions
 ```
-expr          ::= (identifier assign-op)* or-expr
+expr          ::= or-expr (assign-op or-expr)*
 assign-op     ::= "=" | "+=" | "-=" | "*=" | "/="
 
 or-expr       ::= and-expr ("||" and-expr)*

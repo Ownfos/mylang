@@ -1287,7 +1287,7 @@ TEST(TypeChecker, InvalidLogicalOperator)
         "    b: bool = 1 && \"hello\";\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 15] logical operator \"&&\" is only allowed between bool types, but \"i32\" and \"str\" were given";
+        "[Semantic Error][Ln 3, Col 17] logical operator \"&&\" is only allowed between bool types, but \"i32\" and \"str\" were given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1431,5 +1431,18 @@ TEST(TypeChecker, InvalidMemberAccess)
         "}\n";
     auto expected_error =
         "[Semantic Error][Ln 8, Col 10] struct type \"person\" does not have member variable named \"height\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidAssignmentTypeMismatch)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32;\n"
+        "    i = \"hello\";\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 4, Col 7] implicit conversion from base type \"str\" to \"i32\" is not allowed";
     ExpectTypeCheckFailure(source, expected_error);
 }
