@@ -1208,7 +1208,7 @@ TEST(TypeChecker, InvalidIfCondition)
         "    if (1) {}"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 9] condition expression should have bool type, instead of \"i32\"";
+        "[Semantic Error][Ln 3, Col 9] expected type of a condition expression is \"bool\", but \"i32\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1230,7 +1230,7 @@ TEST(TypeChecker, InvalidWhileCondition)
         "    while (\"hello\") {}"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 12] condition expression should have bool type, instead of \"str\"";
+        "[Semantic Error][Ln 3, Col 12] expected type of a condition expression is \"bool\", but \"str\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1252,7 +1252,7 @@ TEST(TypeChecker, InvalidForStmt)
         "    for (i: i32 = 0; i / 1; ++i) {}"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 22] condition expression should have bool type, instead of \"i32\"";
+        "[Semantic Error][Ln 3, Col 22] expected type of a condition expression is \"bool\", but \"i32\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1275,7 +1275,29 @@ TEST(TypeChecker, InvalidLogicalOperator)
         "    b: bool = 1 && \"hello\";\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 17] logical operator \"&&\" is only allowed between bool types, but \"i32\" and \"str\" were given";
+        "[Semantic Error][Ln 3, Col 17] expected type of operand of logical operator && is \"bool\", but \"i32\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, ValidEqualityOperator)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    \"hi\" == \"hello\";\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidEqualityOperator)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    1 == \"hello\";\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 7] expected type of right hand operand of equality operator == is \"i32\", but \"str\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1316,7 +1338,7 @@ TEST(TypeChecker, InvalidArgFuncCallTypeMismatch)
         "    foo(1, 2);\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 4, Col 12] expected argument type \"bool\", but \"i32\" was given";
+        "[Semantic Error][Ln 4, Col 12] expected type of argument 1 is \"bool\", but \"i32\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1386,6 +1408,19 @@ TEST(TypeChecker, InvalidArrayAccessDimensionMismatch)
         "}\n";
     auto expected_error =
         "[Semantic Error][Ln 4, Col 10] array access operator [] cannot be applied to non-array type \"i32\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidArrayAccessNonIntegerIndex)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: i32[1];\n"
+        "    i[1.5];\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 4, Col 7] expected type of an array index is \"i32\", but \"f32\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 

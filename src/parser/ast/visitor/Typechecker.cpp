@@ -109,16 +109,26 @@ void TypeChecker::PostorderVisit(CompoundStmt* node)
     // TODO: implement
 }
 
-void TypeChecker::ValidateConditionExprType(const Expr* condition_expr)
+// Throws an exception if 'type' is different from 'expected'.
+// 'who' and 'where' are used to provide information to the SemanticError.
+void ValidateTypeEquality(const Type& type, const Type& expected, std::string_view who, const SourcePos& where)
 {
-    auto type = GetExprTrait(condition_expr).type;
-    if (type != CreatePrimiveType(TokenType::BoolType))
+    if (type != expected)
     {
-        auto message = std::format("condition expression should have bool type, instead of \"{}\"",
+        auto message = std::format("expected type of {} is \"{}\", but \"{}\" was given",
+            who,
+            expected.ToString(),
             type.ToString()
         );
-        throw SemanticError(condition_expr->StartPos(), message);
+        throw SemanticError(where, message);
     }
+}
+
+void TypeChecker::ValidateConditionExprType(const Expr* condition_expr)
+{
+    const auto& type = GetExprTrait(condition_expr).type;
+    const auto& expected = CreatePrimiveType(TokenType::BoolType);
+    ValidateTypeEquality(type, expected, "a condition expression", condition_expr->StartPos());
 }
 
 void TypeChecker::PostorderVisit(IfStmt* node)
@@ -315,16 +325,13 @@ void TypeChecker::PostorderVisit(VarInitList* node)
 
 void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
 {
-    // Index should have int type.
     const auto index_expr = node->Index();
+
+    // Index should have int type.
     const auto& index_type = GetExprTrait(index_expr).type;
-    if (index_type != CreatePrimiveType(TokenType::IntType))
-    {
-        auto message = std::format("array index should have type i32, but \"{}\" was given",
-            index_type.ToString()
-        );
-        throw SemanticError(index_expr->StartPos(), message);
-    }
+    auto expected = CreatePrimiveType(TokenType::IntType);
+    auto where = index_expr->StartPos();
+    ValidateTypeEquality(index_type, expected, "an array index", where);
 
     // Operand should be an array type.
     const auto& operand_type = GetExprTrait(node->Operand()).type;
@@ -333,7 +340,7 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
         auto message = std::format("array access operator [] cannot be applied to non-array type \"{}\"",
             operand_type.ToString()
         );
-        throw SemanticError(index_expr->StartPos(), message);
+        throw SemanticError(where, message);
     }
 
     // Record the result type.
@@ -356,22 +363,19 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
     const auto& [is_lhs_lvalue, lhs_type] = GetExprTrait(node->LeftHandOperand());
     const auto& rhs_type = GetExprTrait(node->RightHandOperand()).type;
 
-    // Bool type appears frequently on binary expression type check, so prepare one.
-    const auto bool_type = CreatePrimiveType(TokenType::BoolType);
+    // These instances frequently appear within this function,
+    // so why not prepare them in advance!
+    // Note: 'where' is used to report source location when semantic error occurs
+    const auto& bool_type = CreatePrimiveType(TokenType::BoolType);
+    const auto& where = op_token.start_pos;
 
     // Logical and/or is allowed only between bool types
     if (op_type == TokenType::And ||
         op_type == TokenType::Or)
     {
-        if (lhs_type != bool_type || rhs_type != bool_type)
-        {
-            const auto message = std::format("logical operator \"{}\" is only allowed between bool types, but \"{}\" and \"{}\" were given",
-                node->Operator().lexeme,
-                lhs_type.ToString(),
-                rhs_type.ToString()
-            );
-            throw SemanticError(op_token.start_pos, message);
-        }
+        auto who = std::format("operand of logical operator {}", op_token.lexeme);
+        ValidateTypeEquality(lhs_type, bool_type, who, where);
+        ValidateTypeEquality(rhs_type, bool_type, who, where);
         
         SetExprTrait(node, bool_type);
     }
@@ -380,15 +384,8 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
     if (op_type == TokenType::Equal ||
         op_type == TokenType::NotEqual)
     {
-        if (lhs_type != rhs_type)
-        {
-            const auto message = std::format("equality operator \"{}\" is only allowed between same types, but \"{}\" and \"{}\" were given",
-                node->Operator().lexeme,
-                lhs_type.ToString(),
-                rhs_type.ToString()
-            );
-            throw SemanticError(op_token.start_pos, message);
-        }
+        auto who = std::format("right hand operand of equality operator {}", op_token.lexeme);
+        ValidateTypeEquality(rhs_type, lhs_type, who, where);
 
         SetExprTrait(node, bool_type);
     }
@@ -430,12 +427,8 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
         // Array assignment requires strict type identity.
         if (lhs_type.IsArray() && (lhs_type != rhs_type))
         {
-            const auto message = std::format("assignment operator \"{}\" is only allowed between same types, but \"{}\" and \"{}\" were given",
-                node->Operator().lexeme,
-                lhs_type.ToString(),
-                rhs_type.ToString()
-            );
-            throw SemanticError(op_token.start_pos, message);
+            auto who = "right hand operand of array assignment operator";
+            ValidateTypeEquality(rhs_type, lhs_type, who, where);
         }
 
         // For non-array types, we need to check if implicit conversion is possible.
@@ -453,12 +446,48 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
     }
 }
 
+// Throws exception if number of arguments differ from requires parameters.
+void ValidateArgumentNumber(
+    const std::vector<ParamType>& param_types,
+    const std::vector<std::shared_ptr<Expr>>& args,
+    const SourcePos& where
+)
+{
+    if (param_types.size() != args.size())
+    {
+        const auto message = std::format("the function only requires {} arguments, but {} was given",
+            param_types.size(),
+            args.size()
+        );
+        throw SemanticError(where, message);
+    }
+}
+
+bool IsLValueRequired(const ParamUsage& usage)
+{
+    return (usage == ParamUsage::InOut) || (usage == ParamUsage::Out);
+}
+
+// Throws exception when an rvalue argument is passed to an 'out' or 'inout' parameter.
+void TypeChecker::ValidateLValueQualifier(const ParamType& param, const Expr* arg)
+{
+    auto is_arg_lvalue = GetExprTrait(arg).is_lvalue;
+    if (IsLValueRequired(param.usage) && !is_arg_lvalue)
+    {
+        const auto message = std::format("an rvalue cannot be passed as parameter type \"{}\"",
+            param.ToString()
+        );
+        throw SemanticError(arg->StartPos(), message);
+    }
+}
+
 void TypeChecker::PostorderVisit(FuncCallExpr* node)
 {
     const auto& func_type = GetExprTrait(node->Function()).type;
 
     // Throw an error if basetype is non-callable, or the operand is an array.
     // Note: The only thing we allow is a callble, non-array instance!
+    // TODO: extract this part to a separate ValidateXXX function.
     auto base_type = dynamic_cast<const FuncType*>(func_type.BaseType());
     if (base_type == nullptr || func_type.IsArray())
     {
@@ -469,46 +498,25 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
     }
 
     // Check if the number of arguments is valid.
-    // TODO: if possible, find other way that doesn't use dynamic_cast...
     const auto& param_types = base_type->ParamTypes();
     const auto& args = node->ArgumentList();
-    if (param_types.size() != args.size())
-    {
-        const auto message = std::format("the function only requires {} arguments, but {} was given",
-            param_types.size(),
-            args.size()
-        );
-        throw SemanticError(node->StartPos(), message);
-    }
+    ValidateArgumentNumber(param_types, args, node->StartPos());
 
     // Check if each argument has a valid type.
     for (int i = 0; i < args.size(); ++i)
     {
-        // This is the one passed as an argument.
-        const auto& [is_arg_lvalue, arg_type] = GetExprTrait(args[i].get());
+        // Alias for frequently used variables.
+        const auto& param = param_types[i];
+        auto arg_expr = args[i].get();
 
-        // This is the parameter signature.
-        const auto& [expected_type, param_usage] = param_types[i];
+        // Make sure the types match.
+        auto who = std::format("argument {}", i);
+        const auto& type = GetExprTrait(arg_expr).type;
+        ValidateTypeEquality(type, param.type, who, arg_expr->StartPos());
 
-        // If two doesn't match, throw a semantic error.
-        if (arg_type != expected_type)
-        {
-            const auto message = std::format("expected argument type \"{}\", but \"{}\" was given",
-                expected_type.ToString(),
-                arg_type.ToString()
-            );
-            throw SemanticError(args[i]->StartPos(), message);
-        }
-
-        // 'inout' or 'out' parameters require corresponding argument to be an lvalue.
-        auto is_lvalue_required = (param_usage == ParamUsage::InOut) || (param_usage == ParamUsage::Out);
-        if (is_lvalue_required && !is_arg_lvalue)
-        {
-            const auto message = std::format("an rvalue cannot be passed as parameter type \"{}\"",
-                param_types[i].ToString()
-            );
-            throw SemanticError(args[i]->StartPos(), message);
-        }
+        // Make sure the argument is an lvalue
+        // if the parameter usage is 'out' or 'inout'.
+        ValidateLValueQualifier(param, arg_expr);
     }
 
     // Since everything is good to go, register the type as the function's return type.

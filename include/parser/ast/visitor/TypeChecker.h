@@ -13,6 +13,7 @@ class Expr;
 class StructType;
 class FuncType;
 class IAbstractSyntaxTree;
+struct ParamType;
 
 struct ExprTrait
 {
@@ -87,6 +88,10 @@ private:
     // Check if the expression has bool type.
     // If not, semantic error will be thrown.
     void ValidateConditionExprType(const Expr* condition_expr);
+
+    // Check if the parameter requires an argument to be lvalue
+    // and throw an error if arg is rvalue while it shouldn't be.
+    void ValidateLValueQualifier(const ParamType& param_type, const Expr* arg);
 
     ProgramEnvironment& m_environment;
 
