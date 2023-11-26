@@ -43,6 +43,18 @@ void TypeChecker::PreorderVisit(Module* node)
     m_context_module_name = node->ModuleName().lexeme;
 }
 
+void TypeChecker::ValidateTypeExistence(const Type& type, std::string_view who, const SourcePos& where)
+{
+    if (!type.IsValid(m_environment, m_context_module_name))
+    {
+        auto message = std::format("{} tried to use invalid type \"{}\"",
+            who,
+            type.ToString()
+        );
+        throw SemanticError(where, message);
+    }
+}
+
 void TypeChecker::PreorderVisit(FuncDecl* node)
 {
     // Record that all of the following statements are
@@ -53,14 +65,10 @@ void TypeChecker::PreorderVisit(FuncDecl* node)
 
     // Check if the return type is valid.
     // Note: parameter types will be validated on child nodes.
-    auto ret_type = node->ReturnType();
-    if (ret_type.has_value() && !ret_type->IsValid(m_environment, m_context_module_name))
+    if (auto ret_type = node->ReturnType())
     {
-        auto message = std::format("function \"{}\" tried to use invalid return type \"{}\"",
-            node->Name().lexeme,
-            ret_type->ToString()
-        );
-        throw SemanticError(node->StartPos(), message);
+        auto who = std::format("return type of function \"{}\"", node->Name().lexeme);
+        ValidateTypeExistence(ret_type.value(), who, node->StartPos());
     }
 
     m_environment.OpenScope(m_context_module_name);
@@ -74,15 +82,8 @@ void TypeChecker::PostorderVisit(FuncDecl* node)
 void TypeChecker::PreorderVisit(Parameter* node)
 {
     // Throw an error if the type is invalid in this module's context.
-    const auto param_type = node->DeclType();
-    if (!param_type.IsValid(m_environment, m_context_module_name))
-    {
-        auto message = std::format("parameter \"{}\" tried to use invalid type \"{}\"",
-            node->Name().lexeme,
-            param_type.ToString()
-        );
-        throw SemanticError(node->StartPos(), message);
-    }
+    auto who = std::format("parameter \"{}\"", node->Name().lexeme);
+    ValidateTypeExistence(node->DeclType(), who, node->StartPos());
 
     // If the type was valid, add it to the local symbol table.
     // Note: corresponding FuncDecl opens a new scope,
@@ -95,15 +96,11 @@ void TypeChecker::PreorderVisit(StructDecl* node)
     // Make sure that all member variables with struct type are valid.
     for (const auto& member : node->Members())
     {
-        if (!member.type.IsValid(m_environment, m_context_module_name))
-        {
-            auto message = std::format("member variable \"{}\" of struct \"{}\" tried to use invalid type \"{}\"",
-                member.name.lexeme,
-                node->Name().lexeme,
-                member.type.ToString()
-            );
-            throw SemanticError(member.name.start_pos, message);
-        }
+        auto who = std::format("member variable \"{}\" of struct \"{}\"",
+            member.name.lexeme,
+            node->Name().lexeme
+        );
+        ValidateTypeExistence(member.type, who, member.name.start_pos);
     }
 }
 

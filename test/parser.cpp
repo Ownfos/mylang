@@ -1326,7 +1326,7 @@ TEST(TypeChecker, InvalidReturnType)
         "module a;\n"
         "foo: func = () -> undefined_struct {}\n";
     auto expected_error =
-        "[Semantic Error][Ln 2, Col 1] function \"foo\" tried to use invalid return type \"undefined_struct\"";
+        "[Semantic Error][Ln 2, Col 1] return type of function \"foo\" tried to use invalid type \"undefined_struct\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
