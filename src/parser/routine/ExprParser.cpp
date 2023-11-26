@@ -84,39 +84,23 @@ bool ExprParser::CanStartParsing()
         IsFirstOfPrefixExpr(type);
 }
 
-// expr      ::= identifier assign-op expr | or-expr
+// expr      ::= (or-expr assign-op)* or-expr
 // assign-op ::= "=" | "+=" | "-=" | "*=" | "/="
 std::shared_ptr<Expr> ExprParser::Parse()
 {
     try
     {
-        // Since primary-expr also starts with identifier,
-        // we should have two lookaheads to confirm an assignment.
-        if (Peek(0) == TokenType::Identifier && IsAssignmentOperator(Peek(1)))
+        auto expr = ParseOrExpr();
+        if (auto op = OptionalAcceptOneOf(AssignmentOps()))
         {
-            return ParseAssignExpr();
+            expr = std::make_shared<BinaryExpr>(op.value(), expr, Parse());
         }
-        else
-        {
-            return ParseOrExpr();
-        }
+        return expr;
     }
     catch(const ParseRoutineError& e)
     {
         throw PatternMismatchError(e, "expr");
     }
-}
-
-// assign-expr ::= identifier assign-op expr
-std::shared_ptr<Expr> ExprParser::ParseAssignExpr()
-{
-    auto lhs = std::make_shared<Identifier>(
-        Accept(TokenType::Identifier)
-    );
-    auto op = AcceptOneOf(AssignmentOps());
-    auto rhs = Parse();
-
-    return std::make_shared<BinaryExpr>(op, lhs, rhs);
 }
 
 // or-expr ::= and-expr ("||" and-expr)*

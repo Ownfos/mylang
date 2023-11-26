@@ -16,7 +16,6 @@ public:
     virtual std::shared_ptr<Expr> Parse() override;
 
 private:
-    std::shared_ptr<Expr> ParseAssignExpr();
     std::shared_ptr<Expr> ParseOrExpr();
     std::shared_ptr<Expr> ParseAndExpr();
     std::shared_ptr<Expr> ParseCompareExpr();
