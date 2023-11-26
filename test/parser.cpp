@@ -1153,19 +1153,7 @@ TEST(TypeChecker, InvalidIntVarDeclWithInitializerList)
         "    i: i32 = {1, 2, 3};\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"i32[3]\" to \"i32\" type variable";
-    ExpectTypeCheckFailure(source, expected_error);
-}
-
-TEST(TypeChecker, InvalidIntArrayWithDimensionMismatch)
-{
-    auto source =
-        "module a;\n"
-        "main: func =() {\n"
-        "    i: i32 = {1, 2, 3};\n"
-        "}\n";
-    auto expected_error =
-        "[Semantic Error][Ln 3, Col 5] trying to assign expression of type \"i32[3]\" to \"i32\" type variable";
+        "[Semantic Error][Ln 3, Col 5] number of dimensions differ between types \"i32\" and \"i32[3]\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
 

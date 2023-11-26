@@ -114,11 +114,11 @@ void TypeChecker::PostorderVisit(CompoundStmt* node)
 
 void TypeChecker::ValidateConditionExprType(const Expr* condition_expr)
 {
-    auto type_name = GetExprTrait(condition_expr).type.ToString();
-    if (type_name != "bool")
+    auto type = GetExprTrait(condition_expr).type;
+    if (type != CreatePrimiveType(TokenType::BoolType))
     {
         auto message = std::format("condition expression should have bool type, instead of \"{}\"",
-            type_name
+            type.ToString()
         );
         throw SemanticError(condition_expr->StartPos(), message);
     }
@@ -185,39 +185,55 @@ bool IsArraySizeContainable(const std::vector<int>& container_arr_size, const st
     return true;
 }
 
-void TypeChecker::ValidateVarDeclType(const Type& var_type, const Type& init_type, const SourcePos& decl_source_location)
+void ValidateBasetypeCompatibility(const IBaseType* dest, const IBaseType* source, const SourcePos& error_report_location)
 {
-    // Check if base type is compatible.
-    if (!IsBasetypeCompatible(var_type.BaseType(), init_type.BaseType()))
+    if (!IsBasetypeCompatible(dest, source))
     {
         auto message = std::format("implicit conversion from base type \"{}\" to \"{}\" is not allowed",
-            init_type.ToString(),
-            var_type.ToString()
+            source->ToString(),
+            dest->ToString()
         );
-        throw SemanticError(decl_source_location, message);
+        throw SemanticError(error_report_location, message);
     }
+}
 
-    // Check if initializer list has same number of dimensions.
-    // ex) arr: i32[100] = {{1}, {2}} (invalid: dimension mismatch)
-    if (!IsNumDimensionSame(var_type, init_type))
+void ValidateNumDimensionEquality(const Type& lhs, const Type& rhs, const SourcePos& error_report_location)
+{
+    if (!IsNumDimensionSame(lhs, rhs))
     {
-        auto message = std::format("trying to assign expression of type \"{}\" to \"{}\" type variable",
-            init_type.ToString(),
-            var_type.ToString()
+        auto message = std::format("number of dimensions differ between types \"{}\" and \"{}\"",
+            lhs.ToString(),
+            rhs.ToString()
         );
-        throw SemanticError(decl_source_location, message);
+        throw SemanticError(error_report_location, message);
     }
+}
 
-    // Check if initializer list has less-or-equal size compared to the variable type.
-    // ex) arr: i32[100] = {0}; (valid: partial initialization)
+void ValidateInitializerListSize(const Type& var_type, const Type& init_type, const SourcePos& error_report_location)
+{
     if (!IsArraySizeContainable(var_type.ArraySize(), init_type.ArraySize()))
     {
         auto message = std::format("array size of initializer's type \"{}\" exceeds variable's type \"{}\"",
             init_type.ToString(),
             var_type.ToString()
         );
-        throw SemanticError(decl_source_location, message);
+        throw SemanticError(error_report_location, message);
     }
+}
+
+void TypeChecker::ValidateVarDeclType(const Type& var_type, const Type& init_type, const SourcePos& decl_source_location)
+{
+    // Check if we can assign initializer to variable,
+    // while only considering the base type.
+    ValidateBasetypeCompatibility(var_type.BaseType(), init_type.BaseType(), decl_source_location);
+
+    // Check if initializer list has same number of dimensions.
+    // ex) arr: i32[100] = {{1}, {2}} (invalid: dimension mismatch)
+    ValidateNumDimensionEquality(var_type, init_type, decl_source_location);
+
+    // Check if initializer list has less-or-equal size compared to the variable type.
+    // ex) arr: i32[100] = {0}; (valid: partial initialization)
+    ValidateInitializerListSize(var_type, init_type, decl_source_location);
 }
 
 void TypeChecker::PostorderVisit(VarDeclStmt* node)
@@ -227,9 +243,7 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
     {
         auto var_type = node->DeclType();
         auto init_type = GetExprTrait(node->Initializer()).type;
-        auto source_location = node->Name().start_pos;
-
-        ValidateVarDeclType(var_type, init_type, source_location);
+        ValidateVarDeclType(var_type, init_type, node->StartPos());
     }
 
     // If we reached here without any exception,
@@ -431,14 +445,7 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
         }
 
         // For non-array types, we need to check if implicit conversion is possible.
-        if (!IsBasetypeCompatible(lhs_type.BaseType(), rhs_type.BaseType()))
-        {
-            auto message = std::format("implicit conversion from base type \"{}\" to \"{}\" is not allowed",
-                rhs_type.ToString(),
-                lhs_type.ToString()
-            );
-            throw SemanticError(op_token.start_pos, message);
-        }
+        ValidateBasetypeCompatibility(lhs_type.BaseType(), rhs_type.BaseType(), op_token.start_pos);
 
         // For assignment other than plain "=",
         // check if the corresponding arithmetic operation
