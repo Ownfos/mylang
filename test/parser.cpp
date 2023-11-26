@@ -1400,3 +1400,36 @@ TEST(TypeChecker, InvalidArrayAccessDimensionMismatch)
         "[Semantic Error][Ln 4, Col 10] array access operator [] cannot be applied to non-array type \"i32\"";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidMemberAccess)
+{
+    auto source =
+        "module a;\n"
+        "person: struct = {\n"
+        "    name: str;\n"
+        "    age: i32;\n"
+        "}\n"
+        "main: func =() {\n"
+        "    dave: person;\n"
+        "    dave.name = \"dave the diver\";\n"
+        "    dave.age = 32;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidMemberAccess)
+{
+    auto source =
+        "module a;\n"
+        "person: struct = {\n"
+        "    name: str;\n"
+        "    age: i32;\n"
+        "}\n"
+        "main: func =() {\n"
+        "    dave: person;\n"
+        "    dave.height = 300;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 8, Col 10] struct type \"person\" does not have member variable named \"height\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}

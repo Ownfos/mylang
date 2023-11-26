@@ -26,7 +26,6 @@ cd build; ctest; cd ..
 
 # TODO
 - [ ] Handle function call expression with void as return type
-- [ ] Find a way to check lvalue/rvalue qualification for each Expr node.
 - [ ] Find out why default source of main function emits error "invalid map<K, T> key"
 - [ ] Find a better way to handle type coercion (Yes/No, result type)
 - [ ] Check return expr type with function signature
