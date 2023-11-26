@@ -26,10 +26,9 @@ cd build; ctest; cd ..
 
 # TODO
 - [ ] Handle function call expression with void as return type
+- [ ] Check return expr type with function signature
 - [ ] Find out why default source of main function emits error "invalid map<K, T> key"
 - [ ] Find a better way to handle type coercion (Yes/No, result type)
-- [ ] Check return expr type with function signature
-- [ ] Check if member name is valid on MemberAccessExpr
 - [ ] Test symbol identification with nested compound-stmt
 - [ ] Decide StartPos() for a ForStmt and an empty CompoundStmt
 

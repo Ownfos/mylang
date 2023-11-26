@@ -1446,3 +1446,28 @@ TEST(TypeChecker, InvalidAssignmentTypeMismatch)
         "[Semantic Error][Ln 4, Col 7] implicit conversion from base type \"str\" to \"i32\" is not allowed";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidReturnStmt)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = () {\n"
+        "    return;\n"
+        "}\n"
+        "main: func = () -> i32 {\n"
+        "    return 0;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidReturnStmtTypeMismatch)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () -> i32 {\n"
+        "    return;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] expected return type \"void\" but \"i32\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
