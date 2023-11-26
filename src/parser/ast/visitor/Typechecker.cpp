@@ -158,13 +158,6 @@ bool IsBasetypeCompatible(const IBaseType* dest, const IBaseType* source)
     return false;
 }
 
-bool IsNumDimensionSame(const Type& arr1, const Type& arr2)
-{
-    // ArraySize() returns array size for each dimension,
-    // so ArraySize().size() is the number of dimensions.
-    return arr1.ArraySize().size() == arr2.ArraySize().size();
-}
-
 // Returns true if value_arr has smaller or equal array size than container_arr.
 // The two array types should have equal number of dimensions.
 // ex) {10, 10} <- {2, 2} => true
@@ -196,7 +189,7 @@ void ValidateBasetypeCompatibility(const IBaseType* dest, const IBaseType* sourc
 
 void ValidateNumDimensionEquality(const Type& lhs, const Type& rhs, const SourcePos& where)
 {
-    if (!IsNumDimensionSame(lhs, rhs))
+    if (lhs.NumDimensions() != rhs.NumDimensions())
     {
         auto message = std::format("number of dimensions differ between types \"{}\" and \"{}\"",
             lhs.ToString(),
@@ -557,13 +550,7 @@ void TypeChecker::PostorderVisit(Literal* node)
 
 void TypeChecker::PostorderVisit(MemberAccessExpr* node)
 {
-    auto [is_struct_lvalue, struct_type] = GetExprTrait(node->Struct());
-
-    // An array is obviously not a struct.
-    if (struct_type.IsArray())
-    {
-        // TODO: throw semantic error: member access cannot be applied to an array type \"{}\"
-    }
+    const auto& [is_struct_lvalue, struct_type] = GetExprTrait(node->Struct());
 
     // Check if the operand is really a struct type.
     const StructDecl* struct_decl;

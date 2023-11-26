@@ -25,6 +25,18 @@ cd build; ctest; cd ..
 #### Note: the main executable currently prints the AST after syntax analysis
 
 # TODO
+- [ ] Extract type identity check to a free function
+```
+List of occurances:
+- ArrayAccessExpr: array index type == i32
+- VarInitList: basetype equality between initializer list elements
+- ValidateConditionExprType(): expr type == bool
+- BinaryExpr: 1. && and || requires both operand to have bool type
+              2. ==, and != requires both operand to have same type
+              3. = requires both operand to have same type if lhs is an array
+- FuncCallExpr: each argument type should match with the corresponding parameter type
+```
+- [ ] Extract expression trait analysis to a separate visitor class
 - [ ] Handle function call expression with void as return type
 - [ ] Check return expr type with function signature
 - [ ] Find out why default source of main function emits error "invalid map<K, T> key"

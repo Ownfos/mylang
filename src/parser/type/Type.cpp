@@ -42,6 +42,11 @@ bool Type::IsArray() const
     return !m_array_sizes.empty();
 }
 
+int Type::NumDimensions() const
+{
+    return static_cast<int>(m_array_sizes.size());
+}
+
 std::string Type::ToString() const
 {
     // Get the base type description.

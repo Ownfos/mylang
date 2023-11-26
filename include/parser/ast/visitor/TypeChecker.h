@@ -80,6 +80,8 @@ private:
     void SetExprTrait(const IAbstractSyntaxTree* node, const Type& type, bool is_lvalue = false);
     const ExprTrait& GetExprTrait(const IAbstractSyntaxTree* node) const;
 
+    // Checks if a type is valid (i.e. all struct types are visible in this context).
+    // If not, semantic error will be thrown.
     void ValidateTypeExistence(const Type& type, std::string_view who, const SourcePos& where);
 
     // Check if the expression has bool type.

@@ -21,6 +21,7 @@ public:
     const std::vector<int>& ArraySize() const;
 
     bool IsArray() const;
+    int NumDimensions() const;
 
     // Wrapper functions for underlying base type.
     std::string ToString() const;
