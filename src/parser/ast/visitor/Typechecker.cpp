@@ -474,16 +474,13 @@ bool IsLValueRequired(const ParamUsage& usage)
     return (usage == ParamUsage::InOut) || (usage == ParamUsage::Out);
 }
 
-// Throws exception when an rvalue argument is passed to an 'out' or 'inout' parameter.
-void TypeChecker::ValidateLValueQualifier(const ParamType& param, const Expr* arg)
+// Throws exception if the expression is an rvalue.
+void TypeChecker::ValidateLValueQualifier(const Expr* expr, std::string_view who, const SourcePos& where)
 {
-    auto is_arg_lvalue = GetExprTrait(arg).is_lvalue;
-    if (IsLValueRequired(param.usage) && !is_arg_lvalue)
+    if (!GetExprTrait(expr).is_lvalue)
     {
-        const auto message = std::format("an rvalue cannot be passed as parameter type \"{}\"",
-            param.ToString()
-        );
-        throw SemanticError(arg->StartPos(), message);
+        const auto message = std::format("expected an lvalue for {}, but an rvalue was given", who);
+        throw SemanticError(where, message);
     }
 }
 
@@ -517,12 +514,17 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
 
         // Make sure the types match.
         auto who = std::format("argument {}", i);
+        auto where = arg_expr->StartPos();
         const auto& type = GetExprTrait(arg_expr).type;
-        ValidateTypeEquality(type, param.type, who, arg_expr->StartPos());
+        ValidateTypeEquality(type, param.type, who, where);
 
         // Make sure the argument is an lvalue
         // if the parameter usage is 'out' or 'inout'.
-        ValidateLValueQualifier(param, arg_expr);
+        if (IsLValueRequired(param.usage))
+        {
+            auto who = std::format("parameter type \"{}\"", param.ToString());
+            ValidateLValueQualifier(arg_expr, who, where);
+        }
     }
 
     // Since everything is good to go, register the type as the function's return type.
@@ -632,7 +634,7 @@ void TypeChecker::PostorderVisit(PrefixExpr* node)
     if (op.type == TokenType::Plus ||
         op.type == TokenType::Minus)
     {
-        ValidateTypeIsNumeric(operand_type, who, node->StartPos());
+        ValidateTypeIsNumeric(operand_type, who, where);
     }
     // Unary ! is only allowed on bool type.
     else if (op.type == TokenType::Not)
@@ -640,15 +642,12 @@ void TypeChecker::PostorderVisit(PrefixExpr* node)
         auto bool_type = CreatePrimiveType(TokenType::BoolType);
         ValidateTypeEquality(operand_type, bool_type, who, where);
     }
-    // Prefix ++/-- is only allowed on int type
+    // Prefix ++/-- is only allowed on lvalue int type
     else
     {
         auto int_type = CreatePrimiveType(TokenType::IntType);
         ValidateTypeEquality(operand_type, int_type, who, where);
-
-        // TODO: refactor the validation function so that
-        //       it only checks if something is an lvalue or not.
-        // ValidateLValueQualifier(operand_expr, ...)
+        ValidateLValueQualifier(operand_expr, who, where);
     }
 
     // Prefix operators do not change the type.

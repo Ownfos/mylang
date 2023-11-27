@@ -1371,7 +1371,7 @@ TEST(TypeChecker, InvalidFuncCallRValueOnOutParam)
         "    foo(1);\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 4, Col 9] an rvalue cannot be passed as parameter type \"out i32\"";
+        "[Semantic Error][Ln 4, Col 9] expected an lvalue for parameter type \"out i32\", but an rvalue was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 

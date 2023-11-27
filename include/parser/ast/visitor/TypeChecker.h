@@ -88,9 +88,9 @@ private:
     // If not, semantic error will be thrown.
     void ValidateConditionExprType(const Expr* condition_expr);
 
-    // Check if the parameter requires an argument to be lvalue
-    // and throw an error if arg is rvalue while it shouldn't be.
-    void ValidateLValueQualifier(const ParamType& param_type, const Expr* arg);
+    // Check if the expression is an lvalue.
+    // If not, semantic error will be thrown.
+    void ValidateLValueQualifier(const Expr* expr, std::string_view who, const SourcePos& where);
 
     ProgramEnvironment& m_environment;
 
