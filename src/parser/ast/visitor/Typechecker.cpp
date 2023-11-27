@@ -624,18 +624,35 @@ void TypeChecker::PostorderVisit(PrefixExpr* node)
     auto operand_expr = node->Operand();
     auto operand_type = GetExprTrait(operand_expr).type;
 
+    // Commonly used information on error reports.
+    auto who = std::format("operand of unary operator {}", op.lexeme);
+    auto where = node->StartPos();
+
     // Unary +/- is only allowed on numeric types.
     if (op.type == TokenType::Plus ||
         op.type == TokenType::Minus)
     {
-        auto who = std::format("operand of unary operator {}", op.lexeme);
         ValidateTypeIsNumeric(operand_type, who, node->StartPos());
+    }
+    // Unary ! is only allowed on bool type.
+    else if (op.type == TokenType::Not)
+    {
+        auto bool_type = CreatePrimiveType(TokenType::BoolType);
+        ValidateTypeEquality(operand_type, bool_type, who, where);
+    }
+    // Prefix ++/-- is only allowed on int type
+    else
+    {
+        auto int_type = CreatePrimiveType(TokenType::IntType);
+        ValidateTypeEquality(operand_type, int_type, who, where);
 
-        // Unary +/- doesn't change the type.
-        SetExprTrait(node, operand_type);
+        // TODO: refactor the validation function so that
+        //       it only checks if something is an lvalue or not.
+        // ValidateLValueQualifier(operand_expr, ...)
     }
 
-    // TODO: implement
+    // Prefix operators do not change the type.
+    SetExprTrait(node, operand_type);
 }
 
 void TypeChecker::SetExprTrait(const IAbstractSyntaxTree* node, const Type& type, bool is_lvalue)

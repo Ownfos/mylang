@@ -1541,3 +1541,49 @@ TEST(TypeChecker, InvalidUnaryPlusMinusOnArray)
         "[Semantic Error][Ln 4, Col 5] expected numeric type for operand of unary operator +, but \"i32[3]\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidUnaryNot)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    b: bool = !true;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidUnaryNot)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    b: bool = !0;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 15] expected type of operand of unary operator ! is \"bool\", but \"i32\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, ValidPrefixIncrement)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    i: i32 = 0;\n"
+        "    j: i32 = ++i;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidPrefixIncrementNotInt)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    i: f32 = 0;\n"
+        "    j: i32 = ++i;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 4, Col 14] expected type of operand of unary operator ++ is \"i32\", but \"f32\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
