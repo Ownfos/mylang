@@ -162,7 +162,7 @@ void TypeChecker::PostorderVisit(JumpStmt* node)
         );
         ValidateTypeEquality(ret_type, m_current_function->ReturnType(), who, node->StartPos());
     }
-    
+
     // TODO: validate 'break' and 'continue' usage
 }
 
@@ -265,11 +265,6 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
     // the variable declaration and initializer is semantically valid.
     // Add it to the module's local symbol table.
     m_environment.AddSymbol(m_context_module_name, node, false);
-}
-
-void TypeChecker::PostorderVisit(ExprStmt* node)
-{
-    // TODO: implement
 }
 
 void TypeChecker::PostorderVisit(VarInitExpr* node)

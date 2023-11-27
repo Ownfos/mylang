@@ -56,7 +56,6 @@ public:
     virtual void PostorderVisit(JumpStmt* node) override;
 
     virtual void PostorderVisit(VarDeclStmt* node) override;
-    virtual void PostorderVisit(ExprStmt* node) override;
 
     virtual void PostorderVisit(VarInitExpr* node) override;
 
