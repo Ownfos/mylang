@@ -1505,3 +1505,39 @@ TEST(TypeChecker, ValidAssignmentArrayAccess)
         "}\n";
     ExpectTypeCheckSuccess(source);
 }
+
+TEST(TypeChecker, ValidUnaryPlusMinus)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    +1;\n"
+        "    -1.0;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidUnaryPlusNotNumeric)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    +false;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] expected numeric type for operand of unary operator +, but \"bool\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidUnaryPlusMinusOnArray)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    arr: i32[3];\n"
+        "    +arr;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] expected numeric type for operand of unary operator +, but \"i32[3]\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
