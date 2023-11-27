@@ -1701,3 +1701,26 @@ TEST(TypeChecker, InvalidArithmeticOperationBool)
         "[Semantic Error][Ln 3, Col 10] operation \"bool\" / \"f32\" is not allowed";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidInequalityOperator)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    b1: bool = 2 > 1.0;\n"
+        "    b2: bool = \"abc\" <= \"def\";\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidInequalityOperator)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    \"1.0\" < 1.0;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 11] operation \"str\" < \"f32\" is not allowed";
+    ExpectTypeCheckFailure(source, expected_error);
+}

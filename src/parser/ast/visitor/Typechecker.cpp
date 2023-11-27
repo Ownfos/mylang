@@ -395,6 +395,16 @@ void ValidateTypeIsNumeric(const Type& type, std::string_view who, const SourceP
     }
 }
 
+void ThrowInvalidOperationError(const Type& lhs_type, const Type& rhs_type, const Token& op_token)
+{
+    auto message = std::format("operation \"{}\" {} \"{}\" is not allowed",
+        lhs_type.ToString(),
+        op_token.lexeme,
+        rhs_type.ToString()
+    );
+    throw SemanticError(op_token.start_pos, message);
+}
+
 // If the operation is valid, return the result type.
 // If not, throw a semantic exception.
 Type FindArithmeticResultType(const Type& lhs_type, const Type& rhs_type, const Token& op_token)
@@ -434,12 +444,22 @@ Type FindArithmeticResultType(const Type& lhs_type, const Type& rhs_type, const 
     }
 
     // All other operations are invalid.
-    auto message = std::format("operation \"{}\" {} \"{}\" is not allowed",
-        lhs_type.ToString(),
-        op_token.lexeme,
-        rhs_type.ToString()
-    );
-    throw SemanticError(where, message);
+    ThrowInvalidOperationError(lhs_type, rhs_type, op_token);
+}
+
+// Throws exception if inequality operator (>, >=, <, <=)
+// cannot be applied between two types.
+void ValidateBaseTypeInequalityComparable(const Type& lhs_type, const Type& rhs_type, const Token& op_token)
+{
+    // Comparision between float and int is possible.
+    if (IsTypeNumeric(lhs_type) && IsTypeNumeric(rhs_type)) return;
+
+    // Comparison between two strings is also allowed (dictionary order!)
+    auto str_type = CreatePrimiveType(TokenType::StringType);
+    if (lhs_type == str_type && rhs_type == str_type) return;
+
+    // Otherwise, we cannot compare two types using inequality operators.
+    ThrowInvalidOperationError(lhs_type, rhs_type, op_token);
 }
 
 // Allowed operations:
@@ -482,11 +502,16 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
         SetExprTrait(node, bool_type);
     }
 
-    // TODO: add other comparison types
+    // Inequality check is only allowed between non-array primitive types
     if (op_type == TokenType::Greater ||
-        op_type == TokenType::Less)
+        op_type == TokenType::GreaterEqual ||
+        op_type == TokenType::Less ||
+        op_type == TokenType::LessEqual)
     {
-        // TODO: check if two types are comparable.
+        auto who = std::format("operand of inequality operator {}", op_token.lexeme);
+        ValidateTypeIsNotArray(lhs_type, who, where);
+        ValidateTypeIsNotArray(rhs_type, who, where);
+        ValidateBaseTypeInequalityComparable(lhs_type, rhs_type, op_token);
 
         SetExprTrait(node, bool_type);
     }
