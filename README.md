@@ -24,24 +24,19 @@ cd build; ctest; cd ..
 ```
 #### Note: the main executable currently prints the AST after syntax analysis
 
-# TODO
-- [ ] Extract type identity check to a free function
-```
-List of occurances:
-- ArrayAccessExpr: array index type == i32
-- VarInitList: basetype equality between initializer list elements
-- ValidateConditionExprType(): expr type == bool
-- BinaryExpr: 1. && and || requires both operand to have bool type
-              2. ==, and != requires both operand to have same type
-              3. = requires both operand to have same type if lhs is an array
-- FuncCallExpr: each argument type should match with the corresponding parameter type
-```
-- [ ] Extract expression trait analysis to a separate visitor class
-- [ ] Handle function call expression with void as return type
-- [ ] Check return expr type with function signature
-- [ ] Find out why default source of main function emits error "invalid map<K, T> key"
-- [ ] Find a better way to handle type coercion (Yes/No, result type)
+# TODO (implement)
+- [ ] Test if operand of prefix operator + or - is int or float
+- [ ] Test if operand of prefix operator ! is bool type
+- [ ] Test if operand of operator ++ or -- is int type
+- [ ] Record i++ or i-- as an lvalue, if i is an lvalue
+- [ ] Test if 'break' and 'continue' is used inside a loop
 - [ ] Test symbol identification with nested compound-stmt
+
+# TODO (refactor)
+- [ ] Cleanup MemberAccessExpr validation code
+- [ ] Cleanup FuncCallExpr type casting code for the function's base type
+- [ ] Extract expression trait analysis to a separate visitor class
+- [ ] Find a better way to handle type coercion (Yes/No, result type)
 - [ ] Decide StartPos() for a ForStmt and an empty CompoundStmt
 
 # Syntax
