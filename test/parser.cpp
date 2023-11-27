@@ -1599,3 +1599,39 @@ TEST(TypeChecker, InvalidPrefixIncrementNotLValue)
         "[Semantic Error][Ln 3, Col 14] expected an lvalue for operand of unary operator ++, but an rvalue was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidPostfixIncrement)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    i: i32 = 0;\n"
+        "    j: i32 = i++;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidPostfixIncrementNotInt)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    i: f32 = 0;\n"
+        "    j: i32 = i++;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 4, Col 15] expected type of operand of unary operator ++ is \"i32\", but \"f32\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidPostfixIncrementNotLValue)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    i: i32 = 1++;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 15] expected an lvalue for operand of unary operator ++, but an rvalue was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}

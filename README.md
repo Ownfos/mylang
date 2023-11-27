@@ -25,7 +25,7 @@ cd build; ctest; cd ..
 #### Note: the main executable currently prints the AST after syntax analysis
 
 # TODO (implement)
-- [ ] Test if operand of operator ++ or -- is an lvalue
+- [ ] Test if postfix ++ and -- is applied on lvalue integers
 - [ ] Test if 'break' and 'continue' is used inside a loop
 - [ ] Test symbol identification with nested compound-stmt
 
