@@ -1650,3 +1650,42 @@ TEST(TypeChecker, VariableIdentificationWithNestedScope)
         "}\n";
     ExpectTypeCheckSuccess(source);
 }
+
+TEST(TypeChecker, ValidArithmeticOperations)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    r0: i32 = 1 + 1;\n"
+        "    r1: f32 = 1.0 + 1;\n"
+        "    r2: f32 = 1 + 1.0;\n"
+        "    r3: f32 = 1.0 + 1.0;\n"
+        "    r4: str = \"1\" + \"1\";\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidArithmeticOperationArrayType)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    arr: i32[2];\n"
+        "    arr + arr;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 9] expected a non-array type for arithmetic operator +, but \"i32[2]\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidArithmeticOperationStringAddition)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    \"a string\" + 1;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 16] expected a string type for right hand operand of arithmetic operator +, but \"i32\" was given";
+    ExpectTypeCheckFailure(source, expected_error);
+}
