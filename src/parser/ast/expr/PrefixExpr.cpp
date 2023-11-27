@@ -29,4 +29,14 @@ std::string PrefixExpr::ToString() const
     );
 }
 
+const Token& PrefixExpr::Operator() const
+{
+    return m_op;
+}
+
+const Expr* PrefixExpr::Operand() const
+{
+    return m_expr.get();
+}
+
 } // namespace mylang

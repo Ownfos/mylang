@@ -1538,6 +1538,6 @@ TEST(TypeChecker, InvalidUnaryPlusMinusOnArray)
         "    +arr;\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 5] expected numeric type for operand of unary operator +, but \"i32[3]\" was given";
+        "[Semantic Error][Ln 4, Col 5] expected numeric type for operand of unary operator +, but \"i32[3]\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }

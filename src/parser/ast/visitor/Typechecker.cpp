@@ -605,8 +605,36 @@ void TypeChecker::PostorderVisit(PostfixExpr* node)
     // TODO: implement
 }
 
+// Throws exception if given type is not a numeric type (i32 or f32)·
+void ValidateTypeIsNumeric(const Type& type, std::string_view who, const SourcePos& where)
+{
+    if (type == CreatePrimiveType(TokenType::IntType)) return;
+    if (type == CreatePrimiveType(TokenType::FloatType)) return;
+
+    const auto message = std::format("expected numeric type for {}, but \"{}\" was given",
+        who,
+        type.ToString()
+    );
+    throw SemanticError(where, message);
+}
+
 void TypeChecker::PostorderVisit(PrefixExpr* node)
 {
+    auto op = node->Operator();
+    auto operand_expr = node->Operand();
+    auto operand_type = GetExprTrait(operand_expr).type;
+
+    // Unary +/- is only allowed on numeric types.
+    if (op.type == TokenType::Plus ||
+        op.type == TokenType::Minus)
+    {
+        auto who = std::format("operand of unary operator {}", op.lexeme);
+        ValidateTypeIsNumeric(operand_type, who, node->StartPos());
+
+        // Unary +/- doesn't change the type.
+        SetExprTrait(node, operand_type);
+    }
+
     // TODO: implement
 }
 
