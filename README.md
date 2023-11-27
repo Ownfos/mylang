@@ -25,9 +25,8 @@ cd build; ctest; cd ..
 #### Note: the main executable currently prints the AST after syntax analysis
 
 # TODO (implement)
-- [ ] Test if postfix ++ and -- is applied on lvalue integers
-- [ ] Test if 'break' and 'continue' is used inside a loop
 - [ ] Test symbol identification with nested compound-stmt
+- [ ] Test if 'break' and 'continue' is used inside a loop
 
 # TODO (refactor)
 - [ ] Cleanup MemberAccessExpr validation code
@@ -35,6 +34,7 @@ cd build; ctest; cd ..
 - [ ] Extract expression trait analysis to a separate visitor class
 - [ ] Find a better way to handle type coercion (Yes/No, result type)
 - [ ] Decide StartPos() for a ForStmt and an empty CompoundStmt
+- [ ] Group PrefixExpr and PostfixExpr into common class UnaryExpr...?
 
 # Syntax
 ### Notation rules used to write theses:
