@@ -45,6 +45,7 @@ public:
 
     virtual void PreorderVisit(StructDecl* node) override;
 
+    virtual void PreorderVisit(CompoundStmt* node) override;
     virtual void PostorderVisit(CompoundStmt* node) override;
 
     virtual void PostorderVisit(IfStmt* node) override;

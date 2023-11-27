@@ -101,9 +101,14 @@ void TypeChecker::PreorderVisit(StructDecl* node)
     }
 }
 
+void TypeChecker::PreorderVisit(CompoundStmt* node)
+{
+    m_environment.OpenScope(m_context_module_name);
+}
+
 void TypeChecker::PostorderVisit(CompoundStmt* node)
 {
-    // TODO: implement
+    m_environment.CloseScope(m_context_module_name);
 }
 
 // Throws an exception if 'type' is different from 'expected'.
