@@ -602,11 +602,6 @@ void TypeChecker::PostorderVisit(MemberAccessExpr* node)
     throw SemanticError(member_name.start_pos, message);
 }
 
-void TypeChecker::PostorderVisit(PostfixExpr* node)
-{
-    // TODO: implement
-}
-
 // Throws exception if given type is not a numeric type (i32 or f32)·
 void ValidateTypeIsNumeric(const Type& type, std::string_view who, const SourcePos& where)
 {
@@ -651,6 +646,24 @@ void TypeChecker::PostorderVisit(PrefixExpr* node)
     }
 
     // Prefix operators do not change the type.
+    SetExprTrait(node, operand_type);
+}
+
+void TypeChecker::PostorderVisit(PostfixExpr* node)
+{
+    auto op = node->Operator();
+    auto operand_expr = node->Operand();
+    auto operand_type = GetExprTrait(operand_expr).type;
+
+    auto int_type = CreatePrimiveType(TokenType::IntType);
+    auto who = std::format("operand of unary operator {}", op.lexeme);
+    auto where = op.start_pos;
+    
+    // Postfix ++/-- is only allowed on lvalue int type
+    ValidateTypeEquality(operand_type, int_type, who, where);
+    ValidateLValueQualifier(operand_expr, who, where);
+
+    // Postfix operators do not change the type.
     SetExprTrait(node, operand_type);
 }
 

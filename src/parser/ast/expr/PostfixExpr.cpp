@@ -29,4 +29,14 @@ std::string PostfixExpr::ToString() const
     );
 }
 
+const Token& PostfixExpr::Operator() const
+{
+    return m_op;
+}
+
+const Expr* PostfixExpr::Operand() const
+{
+    return m_expr.get();
+}
+
 } // namespace mylang
