@@ -26,7 +26,6 @@ cd build; ctest; cd ..
 
 # TODO (implement)
 - [ ] Test if operand of operator ++ or -- is an lvalue
-- [ ] Record i++ or i-- as an lvalue, if i is an lvalue
 - [ ] Test if 'break' and 'continue' is used inside a loop
 - [ ] Test symbol identification with nested compound-stmt
 
