@@ -1635,3 +1635,18 @@ TEST(TypeChecker, InvalidPostfixIncrementNotLValue)
         "[Semantic Error][Ln 3, Col 15] expected an lvalue for operand of unary operator ++, but an rvalue was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, VariableIdentificationWithNestedScope)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    i: i32;\n"
+        "    {\n"
+        "        i: f32;\n"
+        "        i == 1.0;\n" // Type check succeeds only if we use the float i.
+        "    }\n"
+        "    i == 1;\n" // Type check succeeds only if we use the integer i.
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
