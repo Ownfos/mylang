@@ -361,6 +361,87 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
     SetExprTrait(node, result_type, is_operand_lvalue);
 }
 
+// Throws exception if the type was an array.
+void ValidateTypeIsNotArray(const Type& type, std::string_view who, const SourcePos& where)
+{
+    if (type.IsArray())
+    {
+        auto message = std::format("expected a non-array type for {}, but \"{}\" was given",
+            who,
+            type.ToString()
+        );
+        throw SemanticError(where, message);
+    }
+}
+
+bool IsTypeNumeric(const Type& type)
+{
+    if (type == CreatePrimiveType(TokenType::IntType)) return true;
+    if (type == CreatePrimiveType(TokenType::FloatType)) return true;
+
+    return false;
+}
+
+// Throws exception if given type is not a numeric type (i32 or f32)·
+void ValidateTypeIsNumeric(const Type& type, std::string_view who, const SourcePos& where)
+{
+    if (!IsTypeNumeric(type))
+    {
+        const auto message = std::format("expected numeric type for {}, but \"{}\" was given",
+            who,
+            type.ToString()
+        );
+        throw SemanticError(where, message);
+    }
+}
+
+// If the operation is valid, return the result type.
+// If not, throw a semantic exception.
+Type FindArithmeticResultType(const Type& lhs_type, const Type& rhs_type, const Token& op_token)
+{
+    // Arithmetic operators are not applicable to array types.
+    auto who = std::format("arithmetic operator {}", op_token.lexeme);
+    auto where = op_token.start_pos;
+    ValidateTypeIsNotArray(lhs_type, who, where);
+    ValidateTypeIsNotArray(rhs_type, who, where);
+    
+    // Now find if there exists a type pair for this operation.
+    auto int_type = CreatePrimiveType(TokenType::IntType);
+    auto float_type = CreatePrimiveType(TokenType::FloatType);
+    auto str_type = CreatePrimiveType(TokenType::StringType);
+
+    // The only allowed operation between two strings is concatenation.
+    if (lhs_type == str_type && rhs_type == str_type && op_token.type == TokenType::Plus)
+    {
+        return str_type;
+    }
+
+    // Operation between float or int.
+    if (IsTypeNumeric(lhs_type))
+    {
+        auto who = std::format("right hand operand of arithmetic operator {}", op_token.lexeme);
+        ValidateTypeIsNumeric(rhs_type, who, where);
+
+        // Take type coercion into account.
+        if (lhs_type == int_type && rhs_type == int_type)
+        {
+            return int_type;
+        }
+        else
+        {
+            return float_type;
+        }
+    }
+
+    // All other operations are invalid.
+    auto message = std::format("operation \"{}\" {} \"{}\" is not allowed",
+        lhs_type.ToString(),
+        op_token.lexeme,
+        rhs_type.ToString()
+    );
+    throw SemanticError(where, message);
+}
+
 // Allowed operations:
 // {+, -, *, /} between primitive types
 // {+=, -=, *=, -=} between implicitly convertible types
@@ -415,12 +496,14 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
         op_type == TokenType::Plus ||
         op_type == TokenType::Minus)
     {
-        // TODO: check if two types are compatible.
 
-        // TODO: make sure that both operands are non-array primitive type.
+        // Not all operands have corresponding arithmetic operator.
+        // For example, we cannot add an a number to a string.
+        // This will throw an exception in case of invalid operation.
+        auto result_type = FindArithmeticResultType(lhs_type, rhs_type, op_token);
 
         // TODO: if two types are different, choose more relaxed type as result.
-        SetExprTrait(node, lhs_type);
+        SetExprTrait(node, result_type);
     }
 
     if (op_type == TokenType::Assign ||
@@ -605,19 +688,6 @@ void TypeChecker::PostorderVisit(MemberAccessExpr* node)
         member_name.lexeme
     );
     throw SemanticError(member_name.start_pos, message);
-}
-
-// Throws exception if given type is not a numeric type (i32 or f32)·
-void ValidateTypeIsNumeric(const Type& type, std::string_view who, const SourcePos& where)
-{
-    if (type == CreatePrimiveType(TokenType::IntType)) return;
-    if (type == CreatePrimiveType(TokenType::FloatType)) return;
-
-    const auto message = std::format("expected numeric type for {}, but \"{}\" was given",
-        who,
-        type.ToString()
-    );
-    throw SemanticError(where, message);
 }
 
 void TypeChecker::PostorderVisit(PrefixExpr* node)

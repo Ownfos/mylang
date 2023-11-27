@@ -1674,7 +1674,7 @@ TEST(TypeChecker, InvalidArithmeticOperationArrayType)
         "    arr + arr;\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 9] expected a non-array type for arithmetic operator +, but \"i32[2]\" was given";
+        "[Semantic Error][Ln 4, Col 9] expected a non-array type for arithmetic operator +, but \"i32[2]\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
@@ -1686,6 +1686,18 @@ TEST(TypeChecker, InvalidArithmeticOperationStringAddition)
         "    \"a string\" + 1;\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 16] expected a string type for right hand operand of arithmetic operator +, but \"i32\" was given";
+        "[Semantic Error][Ln 3, Col 16] operation \"str\" + \"i32\" is not allowed";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidArithmeticOperationBool)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    true / 1.0;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 10] operation \"bool\" / \"f32\" is not allowed";
     ExpectTypeCheckFailure(source, expected_error);
 }
