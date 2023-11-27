@@ -177,7 +177,7 @@ bool IsBasetypeCompatible(const IBaseType* dest, const IBaseType* source)
     // Identical types are obviously valid.
     if (dest->ToString() == source->ToString()) return true;
 
-    // TODO: Check if type coercion is possible.
+    // Check if type coercion is possible.
     if (dest->ToString() == "f32" && source->ToString() == "i32") return true;
 
     // Otherwise, source and dest are incompatible types.
@@ -558,7 +558,9 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
         // between lhs and rhs is possible.
         if (op_type != TokenType::Assign)
         {
-            // TODO: throw exception if not possible
+            // TODO: create a corresponding operator token (e.g. "+" for "+=")
+
+            // TODO: find out a way to reuse FindArithmeticResultType()...
         }
 
         SetExprTrait(node, lhs_type);

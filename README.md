@@ -25,15 +25,8 @@ cd build; ctest; cd ..
 #### Note: the main executable currently prints the AST after syntax analysis
 
 # TODO (implement)
+- [ ] Implement type checking for arithmetic assignments (+=, -=, *=, -=)
 - [ ] Test if 'break' and 'continue' is used inside a loop
-- [ ] Validate binary expression operand types
-```
-List of valid operations:
-
-numeric (+|-|*|/) numeric => numeric
-str + str => str
-...
-```
 
 # TODO (refactor)
 - [ ] Cleanup MemberAccessExpr validation code
