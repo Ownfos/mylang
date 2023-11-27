@@ -1,5 +1,6 @@
 #include "parser/type/Type.h"
 #include "parser/type/base/PrimitiveType.h"
+#include "parser/type/base/VoidType.h"
 #include "parser/ProgramEnvironment.h"
 #include <format>
 
@@ -21,6 +22,11 @@ Type CreatePrimiveType(TokenType type)
         .lexeme = TokenTypeName(type)
     };
     return Type(std::make_shared<PrimitiveType>(token));
+}
+
+Type CreateVoidType()
+{
+    return Type(std::make_shared<VoidType>());
 }
 
 Type::Type(std::shared_ptr<IBaseType> base_type, const std::vector<int>& array_sizes)

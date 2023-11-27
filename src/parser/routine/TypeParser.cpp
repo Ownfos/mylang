@@ -106,7 +106,7 @@ std::shared_ptr<IBaseType> TypeParser::ParseBaseType()
             Accept(TokenType::RightParen);
 
             // Return type: "-> type"
-            auto return_type = std::optional<Type>{};
+            auto return_type = CreateVoidType();
             if (OptionalAccept(TokenType::Arrow))
             {
                 return_type = Parse();

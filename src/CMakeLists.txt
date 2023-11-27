@@ -42,6 +42,7 @@ add_library(mylanglib
     parser/type/base/PrimitiveType.cpp
     parser/type/base/StructType.cpp
     parser/type/base/FuncType.cpp
+    parser/type/base/VoidType.cpp
 
     parser/routine/TypeParser.cpp
     parser/routine/ExprParser.cpp

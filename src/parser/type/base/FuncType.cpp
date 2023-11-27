@@ -27,8 +27,9 @@ std::string ParamType::ToString() const
 }
 
 
-FuncType::FuncType(const std::vector<ParamType>& param_types, std::optional<Type> return_type)
-    : m_param_types(param_types), m_return_type(return_type)
+FuncType::FuncType(const std::vector<ParamType>& param_types, const Type& return_type)
+    : m_param_types(param_types)
+    , m_return_type(return_type)
 {}
 
 std::string FuncType::ToString() const
@@ -50,9 +51,9 @@ std::string FuncType::ToString() const
     str_builder << ")";
 
     // Return type
-    if (m_return_type)
+    if (m_return_type != CreateVoidType())
     {
-        str_builder << " -> " << m_return_type->ToString();
+        str_builder << " -> " << m_return_type.ToString();
     }
     
     str_builder << "]";
@@ -65,7 +66,7 @@ bool FuncType::IsValid(
 ) const
 {
     // If return type is invalid, FuncType is also invalid.
-    if (m_return_type && !m_return_type->IsValid(environment, context_module_name))
+    if (!m_return_type.IsValid(environment, context_module_name))
     {
         return false;
     }
@@ -88,7 +89,7 @@ const std::vector<ParamType>& FuncType::ParamTypes() const
     return m_param_types;
 }
 
-const std::optional<Type>& FuncType::ReturnType() const
+const Type& FuncType::ReturnType() const
 {
     return m_return_type;
 }

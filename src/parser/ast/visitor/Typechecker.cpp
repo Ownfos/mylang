@@ -65,11 +65,8 @@ void TypeChecker::PreorderVisit(FuncDecl* node)
 
     // Check if the return type is valid.
     // Note: parameter types will be validated on child nodes.
-    if (auto ret_type = node->ReturnType())
-    {
-        auto who = std::format("return type of function \"{}\"", node->Name().lexeme);
-        ValidateTypeExistence(ret_type.value(), who, node->StartPos());
-    }
+    auto who = std::format("return type of function \"{}\"", node->Name().lexeme);
+    ValidateTypeExistence(node->ReturnType(), who, node->StartPos());
 
     m_environment.OpenScope(m_context_module_name);
 }
@@ -520,11 +517,7 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
     }
 
     // Since everything is good to go, register the type as the function's return type.
-    // TODO: handle void type
-    if (auto ret_type = base_type->ReturnType())
-    {
-        SetExprTrait(node, ret_type.value());
-    }
+    SetExprTrait(node, base_type->ReturnType());
 }
 
 void TypeChecker::PostorderVisit(Identifier* node)

@@ -114,7 +114,7 @@ void TreePrinter::PreorderVisit(FuncDecl* node)
         Indent();
         auto ret_type = node->ReturnType();
         m_output_stream << std::format("- return type: {}\n",
-            ret_type ? ret_type->ToString() : "void"
+            ret_type.ToString()
         );
     }
     

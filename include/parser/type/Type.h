@@ -53,6 +53,7 @@ protected:
 
 // A factory method for primitive types: i32, f32, bool, and str.
 Type CreatePrimiveType(TokenType type);
+Type CreateVoidType();
 
 } // namespace mylang
 

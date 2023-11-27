@@ -32,7 +32,7 @@ struct ParamType
 class FuncType : public IBaseType
 {
 public:
-    FuncType(const std::vector<ParamType>& param_types, std::optional<Type> return_type);
+    FuncType(const std::vector<ParamType>& param_types, const Type& return_type);
 
     virtual std::string ToString() const override;
     virtual bool IsValid(
@@ -41,11 +41,11 @@ public:
     ) const override;
 
     const std::vector<ParamType>& ParamTypes() const;
-    const std::optional<Type>& ReturnType() const;
+    const Type& ReturnType() const;
 
 private:
     std::vector<ParamType> m_param_types;
-    std::optional<Type> m_return_type;
+    Type m_return_type;
 };
 
 } // namespace mylang

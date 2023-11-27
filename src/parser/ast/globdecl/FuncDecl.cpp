@@ -5,7 +5,7 @@
 namespace mylang
 {
 
-std::shared_ptr<FuncType> ConstructFuncType(std::optional<Type> return_type, const std::vector<std::shared_ptr<Parameter>>& parameters)
+std::shared_ptr<FuncType> ConstructFuncType(const Type& return_type, const std::vector<std::shared_ptr<Parameter>>& parameters)
 {
     // Callback function that extracts Parameter::type
     auto extract_type = [](const std::shared_ptr<Parameter>& param){
@@ -22,10 +22,10 @@ std::shared_ptr<FuncType> ConstructFuncType(std::optional<Type> return_type, con
 FuncDecl::FuncDecl(bool should_export, const Token& name, std::optional<Type> return_type, const std::vector<std::shared_ptr<Parameter>>& parameters, std::shared_ptr<Stmt> body)
     : m_should_export(should_export)
     , m_name(name)
-    , m_return_type(return_type)
+    , m_return_type(return_type.value_or(CreateVoidType()))
     , m_parameters(parameters)
     , m_body(body)
-    , m_type(ConstructFuncType(return_type, parameters))
+    , m_type(ConstructFuncType(m_return_type, parameters))
 {}
 
 void FuncDecl::Accept(IAbstractSyntaxTreeVisitor* visitor)
@@ -59,7 +59,7 @@ bool FuncDecl::ShouldExport() const
     return m_should_export;
 }
 
-const std::optional<Type>& FuncDecl::ReturnType() const
+const Type& FuncDecl::ReturnType() const
 {
     return m_return_type;
 }
