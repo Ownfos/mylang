@@ -1494,3 +1494,14 @@ TEST(TypeChecker, InvalidReturnStmtTypeMismatch)
         "[Semantic Error][Ln 3, Col 5] expected return type \"void\" but \"i32\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+TEST(TypeChecker, ValidAssignmentArrayAccess)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    arr: i32[2];\n"
+        "    arr[0] = 1;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}

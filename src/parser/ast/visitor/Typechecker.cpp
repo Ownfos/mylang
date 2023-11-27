@@ -334,7 +334,7 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
     ValidateTypeEquality(index_type, expected, "an array index", where);
 
     // Operand should be an array type.
-    const auto& operand_type = GetExprTrait(node->Operand()).type;
+    const auto& [is_operand_lvalue, operand_type] = GetExprTrait(node->Operand());
     if (!operand_type.IsArray())
     {
         auto message = std::format("array access operator [] cannot be applied to non-array type \"{}\"",
@@ -347,7 +347,7 @@ void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
     auto result_type = operand_type; // copy Type instance
     result_type.RemoveLeftmostArrayDim();
 
-    SetExprTrait(node, result_type);
+    SetExprTrait(node, result_type, is_operand_lvalue);
 }
 
 // Allowed operations:
