@@ -149,7 +149,21 @@ void TypeChecker::PostorderVisit(WhileStmt* node)
 
 void TypeChecker::PostorderVisit(JumpStmt* node)
 {
-    // TODO: implement
+    if (node->JumpType().type == TokenType::Return)
+    {
+        // In case of empty return statement (i.e. "return;"),
+        // use void type as the expression's type.
+        auto ret_expr = node->ReturnValueExpr();
+        auto ret_type = (ret_expr == nullptr) ? CreateVoidType() : GetExprTrait(ret_expr).type;
+
+        // Check if the return type matches the function signature.
+        auto who = std::format("return statement inside function \"{}\"",
+            m_current_function->Name().lexeme
+        );
+        ValidateTypeEquality(ret_type, m_current_function->ReturnType(), who, node->StartPos());
+    }
+    
+    // TODO: validate 'break' and 'continue' usage
 }
 
 // Returns true if assigning source type value to dest type variable is possible.

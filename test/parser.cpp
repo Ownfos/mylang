@@ -1491,7 +1491,7 @@ TEST(TypeChecker, InvalidReturnStmtTypeMismatch)
         "    return;\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 3, Col 5] expected return type \"void\" but \"i32\" was given";
+        "[Semantic Error][Ln 3, Col 5] expected type of return statement inside function \"main\" is \"i32\", but \"void\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
 
