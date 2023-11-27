@@ -1724,3 +1724,28 @@ TEST(TypeChecker, InvalidInequalityOperator)
         "[Semantic Error][Ln 3, Col 11] operation \"str\" < \"f32\" is not allowed";
     ExpectTypeCheckFailure(source, expected_error);
 }
+
+
+TEST(TypeChecker, ValidArithmeticAssignment)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    i: i32 = 0;\n"
+        "    i += 1;\n"
+        "}\n";
+    ExpectTypeCheckSuccess(source);
+}
+
+TEST(TypeChecker, InvalidArithmeticAssignment)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    i: i32 = 0;\n"
+        "    i += true;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 4, Col 7] operation \"i32\" += \"bool\" is not allowed";
+    ExpectTypeCheckFailure(source, expected_error);
+}
