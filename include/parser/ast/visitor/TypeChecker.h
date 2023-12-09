@@ -71,6 +71,7 @@ public:
     virtual void PostorderVisit(Identifier* node) override;
     virtual void PostorderVisit(Literal* node) override;
 
+
     virtual void PostorderVisit(MemberAccessExpr* node) override;
 
     virtual void PostorderVisit(PostfixExpr* node) override;
@@ -92,6 +93,10 @@ private:
     // Check if the expression is an lvalue.
     // If not, semantic error will be thrown.
     void ValidateLValueQualifier(const Expr* expr, std::string_view who, const SourcePos& where);
+
+    // Find the declaration of the type.
+    // If it wasn't a struct type, semantic error will be thrown.
+    const StructDecl* TryToFindStructTypeDecl(const Type &type, const SourcePos &where);
 
     ProgramEnvironment& m_environment;
 

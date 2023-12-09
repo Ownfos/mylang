@@ -256,12 +256,17 @@ void ValidateVarDeclType(const Type& var_type, const Type& init_type, const Sour
 
 void TypeChecker::PostorderVisit(VarDeclStmt* node)
 {
+    // Make sure a valid type is used.
+    auto who = std::format("local variable \"{}\"", node->Name().lexeme);
+    auto where = node->StartPos();
+    auto var_type = node->DeclType();
+    ValidateTypeExistence(var_type, who, where);
+
     // If we have the optional initializer, make sure the type is compatible.
     if (node->Initializer())
     {
-        auto var_type = node->DeclType();
         auto init_type = GetExprTrait(node->Initializer()).type;
-        ValidateVarDeclType(var_type, init_type, node->StartPos());
+        ValidateVarDeclType(var_type, init_type, where);
     }
 
     // If we reached here without any exception,
@@ -685,27 +690,32 @@ void TypeChecker::PostorderVisit(Literal* node)
     SetExprTrait(node, node->DeclType());
 }
 
-void TypeChecker::PostorderVisit(MemberAccessExpr* node)
+const StructDecl* TypeChecker::TryToFindStructTypeDecl(const Type& type, const SourcePos& where)
 {
-    const auto& [is_struct_lvalue, struct_type] = GetExprTrait(node->Struct());
-
-    // Check if the operand is really a struct type.
-    const StructDecl* struct_decl;
     try
     {
-        const auto& struct_decl_symbol = m_environment.FindSymbol(m_context_module_name, struct_type.ToString());
-
-        // FindSymbol() will throw an exception for any non-struct type,
-        // so if it didn't crash, this cast is guaranteed to succeed.
-        struct_decl = dynamic_cast<const StructDecl*>(struct_decl_symbol.declaration);
+        // There are three possible cases:
+        // 1. 'type' is a non-struct type, such as primitives and functions.
+        // 2. 'type' is a struct type.
+        // Note that invalid struct types cannot reach here,
+        // because all variable types are validated while visiting VarDeclStmt.
+        const auto& struct_decl_symbol = m_environment.FindSymbol(m_context_module_name, type.ToString());
+        return dynamic_cast<const StructDecl*>(struct_decl_symbol.declaration);
     }
     catch(const std::exception&)
     {
         auto message = std::format("\"{}\" is not a struct type",
-            struct_type.ToString()
+            type.ToString()
         );
-        throw SemanticError(node->StartPos(), message);
+        throw SemanticError(where, message);
     }
+}
+
+void TypeChecker::PostorderVisit(MemberAccessExpr* node)
+{
+    // Check if the operand is really a struct type.
+    const auto& [is_struct_lvalue, struct_type] = GetExprTrait(node->Struct());
+    const StructDecl* struct_decl = TryToFindStructTypeDecl(struct_type, node->StartPos());
 
     // Check if the struct has a member with matching name.
     const auto& member_name = node->MemberName();

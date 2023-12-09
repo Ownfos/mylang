@@ -1023,6 +1023,18 @@ TEST(TypeChecker, InvalidMemberTypeZeroArraySize)
     ExpectTypeCheckFailure(source, expected_error);
 }
 
+TEST(TypeChecker, InvalidLocalVarType)
+{
+    auto source =
+        "module a;\n"
+        "main: func =() {\n"
+        "    i: error_type = 0;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] local variable \"i\" tried to use invalid type \"error_type\"";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
 TEST(TypeChecker, ValidPrimitiveTypeVarDecl)
 {
     auto source =
