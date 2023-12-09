@@ -10,6 +10,7 @@
 #include "parser/ast/visitor/TreePrinter.h"
 #include "parser/ast/visitor/GlobalSymbolScanner.h"
 #include "parser/ast/visitor/TypeChecker.h"
+#include "parser/ast/visitor/JumpStmtUsageChecker.h"
 #include "parser/SemanticError.h"
 #include "parser/type/Type.h"
 #include "parser/type/base/PrimitiveType.h"
@@ -1748,4 +1749,75 @@ TEST(TypeChecker, InvalidArithmeticAssignment)
     auto expected_error =
         "[Semantic Error][Ln 4, Col 7] expected numeric type for right hand operand of arithmetic operator +=, but \"bool\" was given";
     ExpectTypeCheckFailure(source, expected_error);
+}
+
+void ExpectJumpStmtCheckSuccess(std::string&& source_file)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+    auto checker = JumpStmtUsageChecker();
+
+    auto ast = GenerateAST(std::move(source_file));
+    ast->Accept(&scanner);
+
+    EXPECT_NO_THROW(ast->Accept(&checker));
+}
+
+void ExpectJumpStmtCheckFailure(std::string&& source_file, std::string_view expected_error_message)
+{
+    auto environment = ProgramEnvironment();
+    auto scanner = GlobalSymbolScanner(environment);
+    auto checker = JumpStmtUsageChecker();
+
+    auto ast = GenerateAST(std::move(source_file));
+    ast->Accept(&scanner);
+
+    EXPECT_THROW(
+        try
+        {
+            ast->Accept(&checker);
+        }
+        catch (const SemanticError& e)
+        {
+            ASSERT_EQ(std::string_view(e.what()), expected_error_message);
+            throw;
+        },
+        SemanticError
+    );
+}
+
+TEST(JumpStmtUsageChecker, ValidBreakStmtWhileLoop)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    while (true) {\n"    
+        "        break;\n"
+        "    }\n"
+        "}\n";
+    ExpectJumpStmtCheckSuccess(source);
+}
+
+TEST(JumpStmtUsageChecker, ValidContinueStmtForLoop)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    for (;;) {\n"    
+        "        continue;\n"
+        "    }\n"
+        "}\n";
+    ExpectJumpStmtCheckSuccess(source);
+}
+
+TEST(JumpStmtUsageChecker, InvalidBreakStmt)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    break;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 3, Col 5] jump statement \"break\" cannot be used outside a loop";
+    ExpectJumpStmtCheckFailure(source, expected_error);
 }

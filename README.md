@@ -25,15 +25,11 @@ cd build; ctest; cd ..
 #### Note: the main executable currently prints the AST after syntax analysis
 
 # TODO (implement)
-- [ ] Test if 'break' and 'continue' is used inside a loop
+- [ ] Prepare structure for code generation...
 
 # TODO (refactor)
 - [ ] Cleanup MemberAccessExpr validation code
-- [ ] Cleanup FuncCallExpr type casting code for the function's base type
-- [ ] Extract expression trait analysis to a separate visitor class
-- [ ] Find a better way to handle type coercion (Yes/No, result type)
 - [ ] Decide StartPos() for a ForStmt and an empty CompoundStmt
-- [ ] Group PrefixExpr and PostfixExpr into common class UnaryExpr...?
 
 # Syntax
 ### Notation rules used to write theses:

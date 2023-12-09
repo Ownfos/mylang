@@ -6,6 +6,7 @@
 #include "parser/ast/visitor/TypeChecker.h"
 #include <iostream>
 #include <format>
+#include <array>
 
 using namespace mylang;
 
