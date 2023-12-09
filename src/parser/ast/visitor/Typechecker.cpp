@@ -170,7 +170,7 @@ void TypeChecker::PostorderVisit(JumpStmt* node)
 }
 
 // Returns true if assigning source type value to dest type variable is possible.
-bool IsBasetypeCompatible(const IBaseType* dest, const IBaseType* source)
+bool IsBasetypeAssignmentCompatible(const IBaseType* dest, const IBaseType* source)
 {
     // Identical types are obviously valid.
     if (dest->ToString() == source->ToString()) return true;
@@ -199,9 +199,9 @@ bool IsArraySizeContainable(const std::vector<int>& container_arr_size, const st
     return true;
 }
 
-void ValidateBasetypeCompatibility(const IBaseType* dest, const IBaseType* source, const SourcePos& where)
+void ValidateBasetypeAssignmentCompatibility(const IBaseType* dest, const IBaseType* source, const SourcePos& where)
 {
-    if (!IsBasetypeCompatible(dest, source))
+    if (!IsBasetypeAssignmentCompatible(dest, source))
     {
         auto message = std::format("implicit conversion from base type \"{}\" to \"{}\" is not allowed",
             source->ToString(),
@@ -243,7 +243,7 @@ void ValidateVarDeclType(const Type& var_type, const Type& init_type, const Sour
 {
     // Check if we can assign initializer to variable,
     // while only considering the base type.
-    ValidateBasetypeCompatibility(var_type.BaseType(), init_type.BaseType(), where);
+    ValidateBasetypeAssignmentCompatibility(var_type.BaseType(), init_type.BaseType(), where);
 
     // Check if initializer list has same number of dimensions.
     // ex) arr: i32[100] = {{1}, {2}} (invalid: dimension mismatch)
@@ -425,7 +425,7 @@ Type FindArithmeticResultType(const Type& lhs_type, const Type& rhs_type, const 
         op_token.type == TokenType::MultiplyAssign ||
         op_token.type == TokenType::DivideAssign)
     {
-        ValidateBasetypeCompatibility(lhs_type.BaseType(), rhs_type.BaseType(), where);
+        ValidateBasetypeAssignmentCompatibility(lhs_type.BaseType(), rhs_type.BaseType(), where);
     }
     
     // Now find if there exists a type pair for this operation.
@@ -569,7 +569,7 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
             // For non-array types, we need to check if implicit conversion is possible.
             else
             {
-                ValidateBasetypeCompatibility(lhs_type.BaseType(), rhs_type.BaseType(), op_token.start_pos);
+                ValidateBasetypeAssignmentCompatibility(lhs_type.BaseType(), rhs_type.BaseType(), op_token.start_pos);
             }
             SetExprTrait(node, lhs_type, true);
         }
