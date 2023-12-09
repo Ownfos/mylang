@@ -416,18 +416,18 @@ Type FindArithmeticResultType(const Type& lhs_type, const Type& rhs_type, const 
     ValidateTypeIsNotArray(rhs_type, who, where);
     
     // Now find if there exists a type pair for this operation.
-    auto int_type = CreatePrimiveType(TokenType::IntType);
-    auto float_type = CreatePrimiveType(TokenType::FloatType);
-    auto str_type = CreatePrimiveType(TokenType::StringType);
+    const auto int_type = CreatePrimiveType(TokenType::IntType);
+    const auto float_type = CreatePrimiveType(TokenType::FloatType);
+    const auto str_type = CreatePrimiveType(TokenType::StringType);
 
     // The only allowed operation between two strings is concatenation.
-    if (lhs_type == str_type && rhs_type == str_type && op_token.type == TokenType::Plus)
+    auto is_concatenation = op_token.type == TokenType::Plus || op_token.type == TokenType::PlusAssign;
+    if (lhs_type == str_type && rhs_type == str_type && is_concatenation)
     {
         return str_type;
     }
-
     // Operation between float or int.
-    if (IsTypeNumeric(lhs_type))
+    else if (IsTypeNumeric(lhs_type))
     {
         auto who = std::format("right hand operand of arithmetic operator {}", op_token.lexeme);
         ValidateTypeIsNumeric(rhs_type, who, where);
@@ -442,9 +442,11 @@ Type FindArithmeticResultType(const Type& lhs_type, const Type& rhs_type, const 
             return float_type;
         }
     }
-
     // All other operations are invalid.
-    ThrowInvalidOperationError(lhs_type, rhs_type, op_token);
+    else
+    {
+        ThrowInvalidOperationError(lhs_type, rhs_type, op_token);
+    }
 }
 
 // Throws exception if inequality operator (>, >=, <, <=)
@@ -527,7 +529,6 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
         // This will throw an exception in case of invalid operation.
         auto result_type = FindArithmeticResultType(lhs_type, rhs_type, op_token);
 
-        // TODO: if two types are different, choose more relaxed type as result.
         SetExprTrait(node, result_type);
     }
 
@@ -543,27 +544,28 @@ void TypeChecker::PostorderVisit(BinaryExpr* node)
             throw SemanticError(op_token.start_pos, "assignment to an rvalue is not allowed");
         }
 
-        // Array assignment requires strict type identity.
-        if (lhs_type.IsArray() && (lhs_type != rhs_type))
+        // Simple assignment "="
+        if (op_type == TokenType::Assign)
         {
-            auto who = "right hand operand of array assignment operator";
-            ValidateTypeEquality(rhs_type, lhs_type, who, where);
+            // Array assignment requires strict type identity.
+            if (lhs_type.IsArray())
+            {
+                auto who = "right hand operand of array assignment operator";
+                ValidateTypeEquality(rhs_type, lhs_type, who, where);
+            }
+            // For non-array types, we need to check if implicit conversion is possible.
+            else
+            {
+                ValidateBasetypeCompatibility(lhs_type.BaseType(), rhs_type.BaseType(), op_token.start_pos);
+            }
+            SetExprTrait(node, lhs_type, true);
         }
-
-        // For non-array types, we need to check if implicit conversion is possible.
-        ValidateBasetypeCompatibility(lhs_type.BaseType(), rhs_type.BaseType(), op_token.start_pos);
-
-        // For assignment other than plain "=",
-        // check if the corresponding arithmetic operation
-        // between lhs and rhs is possible.
-        if (op_type != TokenType::Assign)
+        // Arithmetic assignments like "+="
+        else
         {
-            // TODO: create a corresponding operator token (e.g. "+" for "+=")
-
-            // TODO: find out a way to reuse FindArithmeticResultType()...
+            auto result_type = FindArithmeticResultType(lhs_type, rhs_type, op_token);
+            SetExprTrait(node, lhs_type);
         }
-
-        SetExprTrait(node, lhs_type);
     }
 }
 

@@ -1746,6 +1746,6 @@ TEST(TypeChecker, InvalidArithmeticAssignment)
         "    i += true;\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 4, Col 7] operation \"i32\" += \"bool\" is not allowed";
+        "[Semantic Error][Ln 4, Col 7] expected numeric type for right hand operand of arithmetic operator +=, but \"bool\" was given";
     ExpectTypeCheckFailure(source, expected_error);
 }
