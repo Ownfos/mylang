@@ -25,10 +25,18 @@ cd build; ctest; cd ..
 #### Note: the main executable currently prints the AST after syntax analysis
 
 # TODO (implement)
+- [ ] Add JumpStmtUsageChecker to the main function.
 - [ ] Prepare structure for code generation...
+```
+desired output:
+- one header and one source file for each module
+- maintain readability
+ex) expressions do not need to have form of three address code.
+- output target could be either a file or a stream.
+  use std::ostream!
+```
 
 # TODO (refactor)
-- [ ] Cleanup MemberAccessExpr validation code
 - [ ] Decide StartPos() for a ForStmt and an empty CompoundStmt
 
 # Syntax
