@@ -167,8 +167,6 @@ void TypeChecker::PostorderVisit(JumpStmt* node)
         );
         ValidateTypeEquality(ret_type, m_current_function->ReturnType(), who, node->StartPos());
     }
-
-    // TODO: validate 'break' and 'continue' usage
 }
 
 // Returns true if assigning source type value to dest type variable is possible.
@@ -601,26 +599,36 @@ void TypeChecker::ValidateLValueQualifier(const Expr* expr, std::string_view who
     }
 }
 
-void TypeChecker::PostorderVisit(FuncCallExpr* node)
+// Try to cast the type to a non-array FuncType.
+// Throws exception if the type was not a callable type.
+const FuncType* TryTypecastToFuncType(const Type& type, const SourcePos& where)
 {
-    const auto& func_type = GetExprTrait(node->Function()).type;
+    // An array type, regardless of its base type, is not callable.
+    ValidateTypeIsNotArray(type, "a callee expression", where);
 
-    // Throw an error if basetype is non-callable, or the operand is an array.
-    // Note: The only thing we allow is a callble, non-array instance!
-    // TODO: extract this part to a separate ValidateXXX function.
-    auto base_type = dynamic_cast<const FuncType*>(func_type.BaseType());
-    if (base_type == nullptr || func_type.IsArray())
+    // Make sure the base type is FuncType.
+    auto base_type = dynamic_cast<const FuncType*>(type.BaseType());
+    if (base_type == nullptr)
     {
         const auto message = std::format("\"{}\" is not a callable type",
-            func_type.ToString()
+            type.ToString()
         );
-        throw SemanticError(node->StartPos(), message);
+        throw SemanticError(where, message);
     }
+    return base_type;
+}
+
+void TypeChecker::PostorderVisit(FuncCallExpr* node)
+{
+    // Check if the callee has a callable type.
+    auto where = node->StartPos();
+    const Type& callee_node_type = GetExprTrait(node->Function()).type;
+    const FuncType* func_type = TryTypecastToFuncType(callee_node_type, where);
 
     // Check if the number of arguments is valid.
-    const auto& param_types = base_type->ParamTypes();
+    const auto& param_types = func_type->ParamTypes();
     const auto& args = node->ArgumentList();
-    ValidateArgumentNumber(param_types, args, node->StartPos());
+    ValidateArgumentNumber(param_types, args, where);
 
     // Check if each argument has a valid type.
     for (int i = 0; i < args.size(); ++i)
@@ -645,7 +653,7 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
     }
 
     // Since everything is good to go, register the type as the function's return type.
-    SetExprTrait(node, base_type->ReturnType());
+    SetExprTrait(node, func_type->ReturnType());
 }
 
 void TypeChecker::PostorderVisit(Identifier* node)
