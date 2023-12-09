@@ -1759,7 +1759,20 @@ TEST(TypeChecker, InvalidArithmeticAssignment)
         "    i += true;\n"
         "}\n";
     auto expected_error =
-        "[Semantic Error][Ln 4, Col 7] expected numeric type for right hand operand of arithmetic operator +=, but \"bool\" was given";
+        "[Semantic Error][Ln 4, Col 7] implicit conversion from base type \"bool\" to \"i32\" is not allowed";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
+TEST(TypeChecker, InvalidArithmeticAssignmentFloatToInt)
+{
+    auto source =
+        "module a;\n"
+        "main: func = () {\n"
+        "    i: i32;\n"
+        "    i += 1.0;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 4, Col 7] implicit conversion from base type \"f32\" to \"i32\" is not allowed";
     ExpectTypeCheckFailure(source, expected_error);
 }
 

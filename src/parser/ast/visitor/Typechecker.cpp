@@ -417,6 +417,16 @@ Type FindArithmeticResultType(const Type& lhs_type, const Type& rhs_type, const 
     auto where = op_token.start_pos;
     ValidateTypeIsNotArray(lhs_type, who, where);
     ValidateTypeIsNotArray(rhs_type, who, where);
+
+    // Arithmetic assignment operators require assignment compatibility
+    if (op_token.type == TokenType::Assign ||
+        op_token.type == TokenType::PlusAssign ||
+        op_token.type == TokenType::MinusAssign ||
+        op_token.type == TokenType::MultiplyAssign ||
+        op_token.type == TokenType::DivideAssign)
+    {
+        ValidateBasetypeCompatibility(lhs_type.BaseType(), rhs_type.BaseType(), where);
+    }
     
     // Now find if there exists a type pair for this operation.
     const auto int_type = CreatePrimiveType(TokenType::IntType);
