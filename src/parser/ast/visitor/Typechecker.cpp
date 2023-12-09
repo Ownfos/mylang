@@ -730,7 +730,7 @@ void TypeChecker::PostorderVisit(MemberAccessExpr* node)
     }
 
     // Reaching this line implies that we failed to find a matching member name.
-    auto message = std::format("struct type \"person\" does not have member variable named \"height\"",
+    auto message = std::format("struct type \"{}\" does not have member variable named \"{}\"",
         struct_type.ToString(),
         member_name.lexeme
     );
