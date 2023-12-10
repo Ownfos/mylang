@@ -20,12 +20,15 @@ cd build; ctest; cd ..
 
 ## How to run (temporary) intermediate parser
 ```
-.\build\src\Debug\mylang.exe "your source code"
+// Use default input
+.\build\src\Debug\mylang.exe
+
+// Use custom input
+.\build\src\Debug\mylang.exe "module a; foo: func = (){}"
 ```
-#### Note: the main executable currently prints the AST after syntax analysis
+#### Note: the main executable currently performs syntax analysis and semantic analysis
 
 # TODO (implement)
-- [ ] Add JumpStmtUsageChecker to the main function.
 - [ ] Prepare structure for code generation...
 ```
 desired output:
