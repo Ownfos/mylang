@@ -29,18 +29,6 @@ cd build; ctest; cd ..
 #### Note: the main executable currently performs syntax analysis and semantic analysis
 
 # TODO (implement)
-- [ ] Make array initializer list qualification more strict
-```
-// Internal lists should have exactly same size!
-arr: i32[2][2] = {{1, 2}, {3, 4}} // valid
-arr: i32[2][2] = {{1}, {2, 3}} // invalid
-
-// Reason: corresponding c++ code is ill-formed
-auto arr = std::array{
-  std::array{1},
-  std::array{2, 3}
-};
-```
 - [ ] Prepare structure for code generation...
 ```
 desired output:
@@ -49,6 +37,30 @@ desired output:
 ex) expressions do not need to have form of three address code.
 - output target could be either a file or a stream.
   use std::ostream!
+```
+- [ ] Add extra braces for array initializer list on code generation
+```c++
+arr: i32[2][3] = {
+  {1, 2},
+  {3}
+};
+
+==>
+
+std::array<std::array<int, 3>, 2> arr = {{
+  {1, 2},
+  {3}
+}};
+```
+Without external {}, std::array constructor will only use {1, 2}  
+thus generating compiler error that there are too many initializer lists.
+```c++
+
+// This is considered invalid!
+std::array<std::array<int, 3>, 2> {
+  {1, 2},
+  {3}
+};
 ```
 
 # TODO (refactor)

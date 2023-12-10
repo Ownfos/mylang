@@ -15,6 +15,10 @@ using namespace mylang;
 // when user doesn't provide any input through CLI.
 std::string GetDemoSourceCode()
 {
+    std::array<std::array<int, 3>, 2> arr = {{
+        {1, 2},
+        {3}
+    }};
     return
         "module math;\n"
         "\n"
