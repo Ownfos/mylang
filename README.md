@@ -29,6 +29,18 @@ cd build; ctest; cd ..
 #### Note: the main executable currently performs syntax analysis and semantic analysis
 
 # TODO (implement)
+- [ ] Make array initializer list qualification more strict
+```
+// Internal lists should have exactly same size!
+arr: i32[2][2] = {{1, 2}, {3, 4}} // valid
+arr: i32[2][2] = {{1}, {2, 3}} // invalid
+
+// Reason: corresponding c++ code is ill-formed
+auto arr = std::array{
+  std::array{1},
+  std::array{2, 3}
+};
+```
 - [ ] Prepare structure for code generation...
 ```
 desired output:
