@@ -398,7 +398,7 @@ void ValidateTypeIsNumeric(const Type& type, std::string_view who, const SourceP
     }
 }
 
-void ThrowInvalidOperationError(const Type& lhs_type, const Type& rhs_type, const Token& op_token)
+[[noreturn]] void ThrowInvalidOperationError(const Type& lhs_type, const Type& rhs_type, const Token& op_token)
 {
     auto message = std::format("operation \"{}\" {} \"{}\" is not allowed",
         lhs_type.ToString(),
