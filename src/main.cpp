@@ -13,7 +13,7 @@ using namespace mylang;
 
 // This is the source code used as an input
 // when user doesn't provide any input through CLI.
-std::string get_demo_source_code()
+std::string GetDemoSourceCode()
 {
     return
         "module math;\n"
@@ -40,7 +40,7 @@ std::string get_demo_source_code()
 
 // If user provided CLI argument, use it as input.
 // If not, just use the default input data.
-std::string get_input_source_code(int argc, char** argv)
+std::string GetInputSourceCode(int argc, char** argv)
 {
     if (argc > 1)
     {
@@ -48,7 +48,7 @@ std::string get_input_source_code(int argc, char** argv)
     }
     else
     {
-        return get_demo_source_code();
+        return GetDemoSourceCode();
     }
 }
 
@@ -87,7 +87,7 @@ int main(int argc, char** argv)
     try
     {
         // Choose between default input source code and user input (if any)
-        auto source_code = get_input_source_code(argc, argv);
+        auto source_code = GetInputSourceCode(argc, argv);
         std::cout << "[Source Code]\n" << source_code << "\n\n";
 
         // Generate AST from given source code
