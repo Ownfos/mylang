@@ -11,9 +11,7 @@ MemberAccessExpr::MemberAccessExpr(std::shared_ptr<Expr> expr, const Token& id)
 
 void MemberAccessExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    m_expr->Accept(visitor);
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& MemberAccessExpr::StartPos() const

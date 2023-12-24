@@ -9,18 +9,18 @@ GlobalSymbolScanner::GlobalSymbolScanner(ProgramEnvironment& environment)
     : m_environment(environment)
 {}
 
-void GlobalSymbolScanner::PreorderVisit(Module* node)
+void GlobalSymbolScanner::Visit(Module* node)
 {
     m_module_name = node->ModuleName().lexeme;
     m_environment.AddModuleDeclaration(node);
 }
 
-void GlobalSymbolScanner::PreorderVisit(FuncDecl* node)
+void GlobalSymbolScanner::Visit(FuncDecl* node)
 {
     m_environment.AddSymbol(m_module_name, node, node->ShouldExport());
 }
 
-void GlobalSymbolScanner::PreorderVisit(StructDecl* node)
+void GlobalSymbolScanner::Visit(StructDecl* node)
 {
     m_environment.AddSymbol(m_module_name, node, node->ShouldExport());
 }

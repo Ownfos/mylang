@@ -11,9 +11,7 @@ PrefixExpr::PrefixExpr(const Token& op, std::shared_ptr<Expr> expr)
 
 void PrefixExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    m_expr->Accept(visitor);
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& PrefixExpr::StartPos() const

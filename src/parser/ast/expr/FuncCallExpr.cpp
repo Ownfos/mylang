@@ -12,13 +12,7 @@ FuncCallExpr::FuncCallExpr(std::shared_ptr<Expr> expr, const std::vector<std::sh
 
 void FuncCallExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    m_expr->Accept(visitor);
-    for (const auto& arg : m_arg_list)
-    {
-        arg->Accept(visitor);
-    }
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& FuncCallExpr::StartPos() const

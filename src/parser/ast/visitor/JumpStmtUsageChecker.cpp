@@ -8,27 +8,27 @@
 namespace mylang
 {
 
-void JumpStmtUsageChecker::PreorderVisit(ForStmt* node)
+void JumpStmtUsageChecker::Visit(ForStmt* node)
 {
     EnterLoop();
 }
 
-void JumpStmtUsageChecker::PostorderVisit(ForStmt* node)
+void JumpStmtUsageChecker::Visit(ForStmt* node)
 {
     ExitLoop();
 }
 
-void JumpStmtUsageChecker::PreorderVisit(WhileStmt* node)
+void JumpStmtUsageChecker::Visit(WhileStmt* node)
 {
     EnterLoop();
 }
 
-void JumpStmtUsageChecker::PostorderVisit(WhileStmt* node)
+void JumpStmtUsageChecker::Visit(WhileStmt* node)
 {
     ExitLoop();
 }
 
-void JumpStmtUsageChecker::PostorderVisit(JumpStmt* node)
+void JumpStmtUsageChecker::Visit(JumpStmt* node)
 {
     // We only need to check "break" and "continue".
     // Return statements can be used everywhere...

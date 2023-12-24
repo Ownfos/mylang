@@ -11,13 +11,7 @@ JumpStmt::JumpStmt(const Token& instruction, std::shared_ptr<Expr> expr)
 
 void JumpStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    // Note: m_expr is not null only if this is a value-returning statement.
-    if (m_expr)
-    {
-        m_expr->Accept(visitor);
-    }
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& JumpStmt::StartPos() const

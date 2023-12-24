@@ -10,8 +10,7 @@ Identifier::Identifier(const Token& id)
 
 void Identifier::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& Identifier::StartPos() const

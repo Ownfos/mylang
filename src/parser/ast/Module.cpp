@@ -18,12 +18,7 @@ Module::Module(const Token& module_name, const std::vector<ModuleImportInfo>& im
 
 void Module::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    for (auto& decl : m_global_declarations)
-    {
-        decl->Accept(visitor);
-    }
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& Module::StartPos() const

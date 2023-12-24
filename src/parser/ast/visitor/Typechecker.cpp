@@ -38,7 +38,7 @@ TypeChecker::TypeChecker(ProgramEnvironment& environment)
     : m_environment(environment)
 {}
 
-void TypeChecker::PreorderVisit(Module* node)
+void TypeChecker::Visit(Module* node)
 {
     m_context_module_name = node->ModuleName().lexeme;
 }
@@ -55,7 +55,7 @@ void TypeChecker::ValidateTypeExistence(const Type& type, std::string_view who, 
     }
 }
 
-void TypeChecker::PreorderVisit(FuncDecl* node)
+void TypeChecker::Visit(FuncDecl* node)
 {
     // Record that all of the following statements are
     // executed within this function's context.
@@ -71,12 +71,12 @@ void TypeChecker::PreorderVisit(FuncDecl* node)
     m_environment.OpenScope(m_context_module_name);
 }
 
-void TypeChecker::PostorderVisit(FuncDecl* node)
+void TypeChecker::Visit(FuncDecl* node)
 {
     m_environment.CloseScope(m_context_module_name);
 }
 
-void TypeChecker::PreorderVisit(Parameter* node)
+void TypeChecker::Visit(Parameter* node)
 {
     // Throw an error if the type is invalid in this module's context.
     auto who = std::format("parameter \"{}\"", node->Name().lexeme);
@@ -88,7 +88,7 @@ void TypeChecker::PreorderVisit(Parameter* node)
     m_environment.AddSymbol(m_context_module_name, node, false);
 }
 
-void TypeChecker::PreorderVisit(StructDecl* node)
+void TypeChecker::Visit(StructDecl* node)
 {
     // Make sure that all member variables with struct type are valid.
     for (const auto& member : node->Members())
@@ -101,12 +101,12 @@ void TypeChecker::PreorderVisit(StructDecl* node)
     }
 }
 
-void TypeChecker::PreorderVisit(CompoundStmt* node)
+void TypeChecker::Visit(CompoundStmt* node)
 {
     m_environment.OpenScope(m_context_module_name);
 }
 
-void TypeChecker::PostorderVisit(CompoundStmt* node)
+void TypeChecker::Visit(CompoundStmt* node)
 {
     m_environment.CloseScope(m_context_module_name);
 }
@@ -133,12 +133,12 @@ void TypeChecker::ValidateConditionExprType(const Expr* condition_expr)
     ValidateTypeEquality(type, expected, "a condition expression", condition_expr->StartPos());
 }
 
-void TypeChecker::PostorderVisit(IfStmt* node)
+void TypeChecker::Visit(IfStmt* node)
 {
     ValidateConditionExprType(node->Condition());
 }
 
-void TypeChecker::PostorderVisit(ForStmt* node)
+void TypeChecker::Visit(ForStmt* node)
 {
     // Check if the type of condition expression (if any) is bool.
     if (auto condition_expr = node->Condition())
@@ -147,12 +147,12 @@ void TypeChecker::PostorderVisit(ForStmt* node)
     }
 }
 
-void TypeChecker::PostorderVisit(WhileStmt* node)
+void TypeChecker::Visit(WhileStmt* node)
 {
     ValidateConditionExprType(node->Condition());
 }
 
-void TypeChecker::PostorderVisit(JumpStmt* node)
+void TypeChecker::Visit(JumpStmt* node)
 {
     if (node->JumpType().type == TokenType::Return)
     {
@@ -254,7 +254,7 @@ void ValidateVarDeclType(const Type& var_type, const Type& init_type, const Sour
     ValidateInitializerListSize(var_type, init_type, where);
 }
 
-void TypeChecker::PostorderVisit(VarDeclStmt* node)
+void TypeChecker::Visit(VarDeclStmt* node)
 {
     // Make sure a valid type is used.
     auto who = std::format("local variable \"{}\"", node->Name().lexeme);
@@ -275,7 +275,7 @@ void TypeChecker::PostorderVisit(VarDeclStmt* node)
     m_environment.AddSymbol(m_context_module_name, node, false);
 }
 
-void TypeChecker::PostorderVisit(VarInitExpr* node)
+void TypeChecker::Visit(VarInitExpr* node)
 {
     // VarInitExpr has same type as its internal Expr node.
     SetExprTrait(node, GetExprTrait(node->Expression()).type);
@@ -299,7 +299,7 @@ void TypeChecker::PostorderVisit(VarInitExpr* node)
 // After iteration is done, append extra dimension on the left
 // to note that this is an array of elements
 // => i32[3][2]
-void TypeChecker::PostorderVisit(VarInitList* node)
+void TypeChecker::Visit(VarInitList* node)
 {
     auto first_elem = node->InitializerList().begin()->get();
     auto list_type = GetExprTrait(first_elem).type;
@@ -337,7 +337,7 @@ void TypeChecker::PostorderVisit(VarInitList* node)
     SetExprTrait(node, list_type);
 }
 
-void TypeChecker::PostorderVisit(ArrayAccessExpr* node)
+void TypeChecker::Visit(ArrayAccessExpr* node)
 {
     const auto index_expr = node->Index();
 
@@ -483,7 +483,7 @@ void ValidateBaseTypeInequalityComparable(const Type& lhs_type, const Type& rhs_
 // {==, !=} between strictly identical types
 // {>, <, >=, <=} between primitive types
 // {&&, ||} between bool types
-void TypeChecker::PostorderVisit(BinaryExpr* node)
+void TypeChecker::Visit(BinaryExpr* node)
 {
     const auto& op_token = node->Operator();
     const auto& op_type = op_token.type;
@@ -633,7 +633,7 @@ const FuncType* TryTypecastToFuncType(const Type& type, const SourcePos& where)
     return base_type;
 }
 
-void TypeChecker::PostorderVisit(FuncCallExpr* node)
+void TypeChecker::Visit(FuncCallExpr* node)
 {
     // Check if the callee has a callable type.
     auto where = node->StartPos();
@@ -671,7 +671,7 @@ void TypeChecker::PostorderVisit(FuncCallExpr* node)
     SetExprTrait(node, func_type->ReturnType());
 }
 
-void TypeChecker::PostorderVisit(Identifier* node)
+void TypeChecker::Visit(Identifier* node)
 {
     auto symbol_name = node->ToString();
 
@@ -695,7 +695,7 @@ void TypeChecker::PostorderVisit(Identifier* node)
     }
 }
 
-void TypeChecker::PostorderVisit(Literal* node)
+void TypeChecker::Visit(Literal* node)
 {
     SetExprTrait(node, node->DeclType());
 }
@@ -721,7 +721,7 @@ const StructDecl* TypeChecker::TryToFindStructTypeDecl(const Type& type, const S
     }
 }
 
-void TypeChecker::PostorderVisit(MemberAccessExpr* node)
+void TypeChecker::Visit(MemberAccessExpr* node)
 {
     // Check if the operand is really a struct type.
     const auto& [is_struct_lvalue, struct_type] = GetExprTrait(node->Struct());
@@ -747,7 +747,7 @@ void TypeChecker::PostorderVisit(MemberAccessExpr* node)
     throw SemanticError(member_name.start_pos, message);
 }
 
-void TypeChecker::PostorderVisit(PrefixExpr* node)
+void TypeChecker::Visit(PrefixExpr* node)
 {
     auto op = node->Operator();
     auto operand_expr = node->Operand();
@@ -781,7 +781,7 @@ void TypeChecker::PostorderVisit(PrefixExpr* node)
     SetExprTrait(node, operand_type);
 }
 
-void TypeChecker::PostorderVisit(PostfixExpr* node)
+void TypeChecker::Visit(PostfixExpr* node)
 {
     auto op = node->Operator();
     auto operand_expr = node->Operand();

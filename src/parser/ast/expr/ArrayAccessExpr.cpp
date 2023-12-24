@@ -11,10 +11,7 @@ ArrayAccessExpr::ArrayAccessExpr(std::shared_ptr<Expr> expr, std::shared_ptr<Exp
 
 void ArrayAccessExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    m_expr->Accept(visitor);
-    m_index->Accept(visitor);
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& ArrayAccessExpr::StartPos() const

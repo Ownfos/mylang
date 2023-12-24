@@ -10,12 +10,7 @@ CompoundStmt::CompoundStmt(const std::vector<std::shared_ptr<Stmt>>& statements)
 
 void CompoundStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    for (const auto& stmt : m_statements)
-    {
-        stmt->Accept(visitor);
-    }
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& CompoundStmt::StartPos() const

@@ -10,11 +10,8 @@ namespace mylang
 class JumpStmtUsageChecker : public IAbstractSyntaxTreeVisitor
 {
 public:
-    virtual void PreorderVisit(ForStmt* node) override;
-    virtual void PostorderVisit(ForStmt* node) override;
-    virtual void PreorderVisit(WhileStmt* node) override;
-    virtual void PostorderVisit(WhileStmt* node) override;
-    virtual void PostorderVisit(JumpStmt* node) override;
+    virtual void Visit(ForStmt* node) override;
+    virtual void Visit(WhileStmt* node) override;
     
 private:
     // Increase or decrease loop nesting level counter.

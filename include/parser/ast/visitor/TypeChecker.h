@@ -37,45 +37,43 @@ class TypeChecker : public IAbstractSyntaxTreeVisitor
 public:
     TypeChecker(ProgramEnvironment& environment);
 
-    virtual void PreorderVisit(Module* node) override;
+    virtual void Visit(Module* node) override;
 
-    virtual void PreorderVisit(FuncDecl* node) override;
-    virtual void PostorderVisit(FuncDecl* node) override;
-    virtual void PreorderVisit(Parameter* node) override;
+    virtual void Visit(FuncDecl* node) override;
+    virtual void Visit(Parameter* node) override;
 
-    virtual void PreorderVisit(StructDecl* node) override;
+    virtual void Visit(StructDecl* node) override;
 
-    virtual void PreorderVisit(CompoundStmt* node) override;
-    virtual void PostorderVisit(CompoundStmt* node) override;
+    virtual void Visit(CompoundStmt* node) override;
 
-    virtual void PostorderVisit(IfStmt* node) override;
+    virtual void Visit(IfStmt* node) override;
 
-    virtual void PostorderVisit(ForStmt* node) override;
+    virtual void Visit(ForStmt* node) override;
     
-    virtual void PostorderVisit(WhileStmt* node) override;
+    virtual void Visit(WhileStmt* node) override;
 
-    virtual void PostorderVisit(JumpStmt* node) override;
+    virtual void Visit(JumpStmt* node) override;
 
-    virtual void PostorderVisit(VarDeclStmt* node) override;
+    virtual void Visit(VarDeclStmt* node) override;
 
-    virtual void PostorderVisit(VarInitExpr* node) override;
+    virtual void Visit(VarInitExpr* node) override;
 
-    virtual void PostorderVisit(VarInitList* node) override;
+    virtual void Visit(VarInitList* node) override;
 
-    virtual void PostorderVisit(ArrayAccessExpr* node) override;
+    virtual void Visit(ArrayAccessExpr* node) override;
 
-    virtual void PostorderVisit(BinaryExpr* node) override;
+    virtual void Visit(BinaryExpr* node) override;
 
-    virtual void PostorderVisit(FuncCallExpr* node) override;
+    virtual void Visit(FuncCallExpr* node) override;
 
-    virtual void PostorderVisit(Identifier* node) override;
-    virtual void PostorderVisit(Literal* node) override;
+    virtual void Visit(Identifier* node) override;
+    virtual void Visit(Literal* node) override;
 
 
-    virtual void PostorderVisit(MemberAccessExpr* node) override;
+    virtual void Visit(MemberAccessExpr* node) override;
 
-    virtual void PostorderVisit(PostfixExpr* node) override;
-    virtual void PostorderVisit(PrefixExpr* node) override;
+    virtual void Visit(PostfixExpr* node) override;
+    virtual void Visit(PrefixExpr* node) override;
 
 private:
     // Getter and setter that wraps std::map implementation details

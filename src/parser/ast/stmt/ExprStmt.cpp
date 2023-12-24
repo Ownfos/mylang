@@ -10,9 +10,7 @@ ExprStmt::ExprStmt(std::shared_ptr<Expr> expr)
 
 void ExprStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    m_expr->Accept(visitor);
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& ExprStmt::StartPos() const

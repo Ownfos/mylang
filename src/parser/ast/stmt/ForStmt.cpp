@@ -18,28 +18,7 @@ ForStmt::ForStmt(
 
 void ForStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-
-    // Note: m_initializer, m_condition, and m_increment_expr
-    // are all optional, thus can be nullptr.
-    if (m_initializer)
-    {
-        m_initializer->Accept(visitor);
-    }
-
-    if (m_condition)
-    {
-        m_condition->Accept(visitor);
-    }
-
-    if (m_increment_expr)
-    {
-        m_increment_expr->Accept(visitor);
-    }
-
-    m_body->Accept(visitor);
-    
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& ForStmt::StartPos() const

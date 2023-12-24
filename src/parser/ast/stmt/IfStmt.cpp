@@ -16,18 +16,7 @@ IfStmt::IfStmt(
 
 void IfStmt::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    
-    m_condition->Accept(visitor);
-    m_then_branch->Accept(visitor);
-
-    // Note: else branch is optional, thus can be nullptr.
-    if (m_else_branch)
-    {
-        m_else_branch->Accept(visitor);
-    }
-    
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& IfStmt::StartPos() const

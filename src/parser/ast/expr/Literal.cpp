@@ -29,8 +29,7 @@ Literal::Literal(const Token& literal)
 
 void Literal::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& Literal::StartPos() const

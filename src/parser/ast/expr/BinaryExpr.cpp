@@ -11,10 +11,7 @@ BinaryExpr::BinaryExpr(const Token& op, std::shared_ptr<Expr> lhs, std::shared_p
 
 void BinaryExpr::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    m_lhs->Accept(visitor);
-    m_rhs->Accept(visitor);
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& BinaryExpr::StartPos() const

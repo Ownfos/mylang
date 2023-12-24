@@ -10,8 +10,7 @@ Parameter::Parameter(const Token& name, const ParamType& param_type)
 
 void Parameter::Accept(IAbstractSyntaxTreeVisitor* visitor)
 {
-    visitor->PreorderVisit(this);
-    visitor->PostorderVisit(this);
+    visitor->Visit(this);
 }
 
 const SourcePos& Parameter::StartPos() const
