@@ -30,7 +30,7 @@ const Type& VarDeclStmt::DeclType() const
     return m_type;
 }
 
-const VarInit* VarDeclStmt::Initializer() const
+VarInit* VarDeclStmt::Initializer()
 {
     return m_initializer.get();
 }

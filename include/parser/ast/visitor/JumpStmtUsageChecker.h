@@ -7,18 +7,21 @@ namespace mylang
 {
 
 // Checks if break or continue is used only inside a loop.
+//
+// Since ExprStmt and VarDeclStmt cannot contain JumpStmt
+// and any JumpStmt in WhileStmt and ForStmt is valid,
+// we only need to traverse and inspect IfStmt and CompoundStmt.
+//
+// On valid AST, we should NOT encounter any break or continue.
 class JumpStmtUsageChecker : public IAbstractSyntaxTreeVisitor
 {
 public:
-    virtual void Visit(ForStmt* node) override;
-    virtual void Visit(WhileStmt* node) override;
-    
-private:
-    // Increase or decrease loop nesting level counter.
-    void EnterLoop();
-    void ExitLoop();
+    virtual void Visit(Module* node) override;
+    virtual void Visit(FuncDecl* node) override;
 
-    int m_loop_nesting_level = 0;
+    virtual void Visit(IfStmt* node) override;
+    virtual void Visit(CompoundStmt* node) override;
+    virtual void Visit(JumpStmt* node) override;
 };
 
 } // namespace mylang

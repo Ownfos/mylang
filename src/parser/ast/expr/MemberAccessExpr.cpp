@@ -27,7 +27,7 @@ std::string MemberAccessExpr::ToString() const
     );
 }
 
-const Expr* MemberAccessExpr::Struct() const
+Expr* MemberAccessExpr::Struct()
 {
     return m_expr.get();
 }

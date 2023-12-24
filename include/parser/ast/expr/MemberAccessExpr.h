@@ -16,7 +16,7 @@ public:
     virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
-    const Expr* Struct() const;
+    Expr* Struct();
     const Token& MemberName() const;
 
 private:

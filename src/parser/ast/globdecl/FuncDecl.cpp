@@ -63,4 +63,9 @@ const std::vector<std::shared_ptr<Parameter>>& FuncDecl::Parameters() const
     return m_parameters;
 }
 
+Stmt* FuncDecl::Body()
+{
+    return m_body.get();
+}
+
 } // namespace mylang

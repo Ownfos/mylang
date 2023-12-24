@@ -27,9 +27,24 @@ const SourcePos& ForStmt::StartPos() const
     return {};
 }
 
-const Expr* ForStmt::Condition() const
+Stmt* ForStmt::Initializer()
+{
+    return m_initializer.get();
+}
+
+Expr* ForStmt::Condition()
 {
     return m_condition.get();
+}
+
+Expr* ForStmt::IncrementExpr()
+{
+    return m_increment_expr.get();
+}
+
+Stmt* ForStmt::Body()
+{
+    return m_body.get();
 }
 
 } // namespace mylang

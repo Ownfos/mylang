@@ -17,7 +17,7 @@ public:
     virtual const SourcePos& StartPos() const override;
     virtual std::string ToString() const override;
 
-    const Expr* Function() const;
+    Expr* Function();
     const std::vector<std::shared_ptr<Expr>>& ArgumentList() const;
 
 private:

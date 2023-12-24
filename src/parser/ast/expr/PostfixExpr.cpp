@@ -32,7 +32,7 @@ const Token& PostfixExpr::Operator() const
     return m_op;
 }
 
-const Expr* PostfixExpr::Operand() const
+Expr* PostfixExpr::Operand()
 {
     return m_expr.get();
 }

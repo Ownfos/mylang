@@ -22,7 +22,7 @@ public:
     virtual const Token& Name() const;
     virtual const Type& DeclType() const override;
 
-    const VarInit* Initializer() const;
+    VarInit* Initializer();
 
 private:
     Token m_name;

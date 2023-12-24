@@ -20,7 +20,7 @@ public:
     virtual const SourcePos& StartPos() const override;
 
     const Token& JumpType() const;
-    const Expr* ReturnValueExpr() const;
+    Expr* ReturnValueExpr();
 
 private:
     Token m_jump_type;

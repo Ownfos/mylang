@@ -24,9 +24,19 @@ const SourcePos& IfStmt::StartPos() const
     return m_condition->StartPos();
 }
 
-const Expr* IfStmt::Condition() const
+Expr* IfStmt::Condition()
 {
     return m_condition.get();
+}
+
+Stmt* IfStmt::ThenBranch()
+{
+    return m_then_branch.get();
+}
+
+Stmt* IfStmt::ElseBranch()
+{
+    return m_else_branch.get();
 }
 
 } // namespace mylang

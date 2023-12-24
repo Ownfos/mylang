@@ -8,6 +8,7 @@
 #include "parser/ast/stmt/ForStmt.h"
 #include "parser/ast/stmt/WhileStmt.h"
 #include "parser/ast/stmt/JumpStmt.h"
+#include "parser/ast/stmt/ExprStmt.h"
 #include "parser/ast/stmt/VarDeclStmt.h"
 #include "parser/ast/stmt/ExprStmt.h"
 
@@ -41,6 +42,11 @@ TypeChecker::TypeChecker(ProgramEnvironment& environment)
 void TypeChecker::Visit(Module* node)
 {
     m_context_module_name = node->ModuleName().lexeme;
+
+    for (const auto& decl : node->Declarations())
+    {
+        decl->Accept(this);
+    }
 }
 
 void TypeChecker::ValidateTypeExistence(const Type& type, std::string_view who, const SourcePos& where)
@@ -68,11 +74,13 @@ void TypeChecker::Visit(FuncDecl* node)
     auto who = std::format("return type of function \"{}\"", node->Name().lexeme);
     ValidateTypeExistence(node->ReturnType(), who, node->StartPos());
 
+    // Visit child node
     m_environment.OpenScope(m_context_module_name);
-}
-
-void TypeChecker::Visit(FuncDecl* node)
-{
+    for (const auto& param : node->Parameters())
+    {
+        param->Accept(this);
+    }
+    node->Body()->Accept(this);
     m_environment.CloseScope(m_context_module_name);
 }
 
@@ -83,8 +91,7 @@ void TypeChecker::Visit(Parameter* node)
     ValidateTypeExistence(node->DeclType(), who, node->StartPos());
 
     // If the type was valid, add it to the local symbol table.
-    // Note: corresponding FuncDecl opens a new scope,
-    //       so the parameters are added to the nested scope (not the global one!).
+    // Note: parameters belong to the function's local scope.
     m_environment.AddSymbol(m_context_module_name, node, false);
 }
 
@@ -104,10 +111,10 @@ void TypeChecker::Visit(StructDecl* node)
 void TypeChecker::Visit(CompoundStmt* node)
 {
     m_environment.OpenScope(m_context_module_name);
-}
-
-void TypeChecker::Visit(CompoundStmt* node)
-{
+    for (const auto& stmt : node->Statements())
+    {
+        stmt->Accept(this);
+    }
     m_environment.CloseScope(m_context_module_name);
 }
 
@@ -135,21 +142,55 @@ void TypeChecker::ValidateConditionExprType(const Expr* condition_expr)
 
 void TypeChecker::Visit(IfStmt* node)
 {
+    // Check if the condition has bool type.
+    node->Condition()->Accept(this);
     ValidateConditionExprType(node->Condition());
+
+    // Visit then branch
+    m_environment.OpenScope(m_context_module_name);
+    node->ThenBranch()->Accept(this);
+    m_environment.CloseScope(m_context_module_name);
+
+    // Visit else branch
+    if (auto else_branch = node->ElseBranch())
+    {
+        m_environment.OpenScope(m_context_module_name);
+        else_branch->Accept(this);
+        m_environment.CloseScope(m_context_module_name);
+    }
 }
 
 void TypeChecker::Visit(ForStmt* node)
 {
-    // Check if the type of condition expression (if any) is bool.
-    if (auto condition_expr = node->Condition())
+    m_environment.OpenScope(m_context_module_name);
+
+    if (auto initializer = node->Initializer())
     {
-        ValidateConditionExprType(condition_expr);
+        initializer->Accept(this);
     }
+    if (auto condition = node->Condition())
+    {
+        condition->Accept(this);
+        ValidateConditionExprType(condition);
+    }
+    if (auto increment = node->IncrementExpr())
+    {
+        increment->Accept(this);
+    }
+    node->Body()->Accept(this);
+
+    m_environment.CloseScope(m_context_module_name);
 }
 
 void TypeChecker::Visit(WhileStmt* node)
 {
-    ValidateConditionExprType(node->Condition());
+    // Condition should have bool type
+    auto condition = node->Condition();
+    condition->Accept(this);
+    ValidateConditionExprType(condition);
+
+    // Visit child node
+    node->Body()->Accept(this);
 }
 
 void TypeChecker::Visit(JumpStmt* node)
@@ -159,7 +200,12 @@ void TypeChecker::Visit(JumpStmt* node)
         // In case of empty return statement (i.e. "return;"),
         // use void type as the expression's type.
         auto ret_expr = node->ReturnValueExpr();
-        auto ret_type = (ret_expr == nullptr) ? CreateVoidType() : GetExprTrait(ret_expr).type;
+        auto ret_type = CreateVoidType();
+        if (ret_expr)
+        {
+            ret_expr->Accept(this);
+            ret_type = GetExprTrait(ret_expr).type;
+        }
 
         // Check if the return type matches the function signature.
         auto who = std::format("return statement inside function \"{}\"",
@@ -167,6 +213,11 @@ void TypeChecker::Visit(JumpStmt* node)
         );
         ValidateTypeEquality(ret_type, m_current_function->ReturnType(), who, node->StartPos());
     }
+}
+
+void TypeChecker::Visit(ExprStmt* node)
+{
+    node->Expression()->Accept(this);
 }
 
 // Returns true if assigning source type value to dest type variable is possible.
@@ -263,9 +314,13 @@ void TypeChecker::Visit(VarDeclStmt* node)
     ValidateTypeExistence(var_type, who, where);
 
     // If we have the optional initializer, make sure the type is compatible.
-    if (node->Initializer())
+    if (auto initializer = node->Initializer())
     {
-        auto init_type = GetExprTrait(node->Initializer()).type;
+        // Synthesize type attribute.
+        initializer->Accept(this);
+
+        // Check if the type is compatible.
+        auto init_type = GetExprTrait(initializer).type;
         ValidateVarDeclType(var_type, init_type, where);
     }
 
@@ -277,10 +332,13 @@ void TypeChecker::Visit(VarDeclStmt* node)
 
 void TypeChecker::Visit(VarInitExpr* node)
 {
-    // VarInitExpr has same type as its internal Expr node.
-    SetExprTrait(node, GetExprTrait(node->Expression()).type);
-}
+    // Synthesize type attribute.
+    auto expr = node->Expression();
+    expr->Accept(this);
 
+    // VarInitExpr has same type as its internal Expr node.
+    SetExprTrait(node, GetExprTrait(expr).type);
+}
 
 // We will find the minimum array size which can
 // accommodate all elements in this initializer list.
@@ -301,10 +359,23 @@ void TypeChecker::Visit(VarInitExpr* node)
 // => i32[3][2]
 void TypeChecker::Visit(VarInitList* node)
 {
+    // Synthesize type attributes.
+    for (const auto& init_elem : node->InitializerList())
+    {
+        init_elem->Accept(this);
+    }
+
+    // Find an array type which is large enough to store all elements.
+    // We will start from the first element's type and increment array size
+    // whenever we encounter a bigger array as next list element.
+    //
+    // Note:
+    // nested elements of an initializer list can have different array size!
+    // ex) arr: i32[10][10] = {{1, 2}, {3}, {4, 5, 6}};
     auto first_elem = node->InitializerList().begin()->get();
     auto list_type = GetExprTrait(first_elem).type;
 
-    for (const std::shared_ptr<VarInit>& elem : node->InitializerList())
+    for (const auto& elem : node->InitializerList())
     {
         auto elem_type = GetExprTrait(elem.get()).type;
 
@@ -322,6 +393,9 @@ void TypeChecker::Visit(VarInitList* node)
 
         // Update list type to a bigger array which can store all elements in this list.
         // When number of dimensions differ between elements, an exception will be thrown.
+        //
+        // ex) {1} and {2,3} => i32[2]
+        // ex) {1} and {{2}, {3}} => error! we cannot mix i32[] and i32[][]...
         try
         {
             list_type.MergeArrayDim(elem_type);
@@ -339,7 +413,12 @@ void TypeChecker::Visit(VarInitList* node)
 
 void TypeChecker::Visit(ArrayAccessExpr* node)
 {
-    const auto index_expr = node->Index();
+    // Synthesize type attributes.
+    auto operand_expr = node->Operand();
+    operand_expr->Accept(this);
+
+    auto index_expr = node->Index();
+    index_expr->Accept(this);
 
     // Index should have int type.
     const auto& index_type = GetExprTrait(index_expr).type;
@@ -348,7 +427,7 @@ void TypeChecker::Visit(ArrayAccessExpr* node)
     ValidateTypeEquality(index_type, expected, "an array index", where);
 
     // Operand should be an array type.
-    const auto& [is_operand_lvalue, operand_type] = GetExprTrait(node->Operand());
+    const auto& [is_operand_lvalue, operand_type] = GetExprTrait(operand_expr);
     if (!operand_type.IsArray())
     {
         auto message = std::format("array access operator [] cannot be applied to non-array type \"{}\"",
@@ -485,10 +564,18 @@ void ValidateBaseTypeInequalityComparable(const Type& lhs_type, const Type& rhs_
 // {&&, ||} between bool types
 void TypeChecker::Visit(BinaryExpr* node)
 {
+    // Synthesize type attributes.
+    auto lhs_expr = node->LeftHandOperand();
+    lhs_expr->Accept(this);
+
+    auto rhs_expr = node->RightHandOperand();
+    rhs_expr->Accept(this);
+
+    // From here, we will check if the operation between to types is possible.
     const auto& op_token = node->Operator();
     const auto& op_type = op_token.type;
-    const auto& [is_lhs_lvalue, lhs_type] = GetExprTrait(node->LeftHandOperand());
-    const auto& rhs_type = GetExprTrait(node->RightHandOperand()).type;
+    const auto& [is_lhs_lvalue, lhs_type] = GetExprTrait(lhs_expr);
+    const auto& rhs_type = GetExprTrait(rhs_expr).type;
 
     // These instances frequently appear within this function,
     // so why not prepare them in advance!
@@ -635,22 +722,31 @@ const FuncType* TryTypecastToFuncType(const Type& type, const SourcePos& where)
 
 void TypeChecker::Visit(FuncCallExpr* node)
 {
+    // Synthesize type attributes.
+    auto callee_node_expr = node->Function();
+    callee_node_expr->Accept(this);
+
+    const auto& arg_list = node->ArgumentList();
+    for (const auto& arg : arg_list)
+    {
+        arg->Accept(this);
+    }
+
     // Check if the callee has a callable type.
     auto where = node->StartPos();
-    const Type& callee_node_type = GetExprTrait(node->Function()).type;
+    const Type& callee_node_type = GetExprTrait(callee_node_expr).type;
     const FuncType* func_type = TryTypecastToFuncType(callee_node_type, where);
 
     // Check if the number of arguments is valid.
     const auto& param_types = func_type->ParamTypes();
-    const auto& args = node->ArgumentList();
-    ValidateArgumentNumber(param_types, args, where);
+    ValidateArgumentNumber(param_types, arg_list, where);
 
     // Check if each argument has a valid type.
-    for (int i = 0; i < args.size(); ++i)
+    for (int i = 0; i < arg_list.size(); ++i)
     {
         // Alias for frequently used variables.
         const auto& param = param_types[i];
-        auto arg_expr = args[i].get();
+        auto arg_expr = arg_list[i].get();
 
         // Make sure the types match.
         auto who = std::format("argument {}", i);
@@ -723,8 +819,12 @@ const StructDecl* TypeChecker::TryToFindStructTypeDecl(const Type& type, const S
 
 void TypeChecker::Visit(MemberAccessExpr* node)
 {
+    // Synthesize type attributes.
+    auto struct_expr = node->Struct();
+    struct_expr->Accept(this);
+
     // Check if the operand is really a struct type.
-    const auto& [is_struct_lvalue, struct_type] = GetExprTrait(node->Struct());
+    const auto& [is_struct_lvalue, struct_type] = GetExprTrait(struct_expr);
     const StructDecl* struct_decl = TryToFindStructTypeDecl(struct_type, node->StartPos());
 
     // Check if the struct has a member with matching name.
@@ -749,11 +849,13 @@ void TypeChecker::Visit(MemberAccessExpr* node)
 
 void TypeChecker::Visit(PrefixExpr* node)
 {
-    auto op = node->Operator();
+    // Synthesize type attribute.
     auto operand_expr = node->Operand();
+    operand_expr->Accept(this);
     auto operand_type = GetExprTrait(operand_expr).type;
 
     // Commonly used information on error reports.
+    auto op = node->Operator();
     auto who = std::format("operand of unary operator {}", op.lexeme);
     auto where = node->StartPos();
 
@@ -783,11 +885,14 @@ void TypeChecker::Visit(PrefixExpr* node)
 
 void TypeChecker::Visit(PostfixExpr* node)
 {
-    auto op = node->Operator();
+    // Synthesize type attribute.
     auto operand_expr = node->Operand();
+    operand_expr->Accept(this);
     auto operand_type = GetExprTrait(operand_expr).type;
 
+    // Commonly used values.
     auto int_type = CreatePrimiveType(TokenType::IntType);
+    auto op = node->Operator();
     auto who = std::format("operand of unary operator {}", op.lexeme);
     auto where = op.start_pos;
     

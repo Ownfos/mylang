@@ -65,6 +65,7 @@ std::array<std::array<int, 3>, 2> {
 
 # TODO (refactor)
 - [ ] Decide StartPos() for a ForStmt and an empty CompoundStmt
+- [ ] const Accept() for AST nodes...?
 
 # Syntax
 ### Notation rules used to write theses:

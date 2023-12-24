@@ -45,395 +45,358 @@ void TreePrinter::DecreaseDepth()
 
 void TreePrinter::Visit(Module* node)
 {
-    // Node type
-    Indent();
-    m_output_stream << "[Module]\n";
+    PrintIndentedLine("[Module]");
 
     if (m_verbose)
     {
-        // Module declaration
-        Indent();
-        m_output_stream << std::format("- module: {}\n",
+        PrintIndentedLine(std::format("- module: {}",
             node->ModuleName().lexeme
-        );
+        ));
 
-        // Imported modules
         for (const auto& import_info : node->ImportList())
         {
-            Indent();
-            m_output_stream << std::format("- imported module: {}, export: {}\n",
+            PrintIndentedLine(std::format("- imported module: {}, export: {}",
                 import_info.name.lexeme,
                 import_info.should_export
-            );
+            ));
         }
     }
 
+    // Visit child node
     IncreaseDepth();
+    for (const auto& decl : node->Declarations())
+    {
+        decl->Accept(this);
+    }
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(Parameter* node)
 {
-    Indent();
-    m_output_stream << "[Parameter]\n";
+    PrintIndentedLine("[Parameter]");
 
     if (m_verbose)
     {
-        Indent();
-        m_output_stream << std::format("- name: {}\n",
+        PrintIndentedLine(std::format("- name: {}",
             node->Name().lexeme
-        );
+        ));
 
-        Indent();
-        m_output_stream << std::format("- type: {}\n",
+        PrintIndentedLine(std::format("- type: {}",
             node->DeclParamType().ToString()
-        );
+        ));
     }
 }
 
 void TreePrinter::Visit(FuncDecl* node)
 {
-    // Node type
-    Indent();
-    m_output_stream << "[FuncDecl]\n";
+    PrintIndentedLine("[FuncDecl]");
 
     if (m_verbose)
     {
-        // Function name
-        Indent();
-        m_output_stream << std::format("- name: {}\n",
+        PrintIndentedLine(std::format("- name: {}",
             node->Name().lexeme
-        );
+        ));
 
         // Is this symbol visible in other modules?
-        Indent();
-        m_output_stream << std::format("- export: {}\n",
+        PrintIndentedLine(std::format("- export: {}",
             node->ShouldExport()
-        );
+        ));
 
-        // Return type
-        Indent();
         auto ret_type = node->ReturnType();
-        m_output_stream << std::format("- return type: {}\n",
+        PrintIndentedLine(std::format("- return type: {}",
             ret_type.ToString()
-        );
+        ));
     }
     
+    // Visit child node
     IncreaseDepth();
+    for (const auto& param : node->Parameters())
+    {
+        param->Accept(this);
+    }
+    node->Body()->Accept(this);
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(StructDecl* node)
 {
-    Indent();
-    m_output_stream << "[StructDecl]\n";
+    PrintIndentedLine("[StructDecl]");
 
     if (m_verbose)
     {
-        // Struct name
-        Indent();
-        m_output_stream << std::format("- name: {}\n",
+        PrintIndentedLine(std::format("- name: {}",
             node->Name().lexeme
-        );
+        ));
 
         // Is this symbol visible in other modules?
-        Indent();
-        m_output_stream << std::format("- export: {}\n",
+        PrintIndentedLine(std::format("- export: {}",
             node->ShouldExport()
-        );
+        ));
 
-        // Member variables
         for (const auto& member : node->Members())
-        {
-            Indent();
-            m_output_stream << std::format("- member name: {}, type: {}\n",
+        {            
+            PrintIndentedLine(std::format("- member name: {}, type: {}",
                 member.name.lexeme,
                 member.type.ToString()
-            );
+            ));
         }
     }
 }
 
 void TreePrinter::Visit(CompoundStmt* node)
 {
-    Indent();
-    m_output_stream << "[CompoundStmt]\n";
+    
+    PrintIndentedLine("[CompoundStmt]");
 
+    // Visit child node
     IncreaseDepth();
+    for (const auto& stmt : node->Statements())
+    {
+        stmt->Accept(this);
+    }
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(IfStmt* node)
 {
-    Indent();
-    m_output_stream << "[IfStmt]\n";
+    PrintIndentedLine("[IfStmt]");
 
+    // Visit child node
+    // NOTE: else branch is optional, so it might be nullptr.
     IncreaseDepth();
+    node->Condition()->Accept(this);
+    node->ThenBranch()->Accept(this);
+    if (auto else_branch = node->ElseBranch())
+    {
+        else_branch->Accept(this);
+    }
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(ForStmt* node)
 {
-    Indent();
-    m_output_stream << "[ForStmt]\n";
+    PrintIndentedLine("[ForStmt]");
 
+    // Visit child node
+    // NOTE: everything except the statememt body is optional!
     IncreaseDepth();
+    if (auto initializer = node->Initializer())
+    {
+        initializer->Accept(this);
+    }
+    if (auto condition = node->Condition())
+    {
+        condition->Accept(this);
+    }
+    if (auto increment = node->IncrementExpr())
+    {
+        increment->Accept(this);
+    }
+    node->Body()->Accept(this);
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(WhileStmt* node)
 {
-    Indent();
-    m_output_stream << "[WhileStmt]\n";
+    PrintIndentedLine("[WhileStmt]");
 
+    // Visit child node
     IncreaseDepth();
+    node->Condition()->Accept(this);
+    node->Body()->Accept(this);
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(JumpStmt* node)
 {
-    Indent();
-    m_output_stream << "[JumpStmt]\n";
+    PrintIndentedLine("[JumpStmt]");
+
     if (m_verbose)
     {
-        Indent();
-        m_output_stream << std::format("- jump type: {}\n",
+        PrintIndentedLine(std::format("- jump type: {}",
             node->JumpType().lexeme
-        );
+        ));
     }
 
+    // Visit child node
+    // NOTE: return value doesn't exist for "break" and "continue"
     IncreaseDepth();
+    if (auto ret = node->ReturnValueExpr())
+    {
+        ret->Accept(this);
+    }
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(VarDeclStmt* node)
 {
-    Indent();
-    m_output_stream << "[VarDeclStmt]\n";
+    PrintIndentedLine("[VarDeclStmt]");
     if (m_verbose)
     {
-        Indent();
-        m_output_stream << std::format("- name: {}\n",
+        PrintIndentedLine(std::format("- name: {}",
             node->Name().lexeme
-        );
+        ));
 
-        Indent();
-        m_output_stream << std::format("- type: {}\n",
+        PrintIndentedLine(std::format("- type: {}",
             node->DeclType().ToString()
-        );
+        ));
     }
 
+    // Visit child node
+    // NOTE: initializer part is optional (e.g. "abc: i32;")
     IncreaseDepth();
+    if (auto initializer = node->Initializer())
+    {
+        initializer->Accept(this);
+    }
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(ExprStmt* node)
 {
-    Indent();
-    m_output_stream << "[ExprStmt]\n";
+    PrintIndentedLine("[ExprStmt]");
 
+    // Visit child node
     IncreaseDepth();
+    node->Expression()->Accept(this);
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(VarInitExpr* node)
-{
-    Indent();
-    m_output_stream << "[VarInitExpr]\n";
+{   
+    PrintIndentedLine("[VarInitExpr]");
 
+    // Visit child node
     IncreaseDepth();
+    node->Expression()->Accept(this);
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(VarInitList* node)
 {
-    Indent();
-    m_output_stream << "[VarInitList]\n";
+    PrintIndentedLine("[VarInitList]");
 
+    // Visit child node
     IncreaseDepth();
+    for (auto list_elem : node->InitializerList())
+    {
+        list_elem->Accept(this);
+    }
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(ArrayAccessExpr* node)
 {
-    Indent();
-    m_output_stream << "[ArrayAccessExpr]\n";
+    PrintIndentedLine("[ArrayAccessExpr]");
     if (m_verbose)
     {
-        Indent();
-        m_output_stream << "- " << node->ToString() << "\n";
+        PrintIndentedLine(std::format("- {}", node->ToString()));
     }
 
+    // Visit child node
     IncreaseDepth();
+    node->Operand()->Accept(this);
+    node->Index()->Accept(this);
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(BinaryExpr* node)
 {
-    Indent();
-    m_output_stream << "[BinaryExpr]\n";
+    PrintIndentedLine("[BinaryExpr]");
     if (m_verbose)
     {
-        Indent();
-        m_output_stream << "- " << node->ToString() << "\n";
+        PrintIndentedLine(std::format("- {}", node->ToString()));
     }
 
+    // Visit child node
     IncreaseDepth();
+    node->LeftHandOperand()->Accept(this);
+    node->RightHandOperand()->Accept(this);
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(FuncCallExpr* node)
 {
-    Indent();
-    m_output_stream << "[FuncCallExpr]\n";
+    PrintIndentedLine("[FuncCallExpr]");
     if (m_verbose)
     {
-        Indent();
-        m_output_stream << "- " << node->ToString() << "\n";
+        PrintIndentedLine(std::format("- {}", node->ToString()));
     }
 
+    // Visit child node
     IncreaseDepth();
+    node->Function()->Accept(this);
+    for (const auto& arg : node->ArgumentList())
+    {
+        arg->Accept(this);
+    }
+    DecreaseDepth();
 }
 
 void TreePrinter::Visit(Identifier* node)
 {
-    Indent();
-    m_output_stream << "[Identifier]\n";
+    PrintIndentedLine("[Identifier]");
     if (m_verbose)
     {
-        Indent();
-        m_output_stream << "- " << node->ToString() << "\n";
+        PrintIndentedLine(std::format("- {}", node->ToString()));
     }
 }
 
 void TreePrinter::Visit(Literal* node)
 {
-    Indent();
-    m_output_stream << "[Literal]\n";
+    PrintIndentedLine("[Literal]");
     if (m_verbose)
     {
-        Indent();
-        m_output_stream << "- " << node->ToString() << "\n";
+        PrintIndentedLine(std::format("- {}", node->ToString()));
     }
 }
 
 void TreePrinter::Visit(MemberAccessExpr* node)
 {
-    Indent();
-    m_output_stream << "[MemberAccessExpr]\n";
+    PrintIndentedLine("[MemberAccessExpr]");
     if (m_verbose)
     {
-        Indent();
-        m_output_stream << "- " << node->ToString() << "\n";
+        PrintIndentedLine(std::format("- {}", node->ToString()));
     }
 
+    // Visit child node
     IncreaseDepth();
-}
-
-void TreePrinter::Visit(PostfixExpr* node)
-{
-    Indent();
-    m_output_stream << "[PostfixExpr]\n";
-    if (m_verbose)
-    {
-        Indent();
-        m_output_stream << "- " << node->ToString() << "\n";
-    }
-
-    IncreaseDepth();
-}
-
-void TreePrinter::Visit(PrefixExpr* node)
-{
-    Indent();
-    m_output_stream << "[PrefixExpr]\n";
-    if (m_verbose)
-    {
-        Indent();
-        m_output_stream << "- " << node->ToString() << "\n";
-    }
-
-    IncreaseDepth();
-}
-
-void TreePrinter::Visit(Module* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(FuncDecl* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(CompoundStmt* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(IfStmt* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(ForStmt* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(WhileStmt* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(JumpStmt* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(VarDeclStmt* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(ExprStmt* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(VarInitExpr* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(VarInitList* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(ArrayAccessExpr* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(BinaryExpr* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(FuncCallExpr* node)
-{
-    DecreaseDepth();
-}
-
-void TreePrinter::Visit(MemberAccessExpr* node)
-{
+    node->Struct()->Accept(this);
     DecreaseDepth();
 }
 
 void TreePrinter::Visit(PostfixExpr* node)
 {
+    PrintIndentedLine("[PostfixExpr]");
+    if (m_verbose)
+    {
+        PrintIndentedLine(std::format("- {}", node->ToString()));
+    }
+
+    // Visit child node
+    IncreaseDepth();
+    node->Operand()->Accept(this);
     DecreaseDepth();
 }
 
 void TreePrinter::Visit(PrefixExpr* node)
 {
+    PrintIndentedLine("[PrefixExpr]");
+    if (m_verbose)
+    {
+        PrintIndentedLine(std::format("- {}", node->ToString()));
+    }
+
+    // Visit child node
+    IncreaseDepth();
+    node->Operand()->Accept(this);
     DecreaseDepth();
 }
 
-void TreePrinter::Indent()
+void TreePrinter::PrintIndentedLine(std::string_view msg)
 {
-    for (int i = 0; i < m_indent_level * m_indent_spaces; ++i)
-    {
-        m_output_stream << ' ';
-    }
+    const auto indentation = std::string(m_indent_level * m_indent_spaces, ' ');
+    m_output_stream << indentation << msg << '\n';
 }
 
 } // namespace mylang

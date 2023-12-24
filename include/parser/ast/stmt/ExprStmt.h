@@ -16,6 +16,8 @@ public:
     virtual void Accept(IAbstractSyntaxTreeVisitor* visitor) override;
     virtual const SourcePos& StartPos() const override;
 
+    Expr* Expression();
+
 private:
     std::shared_ptr<Expr> m_expr;
 };

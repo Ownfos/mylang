@@ -26,6 +26,7 @@ public:
 
     const Type& ReturnType() const;
     const std::vector<std::shared_ptr<Parameter>>& Parameters() const;
+    Stmt* Body();
 
 private:
     bool m_should_export;

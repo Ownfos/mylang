@@ -32,7 +32,7 @@ const Token& PrefixExpr::Operator() const
     return m_op;
 }
 
-const Expr* PrefixExpr::Operand() const
+Expr* PrefixExpr::Operand()
 {
     return m_expr.get();
 }

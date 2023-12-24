@@ -43,7 +43,7 @@ public:
     virtual void Visit(PrefixExpr* node) override;
 
 private:
-    void Indent();
+    void PrintIndentedLine(std::string_view msg);
 
     std::ostream& m_output_stream;
     bool m_verbose;

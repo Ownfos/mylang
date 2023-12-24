@@ -19,4 +19,9 @@ const SourcePos& CompoundStmt::StartPos() const
     return {};
 }
 
+const std::vector<std::shared_ptr<Stmt>>& CompoundStmt::Statements() const
+{
+    return m_statements;
+}
+
 } // namespace mylang

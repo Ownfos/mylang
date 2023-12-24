@@ -42,7 +42,7 @@ std::string FuncCallExpr::ToString() const
     return str_builder.str();
 }
 
-const Expr* FuncCallExpr::Function() const
+Expr* FuncCallExpr::Function()
 {
     return m_expr.get();
 }

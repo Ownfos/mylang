@@ -18,7 +18,7 @@ const SourcePos& VarInitExpr::StartPos() const
     return m_expr->StartPos();
 }
 
-const Expr* VarInitExpr::Expression() const
+Expr* VarInitExpr::Expression()
 {
     return m_expr.get();
 }

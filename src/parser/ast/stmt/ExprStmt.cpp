@@ -18,4 +18,9 @@ const SourcePos& ExprStmt::StartPos() const
     return m_expr->StartPos();
 }
 
+Expr* ExprStmt::Expression()
+{
+    return m_expr.get();
+}
+
 } // namespace mylang

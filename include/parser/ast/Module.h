@@ -34,6 +34,7 @@ public:
 
     const Token& ModuleName() const;
     const std::vector<ModuleImportInfo>& ImportList() const;
+    const std::vector<std::shared_ptr<GlobalDecl>>& Declarations() const;
 
 private:
     Token m_module_name;

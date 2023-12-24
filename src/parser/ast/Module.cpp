@@ -36,4 +36,9 @@ const std::vector<ModuleImportInfo>& Module::ImportList() const
     return m_import_list;
 }
 
+const std::vector<std::shared_ptr<GlobalDecl>>& Module::Declarations() const
+{
+    return m_global_declarations;
+}
+
 } // namespace mylang

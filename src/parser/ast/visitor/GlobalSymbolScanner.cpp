@@ -13,6 +13,11 @@ void GlobalSymbolScanner::Visit(Module* node)
 {
     m_module_name = node->ModuleName().lexeme;
     m_environment.AddModuleDeclaration(node);
+
+    for (const auto& decl : node->Declarations())
+    {
+        decl->Accept(this);
+    }
 }
 
 void GlobalSymbolScanner::Visit(FuncDecl* node)

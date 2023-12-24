@@ -27,12 +27,12 @@ std::string ArrayAccessExpr::ToString() const
     );
 }
 
-const Expr* ArrayAccessExpr::Operand() const
+Expr* ArrayAccessExpr::Operand()
 {
     return m_expr.get();
 }
 
-const Expr* ArrayAccessExpr::Index() const
+Expr* ArrayAccessExpr::Index()
 {
     return m_index.get();
 }

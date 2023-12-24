@@ -24,7 +24,7 @@ const Token& JumpStmt::JumpType() const
     return m_jump_type;
 }
 
-const Expr* JumpStmt::ReturnValueExpr() const
+Expr* JumpStmt::ReturnValueExpr()
 {
     return m_expr.get();
 }

@@ -17,8 +17,8 @@ public:
     virtual std::string ToString() const override;
 
     const Token& Operator() const;
-    const Expr* LeftHandOperand() const;
-    const Expr* RightHandOperand() const;
+    Expr* LeftHandOperand();
+    Expr* RightHandOperand();
 
 private:
     Token m_op;

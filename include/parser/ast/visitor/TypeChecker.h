@@ -32,6 +32,9 @@ struct ExprTrait
 // 8. array access should not happen on non-array type (e.g. i[0] where i is an int)
 // 9. array access index expression should have int type
 // 10. return value's type should match function definition
+//
+// Since the type of an AST node is a synthesized attribute (i.e., depends on child node),
+// we first visit the children to perform preorder traversal and then do the type checking.
 class TypeChecker : public IAbstractSyntaxTreeVisitor
 {
 public:
@@ -53,6 +56,8 @@ public:
     virtual void Visit(WhileStmt* node) override;
 
     virtual void Visit(JumpStmt* node) override;
+
+    virtual void Visit(ExprStmt* node) override;
 
     virtual void Visit(VarDeclStmt* node) override;
 
