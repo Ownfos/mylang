@@ -1,4 +1,5 @@
 #include "file/DummySourceFile.h"
+#include "file/DummyOutputFile.h"
 #include "file/SourceFile.h"
 #include <gtest/gtest.h>
 #include <fstream>
@@ -81,4 +82,28 @@ TEST(SourceFile, MultipleLine)
         ASSERT_EQ(s.GetNext(), (SourceChar{.ch = 'w', .pos = SourcePos{.line = 2, .column = 1}}));
     }
     DeleteTempFile();
+}
+
+TEST(DummyOutputFile, SingleLine)
+{
+    auto output = DummyOutputFile();
+    output.Open("test.txt");
+    output.Print("haha");
+    output.Close();
+
+    ASSERT_EQ(output.Content(), "haha");
+}
+
+TEST(DummyOutputFile, Indentation)
+{
+    auto output = DummyOutputFile();
+    output.Open("test.txt");
+    output.PrintIndented("1\n");
+    output.IncreaseDepth();
+    output.PrintIndented("2\n");
+    output.DecreaseDepth();
+    output.PrintIndented("3\n");
+    output.Close();
+
+    ASSERT_EQ(output.Content(), "1\n    2\n3\n");
 }

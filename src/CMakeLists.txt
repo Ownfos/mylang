@@ -1,5 +1,6 @@
 add_library(mylanglib
     file/DummySourceFile.cpp
+    file/DummyOutputFile.cpp
     file/SourceFile.cpp
     file/ISourceFile.cpp
     
