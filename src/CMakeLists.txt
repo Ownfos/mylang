@@ -3,6 +3,7 @@ add_library(mylanglib
     file/DummyOutputFile.cpp
     file/SourceFile.cpp
     file/ISourceFile.cpp
+    file/DummyOutputFileFactory.cpp
     
     lexer/DummyLexicalAnalyzer.cpp
     lexer/LexicalAnalyzer.cpp
