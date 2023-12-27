@@ -60,6 +60,8 @@ add_library(mylanglib
     parser/SyntaxError.cpp
     
     parser/SemanticError.cpp
+
+    codegen/CodeGenerator.cpp
 )
 
 target_compile_features(mylanglib PUBLIC cxx_std_20)
