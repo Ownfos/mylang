@@ -22,8 +22,16 @@ public:
     // Returns the corresponding file instance.
     // If a file is not open yet, a new one will be created.
     IOutputFile* GetFile(const std::string& file_name);
-
     void CloseAllFiles();
+
+    virtual void Visit(Module* node) override;
+
+private:
+    // Returns false if the module declaration was seen before.
+    // This becomes true right after visiting a Module node with unseen module name.
+    // Look at InitializeModuleFiles() for what happens if this returns false.
+    bool IsModuleNodeVisited(const std::string& module_name) const;
+    void MarkModuleAsVisited(const std::string& module_name);
 
     // This function gets executed right after we encounter an unseen Module node.
     // In this routine, we need to do all jobs that need to be done only once per module.
@@ -36,16 +44,8 @@ public:
     // 4. Create a source file for this node
     // 5. Emit #include for private module import directives (i.e., "import xxx")
     // 6. Emit local symbol forward declarations (i.e., functions and structs without "export" prefix)
-    void InitializeModuleFiles(const std::string& module_name);
-
-    virtual void Visit(Module* node) override;
-
-private:
-    // Returns false if the module declaration was seen before.
-    // This becomes true right after visiting a Module node with unseen module name.
-    // Look at InitializeModuleFiles() for what happens if this returns false.
-    bool IsModuleNodeVisited(const std::string& module_name) const;
-    void MarkModuleAsVisited(const std::string& module_name);
+    void InitializeHeaderFile(const std::string& module_name);
+    void InitializeSourceFile(const std::string& module_name);
 
     ProgramEnvironment& m_environment;
     std::filesystem::path m_output_dir;

@@ -64,6 +64,13 @@ public:
         std::string_view symbol_name
     ) const;
 
+    // Returns a ModuleInfo instance for a module with specified name.
+    // The const version is used in FindSymbol().
+    //
+    // If a module doesn't exist, an exception will be thrown.
+    ModuleInfo& GetModuleInfo(std::string_view name);
+    const ModuleInfo& GetModuleInfo(std::string_view name) const;
+
 private:
     // Returns a symbol declared with "export" keyword,
     // including the ones imported from other modules.
@@ -89,13 +96,6 @@ private:
         std::string_view symbol_name,
         std::set<std::string_view>& visited_modules
     ) const;
-
-    // Returns a ModuleInfo instance for a module with specified name.
-    // The const version is used in FindSymbol().
-    //
-    // If a module doesn't exist, an exception will be thrown.
-    ModuleInfo& GetModuleInfo(std::string_view name);
-    const ModuleInfo& GetModuleInfo(std::string_view name) const;
 
     // Maps a module name to its corresponding ModuleInfo instance.
     std::map<std::string_view, ModuleInfo> m_modules;

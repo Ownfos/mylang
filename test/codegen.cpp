@@ -61,7 +61,7 @@ TEST(CodeGenerator, EmptyModule)
     {
         auto expected =
             "#ifndef MODULE_a_H\n"
-            "#ifndef MODULE_a_H\n"
+            "#define MODULE_a_H\n"
             "#endif // MODULE_a_H\n";
         ExpectOutputEquality(generator->GetFile("a.h"), expected);
     }

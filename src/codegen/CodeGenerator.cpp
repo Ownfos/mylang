@@ -57,11 +57,53 @@ void CodeGenerator::MarkModuleAsVisited(const std::string& module_name)
     m_visited_modules.insert(module_name);
 }
 
-void CodeGenerator::InitializeModuleFiles(const std::string& module_name)
+std::string HeaderGuardMacro(const std::string& module_name)
 {
-    // TODO: generate header and source file
-    // TODO: emit global module import directives on header file
-    // TODO: emit global symbol forward declarations on header file
+    return std::format("MODULE_{}_H", module_name);
+}
+
+std::string HeaderFileName(const std::string& module_name)
+{
+    return std::format("{}.h", module_name);
+}
+
+std::string IncludeHeaderMacro(const std::string& module_name)
+{
+    return std::format("#include \"{}\"\n", HeaderFileName(module_name));
+}
+
+void CodeGenerator::InitializeHeaderFile(const std::string& module_name)
+{
+    auto header_file = GetFile(HeaderFileName(module_name));
+
+    // Open header guard
+    auto header_guard = HeaderGuardMacro(module_name);
+    header_file->Print(std::format("#ifndef {}\n", header_guard));
+    header_file->Print(std::format("#define {}\n", header_guard));
+
+    // Emit global module import directives
+    const auto& module_info = m_environment.GetModuleInfo(module_name);
+    for (const auto& import_directive : module_info.import_list)
+    {
+        if (import_directive.should_export)
+        {
+            header_file->Print(IncludeHeaderMacro(import_directive.name.lexeme));
+        }
+    }
+
+    // TODO: emit global symbol forward declarations
+
+    // Close header guard
+    header_file->Print(std::format("#endif // {}\n", header_guard));
+}
+
+void CodeGenerator::InitializeSourceFile(const std::string& module_name)
+{
+    auto source_file = GetFile(std::format("{}.cpp", module_name));
+
+    // Import this module's header file
+    source_file->Print(IncludeHeaderMacro(module_name));
+
     // TODO: emit local module import directives on source file
     // TODO: emit local symbol forward declarations on source file
 }
@@ -74,7 +116,9 @@ void CodeGenerator::Visit(Module* node)
     if (!IsModuleNodeVisited(module_name))
     {
         MarkModuleAsVisited(module_name);
-        InitializeModuleFiles(module_name);
+
+        InitializeHeaderFile(module_name);
+        InitializeSourceFile(module_name);
     }
 
     // From now on, all implementation codes will be emitted to this file.
