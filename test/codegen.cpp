@@ -75,6 +75,36 @@ TEST(CodeGenerator, EmptyModule)
 
 TEST(CodeGenerator, SinglePrivateFunction)
 {
+    auto source =
+        "module a;\n"
+        "foo: func = (){\n"
+        "    i: i32 = 0;\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // a.h
+    {
+        auto expected =
+            "#ifndef MODULE_a_H\n"
+            "#define MODULE_a_H\n"
+            "#endif // MODULE_a_H\n";
+        ExpectOutputEquality(generator->GetFile("a.h"), expected);
+    }
+    // a.cpp
+    {
+        auto expected =
+            "#include \"a.h\"\n"
+            "void foo();\n"
+            "void foo() {\n"
+            "    int i = 0;\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
+    }
     // TODO: write test case
     /*
     ```source code
