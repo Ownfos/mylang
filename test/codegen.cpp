@@ -62,6 +62,7 @@ TEST(CodeGenerator, EmptyModule)
         auto expected =
             "#ifndef MODULE_a_H\n"
             "#define MODULE_a_H\n"
+            "#include <functional>\n"
             "#endif // MODULE_a_H\n";
         ExpectOutputEquality(generator->GetFile("a.h"), expected);
     }
@@ -92,6 +93,7 @@ TEST(CodeGenerator, SinglePrivateFunction)
         auto expected =
             "#ifndef MODULE_a_H\n"
             "#define MODULE_a_H\n"
+            "#include <functional>\n"
             "#endif // MODULE_a_H\n";
         ExpectOutputEquality(generator->GetFile("a.h"), expected);
     }
@@ -105,33 +107,76 @@ TEST(CodeGenerator, SinglePrivateFunction)
             "}\n";
         ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
     }
-    // TODO: write test case
-    /*
-    ```source code
-    module a;
+}
 
-    foo: func = () {
-        i: i32 = 0;
-    }
-    ```
+TEST(CodeGenerator, SinglePrivateStruct)
+{
+    auto source =
+        "module a;\n"
+        "foo: struct = {\n"
+        "    i: i32;\n"
+        "    j: str;\n"
+        "}\n";
 
-    ==>
-
-    ```a.h
-    #ifndef MODULE_a_H
-    #define MOUDLE_a_H
-
-    #endif MODULE_a_H
-    ```
-
-    ```a.cpp
-    #include "a.h"
-
-    void foo()
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // a.h
     {
-        int i = 0;
+        auto expected =
+            "#ifndef MODULE_a_H\n"
+            "#define MODULE_a_H\n"
+            "#include <functional>\n"
+            "#endif // MODULE_a_H\n";
+        ExpectOutputEquality(generator->GetFile("a.h"), expected);
     }
-    ```
-    */
-   FAIL();
+    // a.cpp
+    {
+        auto expected =
+            "#include \"a.h\"\n"
+            "struct foo {\n"
+            "    int i;\n"
+            "    std::string j;\n"
+            "};\n";
+        ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
+    }
+}
+
+TEST(CodeGenerator, SinglePublicStruct)
+{
+    auto source =
+        "module a;\n"
+        "export foo: struct = {\n"
+        "    i: i32;\n"
+        "    j: str;\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // a.h
+    {
+        auto expected =
+            "#ifndef MODULE_a_H\n"
+            "#define MODULE_a_H\n"
+            "#include <functional>\n"
+            "struct foo {\n"
+            "    int i;\n"
+            "    std::string j;\n"
+            "};\n"
+            "#endif // MODULE_a_H\n";
+        ExpectOutputEquality(generator->GetFile("a.h"), expected);
+    }
+    // a.cpp
+    {
+        auto expected =
+            "#include \"a.h\"\n";
+        ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
+    }
 }

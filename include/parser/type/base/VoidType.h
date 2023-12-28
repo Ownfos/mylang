@@ -12,6 +12,7 @@ class VoidType : public IBaseType
 {
 public:
     virtual std::string ToString() const override;
+    virtual std::string ToCppString() const override;
     virtual bool IsValid(
         ProgramEnvironment& environment,
         std::string_view context_module_name

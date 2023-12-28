@@ -26,6 +26,18 @@ std::string ParamType::ToString() const
     return std::format("{} {}", UsageString(usage), type.ToString());
 }
 
+std::string ParamType::ToCppString() const
+{
+    auto base = type.ToCppString();
+    if (usage == ParamUsage::In)
+    {
+        return std::format("const {}&", base);
+    }
+    else
+    {
+        return std::format("{}&", base);
+    }
+}
 
 FuncType::FuncType(const std::vector<ParamType>& param_types, const Type& return_type)
     : m_param_types(param_types)
@@ -57,6 +69,26 @@ std::string FuncType::ToString() const
     }
     
     str_builder << "]";
+    return str_builder.str();
+}
+
+std::string FuncType::ToCppString() const
+{
+    auto str_builder = std::ostringstream();
+    str_builder << "std::function<";
+    str_builder << m_return_type.ToCppString();
+    str_builder << "(";
+    for (int i = 0; i < m_param_types.size(); ++i)
+    {
+        // Add seperator for second to last paramters.
+        if (i > 0)
+        {
+            str_builder << ", ";
+        }
+
+        str_builder << m_param_types[i].ToCppString();
+    }
+    str_builder << ")>";
     return str_builder.str();
 }
 

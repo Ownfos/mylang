@@ -25,6 +25,7 @@ public:
 
     // Wrapper functions for underlying base type.
     std::string ToString() const;
+    std::string ToCppString() const;
     bool IsValid(
         ProgramEnvironment& environment,
         std::string_view context_module_name

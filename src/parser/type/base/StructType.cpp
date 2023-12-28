@@ -14,6 +14,11 @@ std::string StructType::ToString() const
     return m_type.lexeme;
 }
 
+std::string StructType::ToCppString() const
+{
+    return m_type.lexeme;
+}
+
 bool StructType::IsValid(
     ProgramEnvironment& environment,
     std::string_view context_module_name

@@ -92,6 +92,7 @@ void CodeGenerator::InitializeHeaderFile(const std::string& module_name)
     auto header_guard = HeaderGuardMacro(module_name);
     header_file->Print(std::format("#ifndef {}\n", header_guard));
     header_file->Print(std::format("#define {}\n", header_guard));
+    header_file->Print("#include <functional>\n");
 
     // Handle global import directives and symbols.
     const auto& module_info = m_environment.GetModuleInfo(module_name);
@@ -168,32 +169,57 @@ void CodeGenerator::Visit(Module* node)
 
 void CodeGenerator::Visit(FuncDecl* node)
 {
-    if (m_is_forward_decl_step)
+    m_current_output_file->Print(std::format("{} {}(",
+        node->ReturnType().ToCppString(),
+        node->Name().lexeme
+    ));
+    const auto& params = node->Parameters();
+    for (int i = 0; i < params.size(); ++i)
     {
+        // Add seperator for second to last paramters.
+        if (i > 0)
+        {
+            m_current_output_file->Print(", ");
+        }
 
+        m_current_output_file->Print(std::format("{} {}", 
+            params[i]->DeclParamType().ToCppString(),
+            params[i]->Name().lexeme
+        ));
     }
-    else
-    {
-        // TODO: emit function definition
-    }
-}
+    m_current_output_file->Print(")");
 
-void CodeGenerator::Visit(StructDecl* node)
-{
-    m_current_output_file->Print(std::format("struct {}", node->Name().lexeme));
     if (m_is_forward_decl_step)
     {
         m_current_output_file->Print(";\n");
     }
     else
     {
+        m_current_output_file->Print(" ");
+        node->Body()->Accept(this);
+    }
+}
+
+void CodeGenerator::Visit(StructDecl* node)
+{
+    // In C++, we cannot use a struct type before providing the definition.
+    // This means that forward declaration doesn't work as in functions!
+    // We should instead put struct definitions on the top.
+    //
+    // Note: this doesn't solve dependency issue among struct members.
+    //       ex) struct A using struct B as member (which comes afterward)
+    //           will generate a compiler error...
+    if (m_is_forward_decl_step)
+    {
+        m_current_output_file->Print(std::format("struct {}", node->Name().lexeme));
         m_current_output_file->Print(" {\n");
         m_current_output_file->IncreaseDepth();
         for (const auto& member : node->Members())
         {
-            // TODO: emit struct definition
-            // member.type.ToString();
-            // member.name.lexeme;
+            m_current_output_file->PrintIndented(std::format("{} {};\n",
+               member.type.ToCppString(),
+               member.name.lexeme
+            ));
         }
         m_current_output_file->DecreaseDepth();
         m_current_output_file->Print("};\n");

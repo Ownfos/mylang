@@ -14,6 +14,7 @@ public:
     virtual ~IBaseType() = default;
 
     virtual std::string ToString() const = 0;
+    virtual std::string ToCppString() const = 0;
 
     // Same type specifier can be valid or invalid depending
     // on the context where it was used.

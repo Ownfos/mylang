@@ -67,6 +67,20 @@ std::string Type::ToString() const
     return type_str;
 }
 
+std::string Type::ToCppString() const
+{
+    // Get the base type description.
+    auto type_str = m_base_type->ToCppString();
+
+    // Append array size information.
+    for (auto size : m_array_sizes)
+    {
+        type_str.append(std::format("[{}]", size));
+    }
+    
+    return type_str;
+}
+
 bool Type::IsValid(
     ProgramEnvironment& environment,
     std::string_view context_module_name

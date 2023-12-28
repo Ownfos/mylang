@@ -26,6 +26,7 @@ struct ParamType
     ParamUsage usage;
 
     std::string ToString() const;
+    std::string ToCppString() const;
 };
 
 // A base type class for callables (functions and functors)
@@ -35,6 +36,7 @@ public:
     FuncType(const std::vector<ParamType>& param_types, const Type& return_type);
 
     virtual std::string ToString() const override;
+    virtual std::string ToCppString() const override;
     virtual bool IsValid(
         ProgramEnvironment& environment,
         std::string_view context_module_name
