@@ -1,6 +1,7 @@
 #include "parser/SymbolTable.h"
 #include "parser/SemanticError.h"
 #include <format>
+#include <ranges>
 
 namespace mylang
 {
@@ -50,6 +51,18 @@ std::optional<Symbol> SymbolTable::FindSymbol(std::string_view name) const
 
     // Found nothing...
     return {};
+}
+
+std::vector<Symbol> SymbolTable::GlobalSymbols() const
+{
+    auto view = m_symbols | std::views::filter([](const Symbol& symbol){ return symbol.is_public; });
+    return {view.begin(), view.end()};
+}
+
+std::vector<Symbol> SymbolTable::LocalSymbols() const
+{
+    auto view = m_symbols | std::views::filter([](const Symbol& symbol){ return !symbol.is_public; });
+    return {view.begin(), view.end()};
 }
 
 } // namespace mylang

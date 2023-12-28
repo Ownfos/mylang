@@ -25,6 +25,8 @@ public:
     void CloseAllFiles();
 
     virtual void Visit(Module* node) override;
+    virtual void Visit(FuncDecl* node) override;
+    virtual void Visit(StructDecl* node) override;
 
 private:
     // Returns false if the module declaration was seen before.
@@ -47,6 +49,15 @@ private:
     void InitializeHeaderFile(const std::string& module_name);
     void InitializeSourceFile(const std::string& module_name);
 
+    // This will emit "#include" for each import directive with matching "export" attribute.
+    // ex) if export_qualifier is true, "import export xxx" => "#include xxx.h"
+    void EmitImportDirectives(IOutputFile* output_file, const std::set<ModuleImportInfo>& import_directives, bool export_qualifier);
+
+    // This will emit forward declaration of given symbols.
+    // StructDecl => "struct [name];"
+    // FuncDecl => "[return type] [name]([param1], [param2], ...);"
+    void EmitForwardDecl(IOutputFile* output_file, const std::vector<Symbol>& symbols);
+
     ProgramEnvironment& m_environment;
     std::filesystem::path m_output_dir;
     std::unique_ptr<IOutputFileFactory> m_file_factory;
@@ -57,8 +68,13 @@ private:
     // module implementation split across multiple files.
     std::set<std::string> m_visited_modules;
 
-    // The "xxx.cpp" file on which we will emit all implementation code.
+    // The target file where generated codes are printed.
+    // Except for global symbol forward declaration or import directives,
+    // this will mostly be set to the source file (*.cpp).
     IOutputFile* m_current_output_file;
+
+    // This flag, when set to true, prevents tree traversal on FuncDecl and StructDecl.
+    bool m_is_forward_decl_step = false;
 };
 
 } // namespace mylang

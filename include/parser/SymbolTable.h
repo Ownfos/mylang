@@ -35,6 +35,14 @@ public:
     // If there were no matches, an empty optional will be returned.
     std::optional<Symbol> FindSymbol(std::string_view name) const;
 
+    // Returns all symbols declared with "export" keyword.
+    // These symbols are visible on other modules which import this module.
+    std::vector<Symbol> GlobalSymbols() const;
+
+    // Returns all symbols declared without "export" keyword.
+    // These symbols are visible only inside this module.
+    std::vector<Symbol> LocalSymbols() const;
+
 private:
     // Scope level increase/decrease whenever
     // OpenScope() or CloseScope() is invoked.

@@ -1,5 +1,7 @@
 #include "codegen/CodeGenerator.h"
 #include "parser/ast/Module.h"
+#include "parser/ast/globdecl/FuncDecl.h"
+#include "parser/ast/globdecl/StructDecl.h"
 
 namespace mylang
 {
@@ -67,45 +69,79 @@ std::string HeaderFileName(const std::string& module_name)
     return std::format("{}.h", module_name);
 }
 
+std::string SourceFileName(const std::string& module_name)
+{
+    return std::format("{}.cpp", module_name);
+}
+
 std::string IncludeHeaderMacro(const std::string& module_name)
 {
     return std::format("#include \"{}\"\n", HeaderFileName(module_name));
+}
+
+std::string FunctionSignature(FuncDecl* func)
+{
+    return "";
 }
 
 void CodeGenerator::InitializeHeaderFile(const std::string& module_name)
 {
     auto header_file = GetFile(HeaderFileName(module_name));
 
-    // Open header guard
+    // Open header guard.
     auto header_guard = HeaderGuardMacro(module_name);
     header_file->Print(std::format("#ifndef {}\n", header_guard));
     header_file->Print(std::format("#define {}\n", header_guard));
 
-    // Emit global module import directives
+    // Handle global import directives and symbols.
     const auto& module_info = m_environment.GetModuleInfo(module_name);
-    for (const auto& import_directive : module_info.import_list)
-    {
-        if (import_directive.should_export)
-        {
-            header_file->Print(IncludeHeaderMacro(import_directive.name.lexeme));
-        }
-    }
+    EmitImportDirectives(header_file, module_info.import_list, true);
+    EmitForwardDecl(header_file, module_info.local_symbol_table.GlobalSymbols());
 
-    // TODO: emit global symbol forward declarations
-
-    // Close header guard
+    // Close header guard.
     header_file->Print(std::format("#endif // {}\n", header_guard));
 }
 
 void CodeGenerator::InitializeSourceFile(const std::string& module_name)
 {
-    auto source_file = GetFile(std::format("{}.cpp", module_name));
+    auto source_file = GetFile(SourceFileName(module_name));
 
     // Import this module's header file
     source_file->Print(IncludeHeaderMacro(module_name));
 
-    // TODO: emit local module import directives on source file
-    // TODO: emit local symbol forward declarations on source file
+    // Handle local import directives and symbols.
+    const auto& module_info = m_environment.GetModuleInfo(module_name);
+    EmitImportDirectives(source_file, module_info.import_list, false);
+    EmitForwardDecl(source_file, module_info.local_symbol_table.LocalSymbols());
+}
+
+void CodeGenerator::EmitImportDirectives(IOutputFile* output_file, const std::set<ModuleImportInfo>& import_directives, bool export_qualifier)
+{
+    for (const auto& import_directive : import_directives)
+    {
+        if (import_directive.should_export == export_qualifier)
+        {
+            output_file->Print(IncludeHeaderMacro(import_directive.name.lexeme));
+        }
+    }
+}
+
+void CodeGenerator::EmitForwardDecl(IOutputFile* output_file, const std::vector<Symbol>& symbols)
+{
+    // Set output target.
+    m_current_output_file = output_file;
+
+    // Prevent recursive tree traversal.
+    // We do not want symbol definitions such as function body.
+    m_is_forward_decl_step = true;
+    
+    for (const auto& symbol : symbols)
+    {
+        symbol.declaration->Accept(this);
+    }
+
+    // Enable recursive tree traversal.
+    m_is_forward_decl_step = false;
 }
 
 void CodeGenerator::Visit(Module* node)
@@ -122,7 +158,46 @@ void CodeGenerator::Visit(Module* node)
     }
 
     // From now on, all implementation codes will be emitted to this file.
-    m_current_output_file = GetFile(std::format("{}.cpp", module_name));
+    m_current_output_file = GetFile(SourceFileName(module_name));
+
+    for (const auto& decl : node->Declarations())
+    {
+        decl->Accept(this);
+    }
+}
+
+void CodeGenerator::Visit(FuncDecl* node)
+{
+    if (m_is_forward_decl_step)
+    {
+
+    }
+    else
+    {
+        // TODO: emit function definition
+    }
+}
+
+void CodeGenerator::Visit(StructDecl* node)
+{
+    m_current_output_file->Print(std::format("struct {}", node->Name().lexeme));
+    if (m_is_forward_decl_step)
+    {
+        m_current_output_file->Print(";\n");
+    }
+    else
+    {
+        m_current_output_file->Print(" {\n");
+        m_current_output_file->IncreaseDepth();
+        for (const auto& member : node->Members())
+        {
+            // TODO: emit struct definition
+            // member.type.ToString();
+            // member.name.lexeme;
+        }
+        m_current_output_file->DecreaseDepth();
+        m_current_output_file->Print("};\n");
+    }
 }
 
 } // namespace mylang
