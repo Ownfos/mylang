@@ -29,38 +29,17 @@ cd build; ctest; cd ..
 #### Note: the main executable currently performs syntax analysis and semantic analysis
 
 # TODO (implement)
-- [ ] Prepare structure for code generation...
-```
-desired output:
-- one header and one source file for each module
-- maintain readability
-ex) expressions do not need to have form of three address code.
-- output target could be either a file or a stream.
-  use std::ostream!
-```
-- [ ] Add extra braces for array initializer list on code generation
-```c++
-arr: i32[2][3] = {
-  {1, 2},
-  {3}
-};
+- [ ] Implement actual output file
+- [ ] Modify main.cpp to accept multiple source files and output generated code to a specified directory
+```bash
+example)
+./mylang "./build" module1.in module2.in
 
-==>
-
-std::array<std::array<int, 3>, 2> arr = {{
-  {1, 2},
-  {3}
-}};
-```
-Without external {}, std::array constructor will only use {1, 2}  
-thus generating compiler error that there are too many initializer lists.
-```c++
-
-// This is considered invalid!
-std::array<std::array<int, 3>, 2> {
-  {1, 2},
-  {3}
-};
+cat ./build
+module1.h
+module1.cpp
+module2.h
+module2.cpp
 ```
 
 # TODO (refactor)
