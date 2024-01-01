@@ -250,3 +250,38 @@ TEST(CodeGenerator, ArrayVariableNestedInitializer)
         ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
     }
 }
+
+TEST(CodeGenerator, ExprStmt)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = (){\n"
+        "    1+2*3==4 && false;\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // a.h
+    {
+        auto expected =
+            "#ifndef MODULE_a_H\n"
+            "#define MODULE_a_H\n"
+            "#include <functional>\n"
+            "#endif // MODULE_a_H\n";
+        ExpectOutputEquality(generator->GetFile("a.h"), expected);
+    }
+    // a.cpp
+    {
+        auto expected =
+            "#include \"a.h\"\n"
+            "void foo();\n"
+            "void foo() {\n"
+            "    (((1 + (2 * 3)) == 4) && false);\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
+    }
+}
