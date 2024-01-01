@@ -72,10 +72,12 @@ std::string Type::ToCppString() const
     // Get the base type description.
     auto type_str = m_base_type->ToCppString();
 
-    // Append array size information.
-    for (auto size : m_array_sizes)
+    // Nest std::array type for multi dimensional array.
+    // ex) i32[dim1][dim2] ==> std::array<std::array<int, dim2>, dim1>
+    for (auto it = m_array_sizes.rbegin(); it != m_array_sizes.rend(); ++it)
     {
-        type_str.append(std::format("[{}]", size));
+        auto current_dim_size = *it;
+        type_str = std::format("std::array<{}, {}>", type_str, current_dim_size);
     }
     
     return type_str;
