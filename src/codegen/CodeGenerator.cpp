@@ -317,4 +317,48 @@ void CodeGenerator::Visit(IfStmt* node)
     }
 }
 
+void CodeGenerator::Visit(ForStmt* node)
+{
+    // Create a nested scope to prevent the variable declared in the initializer
+    // from being visible on the scope outside the loop body.
+    // ex) "for (init; cond; inc) body" gets translated to the following C++ code:
+    // {
+    //     init;
+    //     while (true) {
+    //         if (cond == false) break;
+    //         body;
+    //         inc;
+    //     }
+    // }
+    m_current_output_file->PrintIndented("{\n");
+    m_current_output_file->IncreaseDepth();
+
+    if (auto initializer = node->Initializer())
+    {
+        initializer->Accept(this);
+    }
+
+    m_current_output_file->PrintIndented("while (true) {\n");
+    m_current_output_file->IncreaseDepth();
+
+    if (auto condition = node->Condition())
+    {
+        m_current_output_file->PrintIndented(std::format("if ({} == false) break;\n", condition->ToString()));
+    }
+
+    node->Body()->Accept(this);
+    
+    if (auto increment = node->IncrementExpr())
+    {
+        m_current_output_file->PrintIndented(increment->ToString());
+        m_current_output_file->Print(";\n");
+    }
+    
+    m_current_output_file->DecreaseDepth();
+    m_current_output_file->PrintIndented("}\n"); // End of while (true){...}
+
+    m_current_output_file->DecreaseDepth();
+    m_current_output_file->PrintIndented("}\n"); // End of the outermost block "{ while (true){ ... } }"
+}
+
 } // namespace mylang

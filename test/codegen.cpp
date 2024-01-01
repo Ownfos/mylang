@@ -356,8 +356,15 @@ TEST(CodeGenerator, ForStmt)
             "#include \"a.h\"\n"
             "void foo();\n"
             "void foo() {\n"
-            "    for (int i = 0; i < 10; ++i) {\n"
-            "        std::string name = \"mylang\";\n"
+            "    {\n"
+            "        int i = 0;\n"
+            "        while (true) {\n"
+            "            if ((i < 10) == false) break;\n"
+            "            {\n"
+            "                std::string name = \"mylang\";\n"
+            "            }\n"
+            "            (++i);\n"
+            "        }\n"
             "    }\n"
             "}\n";
         ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
