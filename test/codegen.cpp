@@ -285,3 +285,81 @@ TEST(CodeGenerator, ExprStmt)
         ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
     }
 }
+
+TEST(CodeGenerator, IfStmt)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = (){\n"
+        "    if (true) {\n"
+        "        name: str = \"mylang\";\n"
+        "    }\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // a.h
+    {
+        auto expected =
+            "#ifndef MODULE_a_H\n"
+            "#define MODULE_a_H\n"
+            "#include <functional>\n"
+            "#endif // MODULE_a_H\n";
+        ExpectOutputEquality(generator->GetFile("a.h"), expected);
+    }
+    // a.cpp
+    {
+        auto expected =
+            "#include \"a.h\"\n"
+            "void foo();\n"
+            "void foo() {\n"
+            "    if (true) {\n"
+            "        std::string name = \"mylang\";\n"
+            "    }\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
+    }
+}
+
+TEST(CodeGenerator, ForStmt)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = (){\n"
+        "    for (i: i32 = 0; i < 10; ++i) {\n"
+        "        name: str = \"mylang\";\n"
+        "    }\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // a.h
+    {
+        auto expected =
+            "#ifndef MODULE_a_H\n"
+            "#define MODULE_a_H\n"
+            "#include <functional>\n"
+            "#endif // MODULE_a_H\n";
+        ExpectOutputEquality(generator->GetFile("a.h"), expected);
+    }
+    // a.cpp
+    {
+        auto expected =
+            "#include \"a.h\"\n"
+            "void foo();\n"
+            "void foo() {\n"
+            "    for (int i = 0; i < 10; ++i) {\n"
+            "        std::string name = \"mylang\";\n"
+            "    }\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
+    }
+}
