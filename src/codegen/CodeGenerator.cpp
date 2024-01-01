@@ -2,6 +2,10 @@
 #include "parser/ast/Module.h"
 #include "parser/ast/globdecl/FuncDecl.h"
 #include "parser/ast/globdecl/StructDecl.h"
+#include "parser/ast/stmt/CompoundStmt.h"
+#include "parser/ast/stmt/VarDeclStmt.h"
+#include "parser/ast/varinit/VarInitExpr.h"
+#include "parser/ast/varinit/VarInitList.h"
 
 namespace mylang
 {
@@ -224,6 +228,71 @@ void CodeGenerator::Visit(StructDecl* node)
         m_current_output_file->DecreaseDepth();
         m_current_output_file->Print("};\n");
     }
+}
+
+void CodeGenerator::Visit(CompoundStmt* node)
+{
+    m_current_output_file->PrintIndented("{\n");
+    m_current_output_file->IncreaseDepth();
+    for (const auto& stmt : node->Statements())
+    {
+        stmt->Accept(this);
+    }
+    m_current_output_file->DecreaseDepth();
+    m_current_output_file->PrintIndented("}\n");
+}
+
+void CodeGenerator::Visit(VarDeclStmt* node)
+{
+    const auto& var_type = node->DeclType();
+    m_current_output_file->PrintIndented(std::format("{} {}",
+        var_type.ToCppString(),
+        node->Name().lexeme
+    ));
+
+    // Handle optional initializer part.
+    if (auto initializer = node->Initializer())
+    {
+        m_current_output_file->Print(" = ");
+        if (var_type.IsArray())
+        {
+            m_current_output_file->Print("{");
+        }
+
+        initializer->Accept(this);
+        
+        if (var_type.IsArray())
+        {
+            m_current_output_file->Print("}");
+        }
+        m_current_output_file->Print(";\n");
+    }
+    else
+    {
+        m_current_output_file->Print(";\n");
+    }
+}
+
+void CodeGenerator::Visit(VarInitExpr* node)
+{
+    m_current_output_file->Print(node->Expression()->ToString());
+}
+
+void CodeGenerator::Visit(VarInitList* node)
+{
+    m_current_output_file->Print("{");
+    const auto& list_elem = node->InitializerList();
+    for (int i = 0; i < list_elem.size(); ++i)
+    {
+        // Separator between elements.
+        if (i > 0)
+        {
+            m_current_output_file->Print(", ");
+        }
+
+        list_elem[i]->Accept(this);
+    }
+    m_current_output_file->Print("}");
 }
 
 } // namespace mylang

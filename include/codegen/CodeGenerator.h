@@ -27,6 +27,10 @@ public:
     virtual void Visit(Module* node) override;
     virtual void Visit(FuncDecl* node) override;
     virtual void Visit(StructDecl* node) override;
+    virtual void Visit(CompoundStmt* node) override;
+    virtual void Visit(VarDeclStmt* node) override;
+    virtual void Visit(VarInitExpr* node) override;
+    virtual void Visit(VarInitList* node) override;
 
 private:
     // Returns false if the module declaration was seen before.
