@@ -7,6 +7,7 @@
 #include "parser/ast/stmt/ExprStmt.h"
 #include "parser/ast/stmt/IfStmt.h"
 #include "parser/ast/stmt/ForStmt.h"
+#include "parser/ast/stmt/WhileStmt.h"
 #include "parser/ast/varinit/VarInitExpr.h"
 #include "parser/ast/varinit/VarInitList.h"
 
@@ -359,6 +360,13 @@ void CodeGenerator::Visit(ForStmt* node)
 
     m_current_output_file->DecreaseDepth();
     m_current_output_file->PrintIndented("}\n"); // End of the outermost block "{ while (true){ ... } }"
+}
+
+void CodeGenerator::Visit(WhileStmt* node)
+{
+    m_current_output_file->PrintIndented(std::format("while ({}) ", node->Condition()->ToString()));
+    m_current_output_file->DisableNextIndentation(); // We want to place the loop body at the same line.
+    node->Body()->Accept(this);
 }
 
 } // namespace mylang

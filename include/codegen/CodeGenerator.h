@@ -34,6 +34,7 @@ public:
     virtual void Visit(ExprStmt* node) override;
     virtual void Visit(IfStmt* node) override;
     virtual void Visit(ForStmt* node) override;
+    virtual void Visit(WhileStmt* node) override;
 
 private:
     // Returns false if the module declaration was seen before.

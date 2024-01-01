@@ -404,11 +404,11 @@ TEST(CodeGenerator, JumpStmt)
             "#include \"a.h\"\n"
             "int foo();\n"
             "int foo() {\n"
-            "    while (true) {\n";
-            "        break;\n";
-            "        continue;\n";
-            "    }\n";
-            "    return 0;\n";
+            "    while (true) {\n"
+            "        break;\n"
+            "        continue;\n"
+            "    }\n"
+            "    return 0;\n"
             "}\n";
         ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
     }
