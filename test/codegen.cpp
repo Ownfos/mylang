@@ -522,3 +522,85 @@ TEST(CodeGenerator, ImportModule)
         ExpectOutputEquality(generator->GetFile("main.cpp"), expected);
     }
 }
+
+TEST(CodeGenerator, UsingCustomType)
+{
+    auto source1 =
+        "module math;\n"
+        "export vec2: struct = {\n"
+        "    x: f32;\n"
+        "    y: f32;\n"
+        "}\n"
+        "export dot_product: func = (a: vec2, b: vec2) -> f32 {\n"
+        "    return a.x * b.x + a.y * b.y;\n"
+        "}\n";
+    auto source2 =
+        "module main;\n"
+        "import export math;\n"
+        "main: func = () -> i32 {\n"
+        "    a: vec2;\n"
+        "    a.x = 1;\n"
+        "    a.y = 2;\n"
+        "    b: vec2;\n"
+        "    b.x = 3;\n"
+        "    b.y = 4;\n"
+        "    return dot_product(a, b);\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source1),
+        GenerateAST(source2)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // math.h
+    {
+        auto expected =
+            "#ifndef MODULE_math_H\n"
+            "#define MODULE_math_H\n"
+            "#include <functional>\n"
+            "struct vec2 {\n"
+            "    float x;\n"
+            "    float y;\n"
+            "};\n"
+            "float dot_product(const vec2& a, const vec2& b);\n"
+            "#endif // MODULE_math_H\n";
+        ExpectOutputEquality(generator->GetFile("math.h"), expected);
+    }
+    // math.cpp
+    {
+        auto expected =
+            "#include \"math.h\"\n"
+            "float dot_product(const vec2& a, const vec2& b) {\n"
+            "    return ((a.x * b.x) + (a.y * b.y));\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("math.cpp"), expected);
+    }
+    // main.h
+    {
+        auto expected =
+            "#ifndef MODULE_main_H\n"
+            "#define MODULE_main_H\n"
+            "#include <functional>\n"
+            "#include \"math.h\"\n"
+            "#endif // MODULE_main_H\n";
+        ExpectOutputEquality(generator->GetFile("main.h"), expected);
+    }
+    // main.cpp
+    {
+        auto expected =
+            "#include \"main.h\"\n"
+            "int main();\n"
+            "int main() {\n"
+            "    vec2 a;\n"
+            "    (a.x = 1);\n"
+            "    (a.y = 2);\n"
+            "    vec2 b;\n"
+            "    (b.x = 3);\n"
+            "    (b.y = 4);\n"
+            "    return dot_product(a, b);\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("main.cpp"), expected);
+    }
+}
