@@ -444,7 +444,7 @@ TEST(CodeGenerator, TwoModuleImplmentationFile)
             "#endif // MODULE_math_H\n";
         ExpectOutputEquality(generator->GetFile("math.h"), expected);
     }
-    // a.cpp
+    // math.cpp
     {
         auto expected =
             "#include \"math.h\"\n"
@@ -458,5 +458,67 @@ TEST(CodeGenerator, TwoModuleImplmentationFile)
             "    return (result * result);\n"
             "}\n";
         ExpectOutputEquality(generator->GetFile("math.cpp"), expected);
+    }
+}
+
+TEST(CodeGenerator, ImportModule)
+{
+    auto source1 =
+        "module math;\n"
+        "export add: func = (a: i32, b: i32) -> i32 {\n"
+        "    return a + b;\n"
+        "}\n";
+    auto source2 =
+        "module main;\n"
+        "import math;\n"
+        "main: func = () -> i32 {\n"
+        "    return add(1, 2);\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source1),
+        GenerateAST(source2)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // math.h
+    {
+        auto expected =
+            "#ifndef MODULE_math_H\n"
+            "#define MODULE_math_H\n"
+            "#include <functional>\n"
+            "int add(const int& a, const int& b);\n"
+            "#endif // MODULE_math_H\n";
+        ExpectOutputEquality(generator->GetFile("math.h"), expected);
+    }
+    // math.cpp
+    {
+        auto expected =
+            "#include \"math.h\"\n"
+            "int add(const int& a, const int& b) {\n"
+            "    return (a + b);\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("math.cpp"), expected);
+    }
+    // main.h
+    {
+        auto expected =
+            "#ifndef MODULE_main_H\n"
+            "#define MODULE_main_H\n"
+            "#include <functional>\n"
+            "#endif // MODULE_main_H\n";
+        ExpectOutputEquality(generator->GetFile("main.h"), expected);
+    }
+    // main.cpp
+    {
+        auto expected =
+            "#include \"main.h\"\n"
+            "#include \"math.h\"\n"
+            "int main();\n"
+            "int main() {\n"
+            "    return add(1, 2);\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("main.cpp"), expected);
     }
 }
