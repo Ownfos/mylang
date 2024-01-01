@@ -370,3 +370,46 @@ TEST(CodeGenerator, ForStmt)
         ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
     }
 }
+
+TEST(CodeGenerator, JumpStmt)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = () -> i32 {\n"
+        "    while (true) {\n"
+        "        break;\n"
+        "        continue;\n"
+        "    }\n"
+        "    return 0;\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // a.h
+    {
+        auto expected =
+            "#ifndef MODULE_a_H\n"
+            "#define MODULE_a_H\n"
+            "#include <functional>\n"
+            "#endif // MODULE_a_H\n";
+        ExpectOutputEquality(generator->GetFile("a.h"), expected);
+    }
+    // a.cpp
+    {
+        auto expected =
+            "#include \"a.h\"\n"
+            "int foo();\n"
+            "int foo() {\n"
+            "    while (true) {\n";
+            "        break;\n";
+            "        continue;\n";
+            "    }\n";
+            "    return 0;\n";
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
+    }
+}
