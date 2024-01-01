@@ -422,7 +422,7 @@ TEST(CodeGenerator, TwoModuleImplmentationFile)
         "    return a + b;\n"
         "}\n";
     auto source2 =
-        "module a;\n"
+        "module math;\n"
         "squared_add: func = (a: i32, b: i32) -> i32 {\n"
         "    result: i32 = add(a, b);\n"
         "    return result * result;\n"
@@ -441,7 +441,7 @@ TEST(CodeGenerator, TwoModuleImplmentationFile)
             "#ifndef MODULE_math_H\n"
             "#define MODULE_math_H\n"
             "#include <functional>\n"
-            "#endif // MODULE_a_H\n";
+            "#endif // MODULE_math_H\n";
         ExpectOutputEquality(generator->GetFile("math.h"), expected);
     }
     // a.cpp
@@ -449,7 +449,7 @@ TEST(CodeGenerator, TwoModuleImplmentationFile)
         auto expected =
             "#include \"math.h\"\n"
             "int add(const int& a, const int& b);\n"
-            "int squared_add(const int& a, const int& b);"
+            "int squared_add(const int& a, const int& b);\n"
             "int add(const int& a, const int& b) {\n"
             "    return (a + b);\n"
             "}\n"
