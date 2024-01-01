@@ -413,3 +413,50 @@ TEST(CodeGenerator, JumpStmt)
         ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
     }
 }
+
+TEST(CodeGenerator, TwoModuleImplmentationFile)
+{
+    auto source1 =
+        "module math;\n"
+        "add: func = (a: i32, b: i32) -> i32 {\n"
+        "    return a + b;\n"
+        "}\n";
+    auto source2 =
+        "module a;\n"
+        "squared_add: func = (a: i32, b: i32) -> i32 {\n"
+        "    result: i32 = add(a, b);\n"
+        "    return result * result;\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source1),
+        GenerateAST(source2)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // math.h
+    {
+        auto expected =
+            "#ifndef MODULE_math_H\n"
+            "#define MODULE_math_H\n"
+            "#include <functional>\n"
+            "#endif // MODULE_a_H\n";
+        ExpectOutputEquality(generator->GetFile("math.h"), expected);
+    }
+    // a.cpp
+    {
+        auto expected =
+            "#include \"math.h\"\n"
+            "int add(const int& a, const int& b);\n"
+            "int squared_add(const int& a, const int& b);"
+            "int add(const int& a, const int& b) {\n"
+            "    return (a + b);\n"
+            "}\n"
+            "int squared_add(const int& a, const int& b) {\n"
+            "    int result = add(a, b);\n"
+            "    return (result * result);\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("math.cpp"), expected);
+    }
+}
