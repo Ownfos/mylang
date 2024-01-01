@@ -8,6 +8,7 @@
 #include "parser/ast/stmt/IfStmt.h"
 #include "parser/ast/stmt/ForStmt.h"
 #include "parser/ast/stmt/WhileStmt.h"
+#include "parser/ast/stmt/JumpStmt.h"
 #include "parser/ast/varinit/VarInitExpr.h"
 #include "parser/ast/varinit/VarInitList.h"
 
@@ -367,6 +368,17 @@ void CodeGenerator::Visit(WhileStmt* node)
     m_current_output_file->PrintIndented(std::format("while ({}) ", node->Condition()->ToString()));
     m_current_output_file->DisableNextIndentation(); // We want to place the loop body at the same line.
     node->Body()->Accept(this);
+}
+
+void CodeGenerator::Visit(JumpStmt* node)
+{
+    m_current_output_file->PrintIndented(node->JumpType().lexeme);
+    if (auto return_expr = node->ReturnValueExpr())
+    {
+        m_current_output_file->Print(" ");
+        m_current_output_file->Print(return_expr->ToString());
+    }
+    m_current_output_file->Print(";\n");
 }
 
 } // namespace mylang
