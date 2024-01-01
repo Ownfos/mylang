@@ -31,6 +31,7 @@ public:
     virtual void Visit(VarDeclStmt* node) override;
     virtual void Visit(VarInitExpr* node) override;
     virtual void Visit(VarInitList* node) override;
+    virtual void Visit(ExprStmt* node) override;
 
 private:
     // Returns false if the module declaration was seen before.

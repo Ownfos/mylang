@@ -4,6 +4,7 @@
 #include "parser/ast/globdecl/StructDecl.h"
 #include "parser/ast/stmt/CompoundStmt.h"
 #include "parser/ast/stmt/VarDeclStmt.h"
+#include "parser/ast/stmt/ExprStmt.h"
 #include "parser/ast/varinit/VarInitExpr.h"
 #include "parser/ast/varinit/VarInitList.h"
 
@@ -293,6 +294,11 @@ void CodeGenerator::Visit(VarInitList* node)
         list_elem[i]->Accept(this);
     }
     m_current_output_file->Print("}");
+}
+
+void CodeGenerator::Visit(ExprStmt* node)
+{
+    m_current_output_file->PrintIndented(std::format("{};\n", node->Expression()->ToString()));
 }
 
 } // namespace mylang
