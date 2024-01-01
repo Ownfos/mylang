@@ -5,6 +5,8 @@
 #include "parser/ast/stmt/CompoundStmt.h"
 #include "parser/ast/stmt/VarDeclStmt.h"
 #include "parser/ast/stmt/ExprStmt.h"
+#include "parser/ast/stmt/IfStmt.h"
+#include "parser/ast/stmt/ForStmt.h"
 #include "parser/ast/varinit/VarInitExpr.h"
 #include "parser/ast/varinit/VarInitList.h"
 
@@ -299,6 +301,20 @@ void CodeGenerator::Visit(VarInitList* node)
 void CodeGenerator::Visit(ExprStmt* node)
 {
     m_current_output_file->PrintIndented(std::format("{};\n", node->Expression()->ToString()));
+}
+
+void CodeGenerator::Visit(IfStmt* node)
+{
+    m_current_output_file->PrintIndented(std::format("if ({}) ", node->Condition()->ToString()));
+    m_current_output_file->DisableNextIndentation(); // We want to place then-branch at the same line.
+    node->ThenBranch()->Accept(this);
+
+    if (auto else_branch = node->ElseBranch())
+    {
+        m_current_output_file->PrintIndented("else ");
+        m_current_output_file->DisableNextIndentation(); // We want to place else-branch at the same line.
+        else_branch->Accept(this);
+    }
 }
 
 } // namespace mylang
