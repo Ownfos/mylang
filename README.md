@@ -1,6 +1,56 @@
 # Purpose
 Design and implement a transcompiler for my own language that generates C++ files
 
+## How does this work?
+```
+The program will be given a list of character sequence (i.e., source files).
+A lexical analyzer will read the characters and convert them into a stream of tokens.
+From there, we can use the context free grammar to perform syntax analysis
+and generate an abstract syntax tree (a.k.a. AST) for each source file.
+
+The next step is traversing the AST with various visitors,
+each of them representing a distinct checks such as type validation.
+Passing through these semantic analysis will give information on
+which module includes which, and what are the global symbols visible on each module.
+
+A module is a logical concept which is simillar to a package or a library.
+You can declare structs and functions in a module, and choose their visibility
+on other modules that 'import' it by specifying 'export' prefix.
+
+After all checks are done, a code generator will traverse the ASTs to create
+a header file (xxx.h) and a source file (xxx.cpp) for each module.
+
+
+             lexical        syntax      semantic     codegen
+source files -------> tokens ------> AST --------> AST -------> xxx.h, xxx.cpp
+```
+
+## How does the output file layout look like?
+Suppose we have three input files in this directory.  
+"vector.ml" and "matrix.ml" are both implementing a module called "math".
+```
+vector.ml
+matrix.ml
+main.ml
+```
+If we run the program with following command, the folder will change like below.
+```
+> mylang ./output ./vector.ml ./matrix.ml ./main.ml
+```
+```
+output/
+├─ math.h
+├─ math.cpp
+├─ main.h
+├─ main.cpp
+vector.ml
+matrix.ml
+main.ml
+```
+Note that we only have two .h, .cpp pair instead of three.  
+That is because symbols and definitions in "vector.ml" and "matrix.ml"  
+got aggregated by the analyzer and are treated as if they came from a single file.
+
 ## How to build
 ### Step 1) clone vcpkg
 ```
@@ -69,17 +119,22 @@ struct-decl ::= "struct" "=" "{" member-decl* "}"
 member-decl ::= identifier ":" type ";"
 ```
 ```c++
+// Parameter usage translation rules:
+// in T    ==> const T&
+// out T   ==> T&
+// inout T ==> T&
+
 // Expected code generation:
-// int add(int a, int b) {
-//     return a + b;
+// int add(const int& a, const int& b) {
+//     return (a + b);
 // }
 add: func = (a: i32, b: i32) -> i32 {
     return a + b;
 }
 
 // Expected code generation:
-// void append(std::string& message, std::string prefix) {
-//     message += prefix;
+// void append(std::string& message, const std::string& prefix) {
+//     (message += prefix);
 // }
 append: func = (message: out str, prefix: str) {
     message += prefix;
