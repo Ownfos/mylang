@@ -9,7 +9,7 @@ void OutputFile::Open(const std::filesystem::path& path)
     m_ostream.open(path);
     if (!m_ostream)
     {
-        throw std::runtime_error(std::format("[I/O Error] failed to open output file on path '{}'", path));
+        throw std::runtime_error(std::format("[I/O Error] failed to open output file on path '{}'", path.string()));
     }
 }
 
