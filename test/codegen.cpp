@@ -604,3 +604,47 @@ TEST(CodeGenerator, UsingCustomType)
         ExpectOutputEquality(generator->GetFile("main.cpp"), expected);
     }
 }
+
+TEST(CodeGenerator, CallableVariable)
+{
+    auto source =
+        "module a;\n"
+        "foo: func = (a: i32) -> bool {\n"
+        "    return a > 10;\n"
+        "}\n"
+        "main: func = () -> i32 {\n"
+        "    fn: [(i32)->bool] = foo;\n"
+        "    return 0;\n"
+        "}\n";
+
+    auto environment = ProgramEnvironment();
+    auto ast_list = std::vector{
+        GenerateAST(source)
+    };
+    auto generator = GenerateOutput(environment, ast_list);
+    
+    // a.h
+    {
+        auto expected =
+            "#ifndef MODULE_a_H\n"
+            "#define MODULE_a_H\n"
+            "#include <functional>\n"
+            "#endif // MODULE_a_H\n";
+        ExpectOutputEquality(generator->GetFile("a.h"), expected);
+    }
+    // a.cpp
+    {
+        auto expected =
+            "#include \"a.h\"\n"
+            "bool foo(const int& a);\n"
+            "int main();\n"
+            "bool foo(const int& a) {\n"
+            "    return (a > 10);\n"
+            "}\n"
+            "int main() {\n"
+            "    std::function<bool(const int&)> fn = foo;\n"
+            "    return 0;\n"
+            "}\n";
+        ExpectOutputEquality(generator->GetFile("a.cpp"), expected);
+    }
+}
