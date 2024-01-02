@@ -10,42 +10,57 @@
 
 using namespace mylang;
 
-std::shared_ptr<IAbstractSyntaxTree> GenerateAST(const std::filesystem::path& path)
+struct CommandLineArguments
 {
-    auto source_file = std::make_unique<SourceFile>(path);
-    auto lexer = std::make_unique<LexicalAnalyzer>(std::move(source_file));
-    auto syntax_analyzer = SyntaxAnalyzer(std::move(lexer));
-    return syntax_analyzer.GenerateAST();
+    std::filesystem::path output_directory;
+    std::vector<std::filesystem::path> input_file_paths;
+};
+
+auto ParseCommandLine(int argc, char** argv)
+{
+    // We need output directory and at least one input file.
+    // Note: since the executable's name is treated as the first argument,
+    //       we should validate that argc is greater than 2.
+    if (argc <= 2)
+    {
+        throw std::exception("[Argument Error] more than two arguments are required: [output directory] [input file 1] [input file 2] ... [input file N]");
+    }
+
+    // Store arguments as path.
+    auto arguments = CommandLineArguments{};
+    arguments.output_directory = argv[1];
+    for (int i = 2; i < argc; ++i)
+    {
+        arguments.input_file_paths.push_back(argv[i]);
+    }
+
+    // Make sure we can access the output directory.
+    try
+    {
+        std::filesystem::create_directory(arguments.output_directory);
+    }
+    catch(...)
+    {
+        throw std::exception("[I/O Error] invalid output directory");
+    }
+
+    return arguments;
 }
 
-std::shared_ptr<CodeGenerator> GenerateOutput(
-    ProgramEnvironment& environment,
-    const std::vector<std::shared_ptr<IAbstractSyntaxTree>>& ast_list
-)
+// Generates an AST for a given input file.
+// An exception will be thrown for any lexical or syntactic error.
+std::shared_ptr<IAbstractSyntaxTree> RunLexicalAndSyntaxAnalysis(const std::filesystem::path& input_file_path)
 {
-    auto scanner = GlobalSymbolScanner(environment);
-    auto type_checker = TypeChecker(environment);
-    auto jump_stmt_checker = JumpStmtUsageChecker();
-    for (const auto& ast : ast_list)
-    {
-        ast->Accept(&scanner);
-        ast->Accept(&type_checker);
-        ast->Accept(&jump_stmt_checker);
-    }
+    auto source_file = std::make_unique<SourceFile>(input_file_path);
+    auto lexer = std::make_unique<LexicalAnalyzer>(std::move(source_file));
+    auto syntax_analyzer = SyntaxAnalyzer(std::move(lexer));
 
-    auto file_factory = std::make_unique<OutputFileFactory>();
-    auto generator = std::make_shared<CodeGenerator>(environment, "", std::move(file_factory));
-    
-    for (const auto& ast : ast_list)
-    {
-        ast->Accept(generator.get());
-    }
-
-    return generator;
+    return syntax_analyzer.GenerateAST();
 }
 
 // Perform semantic analysis and collect global symbol
 // information in the given 'environment' instance.
+// An exception will be thrown for any semantic error.
 void RunSemanticAnalysis(ProgramEnvironment& environment, IAbstractSyntaxTree* ast)
 {
     auto scanner = GlobalSymbolScanner(environment);
@@ -57,35 +72,96 @@ void RunSemanticAnalysis(ProgramEnvironment& environment, IAbstractSyntaxTree* a
     ast->Accept(&jump_stmt_checker);
 }
 
-void ValidateArguments(int argc, char** argv)
+void PrintFrontendError(const std::filesystem::path& input_file_path)
 {
-    // We need output directory and at least one input file.
-    if (argc <= 1)
-    {
-        throw std::runtime_error("[Argument Error] more than two arguments are required: [output directory] [input file 1] [input file 2] ... [input file N]");
-    }
-
-    // Make sure we can access the output directory.
-    try
-    {
-        std::filesystem::create_directory(argv[0]);
-    }
-    catch(const std::exception& e)
-    {
-        throw std::runtime_error("[I/O Error] invalid output directory");
-    }
+    std::cerr << std::format("# Error occured while parsing file \'{}\'\n", input_file_path.string());
 }
 
-void PrintUsage()
+std::vector<std::shared_ptr<IAbstractSyntaxTree>> RunCompilerFrontend(
+    const std::vector<std::filesystem::path>& input_file_paths,
+    ProgramEnvironment& environment
+)
 {
-    std::cout << "";
+    // Step 1) generate AST for each input source file.
+    auto ast_list = std::vector<std::shared_ptr<IAbstractSyntaxTree>>();
+    for (const auto& input_file_path : input_file_paths)
+    {
+        try
+        {
+            ast_list.push_back(RunLexicalAndSyntaxAnalysis(input_file_path));
+        }
+        catch(...)
+        {
+            PrintFrontendError(input_file_path);
+            throw;
+        }
+    }
+
+    // Step 2) scan import directives and global symbols.
+    auto scanner = GlobalSymbolScanner(environment);
+    for (int i = 0; i < ast_list.size(); ++i)
+    {
+        try
+        {
+            ast_list[i]->Accept(&scanner);
+        }
+        catch(...)
+        {
+            PrintFrontendError(input_file_paths[i]);
+            throw;
+        }
+    }
+
+    // Step 3) run semantic checks.
+    auto type_checker = TypeChecker(environment);
+    auto jump_stmt_checker = JumpStmtUsageChecker();
+    for (int i = 0; i < ast_list.size(); ++i)
+    {
+        try
+        {
+            ast_list[i]->Accept(&type_checker);
+            ast_list[i]->Accept(&jump_stmt_checker);
+        }
+        catch(...)
+        {
+            PrintFrontendError(input_file_paths[i]);
+            throw;
+        }
+    }
+
+    return ast_list;
+}
+
+void RunCompilerBackend(
+    const std::filesystem::path& output_directory,
+    const std::vector<std::shared_ptr<IAbstractSyntaxTree>>& ast_list,
+    ProgramEnvironment& environment
+)
+{
+    auto file_factory = std::make_unique<OutputFileFactory>();
+    auto generator = std::make_shared<CodeGenerator>(environment, output_directory, std::move(file_factory));
+    
+    for (const auto& ast : ast_list)
+    {
+        ast->Accept(generator.get());
+    }
 }
 
 int main(int argc, char** argv)
 {
     try
     {
-        ValidateArguments(argc, argv);
+        // Get the output directory and list of input file paths.
+        auto arguments = ParseCommandLine(argc, argv);
+
+        // Read and analyze the input files to generate AST.
+        // This step involves lexical analyzer, syntax analyzer, and semantic analyzer.
+        auto environment = ProgramEnvironment();
+        auto ast_list = RunCompilerFrontend(arguments.input_file_paths, environment);
+
+        // Generate C++ code for given ASTs.
+        // One header file and one source file will be created for each logical module.
+        RunCompilerBackend(arguments.output_directory, ast_list, environment);
     }
     catch(const std::exception& e)
     {
