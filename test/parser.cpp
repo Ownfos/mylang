@@ -1470,6 +1470,22 @@ TEST(TypeChecker, InvalidMemberAccess)
     ExpectTypeCheckFailure(source, expected_error);
 }
 
+TEST(TypeChecker, InvalidTypeNameUsage)
+{
+    auto source =
+        "module a;\n"
+        "person: struct = {\n"
+        "    name: str;\n"
+        "    age: i32;\n"
+        "}\n"
+        "main: func =() {\n"
+        "    person.name;\n"
+        "}\n";
+    auto expected_error =
+        "[Semantic Error][Ln 7, Col 5] type name \"person\" cannot be used as an expression";
+    ExpectTypeCheckFailure(source, expected_error);
+}
+
 TEST(TypeChecker, InvalidAssignmentTypeMismatch)
 {
     auto source =
