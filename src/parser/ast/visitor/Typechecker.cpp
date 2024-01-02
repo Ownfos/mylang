@@ -767,6 +767,17 @@ void TypeChecker::Visit(FuncCallExpr* node)
     SetExprTrait(node, func_type->ReturnType());
 }
 
+bool IsSymbolTypeName(const Symbol& symbol)
+{
+    // Struct declarations only appear at level 0.
+    if (symbol.scope_level > 0) return false;
+
+    // Only a struct declaration can have a name identical to its type name,
+    // since global symbols on scope level 0 are either a function or a struct
+    // and a function type starts with "[", not the function's name.
+    return symbol.declaration->Name().lexeme == symbol.declaration->DeclType().ToString();
+}
+
 void TypeChecker::Visit(Identifier* node)
 {
     auto symbol_name = node->ToString();
@@ -779,8 +790,31 @@ void TypeChecker::Visit(Identifier* node)
         auto symbol = m_environment.FindSymbol(m_context_module_name, symbol_name);
         auto type = symbol.declaration->DeclType();
 
+        // There is a chance that a struct name appears as an identifier node.
+        // We should prevent a type name from begin interpreted as a variable.
+        //
+        // Note: it is okay to have a local variable with name identical to its type,
+        //       but it will invalidate usage of the type until the end of its scope.
+        //
+        //       ex) foo: func = () {
+        //               vector: vector;
+        //               // cannot declare variables with struct type "vector"
+        //               // until the scope of local variable "vector" ends...
+        //           }
+        if (IsSymbolTypeName(symbol))
+        {
+            auto message = std::format("type name \"{}\" cannot be used as an expression",
+                symbol_name
+            );
+            throw SemanticError(node->StartPos(), message);
+        }
+
         // Note: the third parameter denotes that this is an lvalue.
         SetExprTrait(node, type, true);
+    }
+    catch(const SemanticError&)
+    {
+        throw;
     }
     catch(const std::exception&)
     {
