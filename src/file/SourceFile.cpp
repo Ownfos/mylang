@@ -9,7 +9,7 @@ SourceFile::SourceFile(const std::filesystem::path& path)
 {
     if (!m_file)
     {
-        throw std::runtime_error(std::format("[I/O Error] failed to open file on path '{}'", path.string()));
+        throw std::runtime_error(std::format("[I/O Error] failed to open input file on path '{}'", path.string()));
     }
 }
 
