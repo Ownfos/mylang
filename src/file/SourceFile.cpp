@@ -7,9 +7,9 @@ namespace mylang
 SourceFile::SourceFile(const std::filesystem::path& path)
     : m_file(path)
 {
-    if (m_file.fail())
+    if (!m_file)
     {
-        throw std::runtime_error(std::format("failed to open file on path '{}'", path.string()));
+        throw std::runtime_error(std::format("[I/O Error] failed to open file on path '{}'", path.string()));
     }
 }
 
