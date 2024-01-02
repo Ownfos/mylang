@@ -18,33 +18,15 @@ cmake --build build
 cd build; ctest; cd ..
 ```
 
-## How to run (temporary) intermediate parser
-```
-// Use default input
-.\build\src\Debug\mylang.exe
-
-// Use custom input
-.\build\src\Debug\mylang.exe "module a; foo: func = (){}"
-```
-#### Note: the main executable currently performs syntax analysis and semantic analysis
-
-# TODO (implement)
-- [ ] Implement actual output file
-- [ ] Modify main.cpp to accept multiple source files and output generated code to a specified directory
+## How to run
 ```bash
-example)
-./mylang "./build" module1.in module2.in
+# General format
+.\build\src\Debug\mylang.exe [output directory] [input file 1] [input file 2] ... [input file N]
 
-cat ./build
-module1.h
-module1.cpp
-module2.h
-module2.cpp
+# Use sample input files (the file extension doesn't matter)
+.\build\src\Debug\mylang.exe ./sample/output ./sample/circle.ml ./sample/vector.ml ./sample/main.ml
 ```
-
-# TODO (refactor)
-- [ ] Decide StartPos() for a ForStmt and an empty CompoundStmt
-- [ ] const Accept() for AST nodes...?
+#### Warning: this program does not support cleaning up outputs!
 
 # Syntax
 ### Notation rules used to write theses:
